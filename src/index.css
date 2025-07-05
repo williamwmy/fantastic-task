@@ -13,7 +13,7 @@ button:disabled {
 }
 
 /* Input, textarea, select grunnstil */
-input, textarea, select {
+input, select {
   font-size: 16px;
   width: 100%;
   padding: 0.8rem 1rem;
@@ -23,6 +23,25 @@ input, textarea, select {
   box-shadow: inset 0 0 0 1px #ccc;
   transition: box-shadow 0.2s, background 0.2s;
   font-family: inherit;
+}
+
+textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.8rem;
+  border-radius: 7px;
+  border: 1px solid #bbb;
+  font-size: 15px;
+  resize: vertical;
+  background: #f2f4f7;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+textarea:focus {
+  outline: none;
+  background: #eaf1fb;
+  box-shadow: 0 0 0 2px #82bcf4;
 }
 
 /* Fokus */
@@ -109,7 +128,7 @@ input[type="checkbox"]:checked::after {
   transform: rotate(45deg);
 }
 
-/* Modal content */
+/* MODAL OVERLAY */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -118,15 +137,45 @@ input[type="checkbox"]:checked::after {
   align-items: center;
   justify-content: center;
   z-index: 10;
+  /* Hindrer at bakgrunn kan scrolle under modal */
+  overscroll-behavior: contain;
 }
 
+/* MODAL CONTENT - Mobilvennlig og fast bredde */
 .modal-content {
   background: #fff;
   border-radius: 1rem;
   padding: 1rem;
-  width: 90%;
+  width: 95vw;
   max-width: 400px;
+  box-sizing: border-box;
   box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+  /* Hindrer unødvendig overflow */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content > * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-content input,
+.modal-content textarea {
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+/* Bedre layout for små skjermer */
+@media (max-width: 480px) {
+  .modal-content {
+    padding: 0.7rem;
+    max-width: 99vw;
+    min-width: 0;
+    font-size: 1.03em;
+  }
 }
 
 @keyframes pop-effect {

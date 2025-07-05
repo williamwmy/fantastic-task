@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useReward } from "react-rewards";
 
-// ANIMATION_TYPES og EMOJI_VARIANTS for emoji-randomisering
+// Ukenavn
+const WEEKDAYS = ["M", "T", "O", "T", "F", "L", "S"];
+const WEEKDAYS_FULL = [
+  "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"
+];
+// Animasjoner og emojis
 const ANIMATION_TYPES = ["confetti", "balloons", "emoji"];
 const EMOJI_VARIANTS = [
   ["💪", "🏆", "⭐️", "🎉"],
@@ -13,11 +18,9 @@ const EMOJI_VARIANTS = [
   ["🦄", "🤩", "💥", "🚀"]
 ];
 
-// Bruk gjerne denne filterTasksForDay hvis du bruker repeat/dager
 export function filterTasksForDay(tasks, dateStr) {
-  // Hvis du har repeat: [1,1,1,1,1,0,0] for ukedager (mandag-søndag)
   const d = new Date(dateStr);
-  const weekday = d.getDay() === 0 ? 6 : d.getDay() - 1; // mandag=0 ... søndag=6
+  const weekday = d.getDay() === 0 ? 6 : d.getDay() - 1;
   return tasks
     .map((t, idx) => ({ ...t, idx }))
     .filter(t => !t.repeat || t.repeat[weekday]);
@@ -35,6 +38,7 @@ export default function TaskList({
   const [taskDesc, setTaskDesc] = useState("");
   const [repeat, setRepeat] = useState([1, 1, 1, 1, 1, 0, 0]);
 
+  // Legg til oppgave (kun når onAdd finnes)
   if (compactOnly) {
     return (
       <form
@@ -54,7 +58,12 @@ export default function TaskList({
             setRepeat([1, 1, 1, 1, 1, 0, 0]);
           }
         }}
-        style={{ marginBottom: 18 }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          boxSizing: "border-box" // REMOVE width: "100%"
+        }}
       >
         <input
           placeholder="Oppgavenavn"
@@ -62,7 +71,7 @@ export default function TaskList({
           maxLength={32}
           style={{
             width: "100%",
-            marginBottom: 6
+            marginBottom: 0
           }}
           onChange={e => setTaskName(e.target.value)}
         />
@@ -72,15 +81,28 @@ export default function TaskList({
           maxLength={40}
           style={{
             width: "100%",
-            marginBottom: 8
+            marginBottom: 0
           }}
           onChange={e => setTaskDesc(e.target.value)}
         />
-        <div style={{
-          display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap"
-        }}>
-          {["M", "T", "O", "T", "F", "L", "S"].map((d, idx) => (
-            <label key={idx} style={{ fontSize: 13, color: "#333" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: 4,
+            marginBottom: 8,
+            marginTop: 0
+          }}
+        >
+          {WEEKDAYS.map((d, idx) => (
+            <label key={idx} style={{
+              fontSize: 13,
+              color: "#333",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center"
+            }}>
               <input
                 type="checkbox"
                 checked={!!repeat[idx]}
@@ -89,7 +111,13 @@ export default function TaskList({
                     r.map((v, i) => (i === idx ? (v ? 0 : 1) : v))
                   )
                 }
-                style={{ marginRight: 2 }}
+                style={{
+                  marginBottom: 2,
+                  marginRight: 0,
+                  width: 28,
+                  height: 28,
+                  accentColor: "#82bcf4"
+                }}
               />
               {d}
             </label>
@@ -178,8 +206,8 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
       )}
       {task.repeat && (
         <span style={{ fontSize: 12, color: "#297", marginTop: 2 }}>
-          {["Ma", "Ti", "On", "To", "Fr", "Lø", "Sø"].map(
-            (d, i) => task.repeat[i] ? d + " " : ""
+          {WEEKDAYS_FULL.map(
+            (d, i) => task.repeat[i] ? d.slice(0, 2) + " " : ""
           )}
         </span>
       )}
@@ -208,14 +236,6 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
       {showComment && (
         <div style={{ marginTop: 8 }}>
           <textarea
-            style={{
-              width: "100%",
-              minHeight: 40,
-              borderRadius: 7,
-              border: "1px solid #bbb",
-              fontSize: 15,
-              padding: "0.3rem"
-            }}
             maxLength={80}
             placeholder="Legg til kommentar ..."
             value={comment}
