@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useReward } from "react-rewards";
 
 // Ukenavn
@@ -151,7 +151,8 @@ export default function TaskList({
             key={t.name + idx}
             task={t}
             idx={idx}
-            utført={!!todayLog[idx]}
+            utført={!!todayLog[idx]?.done}
+            kommentar={todayLog[idx]?.comment || ""}
             onComplete={() => onComplete(idx)}
             onComment={txt => onComment(idx, txt)}
           />
@@ -161,12 +162,16 @@ export default function TaskList({
   );
 }
 
-function TaskRow({ task, idx, utført, onComplete, onComment }) {
+function TaskRow({ task, idx, utført, kommentar, onComplete, onComment }) {
   const [animation, setAnimation] = useState("confetti");
   const [emojiList, setEmojiList] = useState(EMOJI_VARIANTS[0]);
   const { reward } = useReward(`reward${idx}`, animation, { emoji: emojiList });
   const [showComment, setShowComment] = useState(false);
-  const [comment, setComment] = useState(task.comment || "");
+  const [comment, setComment] = useState(kommentar);
+
+  useEffect(() => {
+    setComment(kommentar);
+  }, [kommentar]);
 
   const handleFullfør = () => {
     onComplete();
@@ -190,15 +195,57 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
         borderRadius: 15,
         boxShadow: "0 2px 8px #0001",
         cursor: "pointer",
-        textDecoration: utført ? "line-through" : "none",
         opacity: utført ? 0.7 : 1,
         fontSize: 17,
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
+        minHeight: 80,
+        justifyContent: "center",
+        overflow: "hidden" // viktig for at streken ikke skal gå utenfor boksen
       }}
       onClick={handleFullfør}
     >
-      <span style={{ fontWeight: 600 }}>{task.name}</span>
+      {/* Strek gjennom boksen hvis utført */}
+      {utført && (
+        <>
+          {/* /-strek */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: "140%",
+              height: 0,
+              borderTop: "8px solid #53af67",
+              transform: "translate(-50%, -50%) rotate(45deg)",
+              zIndex: 2,
+              pointerEvents: "none",
+              opacity: 0.5,
+            }}
+          />
+          {/* \-strek */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: "140%",
+              height: 0,
+              borderTop: "8px solid #53af67",
+              transform: "translate(-50%, -50%) rotate(-45deg)",
+              zIndex: 2,
+              pointerEvents: "none",
+              opacity: 0.5,
+            }}
+          />
+        </>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontWeight: 600 }}>{task.name}</span>
+        {utført && (
+          <span style={{ color: "#53af67", fontSize: 18, marginLeft: 4 }}>✅</span>
+        )}
+      </div>
       {task.desc && (
         <span style={{ fontSize: 13, color: "#666", marginTop: 2 }}>
           {task.desc}
@@ -212,9 +259,6 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
         </span>
       )}
       <span id={`reward${idx}`} style={{ position: "absolute", right: 22, top: 5 }}></span>
-      {utført && (
-        <span style={{ color: "#53af67", marginTop: 5 }}>✅ Utført!</span>
-      )}
       <button
         style={{
           marginTop: 10,
@@ -241,6 +285,14 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
             value={comment}
             onChange={e => setComment(e.target.value)}
             onBlur={() => onComment(comment)}
+            style={{
+              width: "100%",
+              minHeight: 32,
+              maxHeight: 80,
+              resize: "none",
+              overflow: "auto",
+              boxSizing: "border-box"
+            }}
           />
         </div>
       )}

@@ -37,7 +37,14 @@ export default function App() {
   }, [data]);
 
   const todayTasks = filterTasksForDay(profile.tasks, selectedDate);
-  const todayLog = profile.log[selectedDate] || todayTasks.map(() => false);
+  let todayLog = profile.log[selectedDate] || todayTasks.map(() => ({ done: false, comment: "" }));
+
+  // Migrer gamle boolean-verdier til objekt
+  todayLog = todayLog.map(entry =>
+    typeof entry === "object"
+      ? entry
+      : { done: !!entry, comment: "" }
+  );
 
   const addProfile = name => {
     setData(d => ({
@@ -80,12 +87,17 @@ export default function App() {
   const handleTaskToggle = idx => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
-      const key = todayStr();
-      const tasksToday = filterTasksForDay(copy.profiles[profileIdx].tasks, key);
-      if (!copy.profiles[profileIdx].log[key]) {
-        copy.profiles[profileIdx].log[key] = tasksToday.map(() => false);
+      const log = copy.profiles[profileIdx].log;
+      if (!log[selectedDate]) {
+        log[selectedDate] = todayTasks.map(() => ({ done: false, comment: "" }));
       }
-      copy.profiles[profileIdx].log[key][idx] = !copy.profiles[profileIdx].log[key][idx];
+      // Migrer gamle booleans til objekt
+      log[selectedDate] = log[selectedDate].map(entry =>
+        typeof entry === "object"
+          ? entry
+          : { done: !!entry, comment: "" }
+      );
+      log[selectedDate][idx].done = !log[selectedDate][idx].done;
       return copy;
     });
   };
@@ -93,9 +105,11 @@ export default function App() {
   const handleComment = (idx, txt) => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
-      const tasksToday = filterTasksForDay(copy.profiles[profileIdx].tasks, todayStr());
-      const fullTaskIdx = tasksToday[idx].idx;
-      copy.profiles[profileIdx].tasks[fullTaskIdx].comment = txt;
+      const log = copy.profiles[profileIdx].log;
+      if (!log[selectedDate]) {
+        log[selectedDate] = todayTasks.map(() => ({ done: false, comment: "" }));
+      }
+      log[selectedDate][idx].comment = txt;
       return copy;
     });
   };
