@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  background: #f4f7fa;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+input, textarea {
+  font-family: inherit;
+}
