@@ -3,6 +3,7 @@ import { loadData, saveData } from "./localStorage";
 import ProfileSelector from "./ProfileSelector";
 import TaskList, { filterTasksForDay } from "./TaskList";
 import Stats from "./Stats";
+import Modal from "./Modal";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
@@ -23,14 +24,15 @@ export default function App() {
   const [profileIdx, setProfileIdx] = useState(0);
   const profile = data.profiles[profileIdx];
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+
   useEffect(() => {
     saveData(data);
   }, [data]);
 
-  // Filtrer for dagens oppgaver (ut fra frekvens)
   const todayTasks = filterTasksForDay(profile.tasks, todayStr());
-
-  // Dagens utført-status fra loggen
   const todayLog = profile.log[todayStr()] || todayTasks.map(() => false);
 
   const addProfile = name => {
@@ -41,7 +43,6 @@ export default function App() {
     setProfileIdx(data.profiles.length);
   };
 
-  // Nytt: Endre navn på profil
   const handleRenameProfile = (idx, newName) => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
@@ -50,7 +51,6 @@ export default function App() {
     });
   };
 
-  // Nytt: Slett profil
   const handleDeleteProfile = idx => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
@@ -73,7 +73,6 @@ export default function App() {
     });
   };
 
-  // Toggle utført-status for valgt oppgave i dagens logg
   const handleTaskToggle = idx => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
@@ -90,7 +89,6 @@ export default function App() {
   const handleComment = (idx, txt) => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
-      // Finner hvilken oppgave i hele lista idx peker til
       const tasksToday = filterTasksForDay(copy.profiles[profileIdx].tasks, todayStr());
       const fullTaskIdx = tasksToday[idx].idx;
       copy.profiles[profileIdx].tasks[fullTaskIdx].comment = txt;
@@ -98,7 +96,6 @@ export default function App() {
     });
   };
 
-  // Rediger status for hvilken som helst dag via statistikk
   const handleEditLog = (date, idx, value) => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
@@ -112,7 +109,6 @@ export default function App() {
     });
   };
 
-  // Sørg for at loggen har oppføring for dagens dato hvis oppgaver endres
   useEffect(() => {
     setData(d => {
       const copy = JSON.parse(JSON.stringify(d));
@@ -128,41 +124,22 @@ export default function App() {
   }, [profileIdx, profile.tasks.length]);
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      overflowY: "auto",
-      padding: "1.5rem"
-    }}>
-      <h1
-        style={{
-          textAlign: "center",
-          fontWeight: 800,
-          fontSize: "2.2rem",
-          marginBottom: "1rem",
-          background: "linear-gradient(90deg, #3b82f6, #9333ea)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          textShadow: "1px 1px 2px rgba(0,0,0,0.15)"
-        }}
-      >
-        ⭐️ Fantastic Task
-      </h1>
-
-      <ProfileSelector
-        profiles={data.profiles}
-        current={profileIdx}
-        onSelect={setProfileIdx}
-        onAdd={addProfile}
-        onRename={handleRenameProfile}
-        onDelete={handleDeleteProfile}
-      />
-      <div style={{ marginBottom: 16, fontWeight: 500 }}>
-        Dagens oppgaver:
+    <div style={{ minHeight: "100vh", padding: "1rem" }}>
+      {/* Top bar */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "1rem"
+      }}>
+        <div style={{ fontWeight: 600 }}>{profile.name}</div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button onClick={() => setShowProfileModal(true)}>Bytt profil</button>
+          <button onClick={() => setShowStats(true)}>Statistikk</button>
+        </div>
       </div>
+
+      {/* Task List */}
       <TaskList
         tasks={todayTasks}
         todayLog={todayLog}
@@ -170,11 +147,58 @@ export default function App() {
         onComment={handleComment}
         onAdd={handleTaskAdd}
       />
-      <Stats
-        log={profile.log || {}}
-        tasks={profile.tasks}
-        onEditLog={handleEditLog}
-      />
+
+      <button
+        onClick={() => setShowAddModal(true)}
+        aria-label="Legg til oppgave"
+        style={{ margin: "1rem 0" }} // Optional: adds spacing
+      >
+        +
+      </button>
+
+      {/* Add Modal */}
+      <Modal open={showAddModal} onClose={() => setShowAddModal(false)}>
+        <h3>Ny oppgave</h3>
+        <TaskList
+          tasks={[]}
+          todayLog={[]}
+          onAdd={t => {
+            handleTaskAdd(t);
+            setShowAddModal(false);
+          }}
+          onComplete={() => {}}
+          onComment={() => {}}
+          compactOnly={true}
+        />
+        <button onClick={() => setShowAddModal(false)} style={{ marginTop: 10 }}>Lukk</button>
+      </Modal>
+
+      {/* Profile Modal */}
+      <Modal open={showProfileModal} onClose={() => setShowProfileModal(false)}>
+        <h3>Velg profil</h3>
+        <ProfileSelector
+          profiles={data.profiles}
+          current={profileIdx}
+          onSelect={i => {
+            setProfileIdx(i);
+            setShowProfileModal(false);
+          }}
+          onAdd={addProfile}
+          onRename={handleRenameProfile}
+          onDelete={handleDeleteProfile}
+        />
+        <button onClick={() => setShowProfileModal(false)} style={{ marginTop: 10 }}>Lukk</button>
+      </Modal>
+
+      {/* Stats Modal */}
+      <Modal open={showStats} onClose={() => setShowStats(false)}>
+        <Stats
+          log={profile.log || {}}
+          tasks={profile.tasks}
+          onEditLog={handleEditLog}
+        />
+        <button onClick={() => setShowStats(false)} style={{ marginTop: 10 }}>Lukk</button>
+      </Modal>
     </div>
   );
 }

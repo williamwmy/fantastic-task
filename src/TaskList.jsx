@@ -1,16 +1,8 @@
 import React, { useState } from "react";
 import { useReward } from "react-rewards";
 
-const MAX_TASKS = 10;
-const WEEKDAYS = ["M", "T", "O", "T", "F", "L", "S"];
-const WEEKDAYS_FULL = [
-  "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"
-];
-
-// Kun gyldige animasjonstyper!
+// ANIMATION_TYPES og EMOJI_VARIANTS for emoji-randomisering
 const ANIMATION_TYPES = ["confetti", "balloons", "emoji"];
-
-// Ulike emoji-varianter for "emoji"-animasjonen
 const EMOJI_VARIANTS = [
   ["💪", "🏆", "⭐️", "🎉"],
   ["🦵", "🦾", "🦶", "💯"],
@@ -21,8 +13,9 @@ const EMOJI_VARIANTS = [
   ["🦄", "🤩", "💥", "🚀"]
 ];
 
-// Filtrerer oppgaver etter valgt ukedag
+// Bruk gjerne denne filterTasksForDay hvis du bruker repeat/dager
 export function filterTasksForDay(tasks, dateStr) {
+  // Hvis du har repeat: [1,1,1,1,1,0,0] for ukedager (mandag-søndag)
   const d = new Date(dateStr);
   const weekday = d.getDay() === 0 ? 6 : d.getDay() - 1; // mandag=0 ... søndag=6
   return tasks
@@ -30,45 +23,46 @@ export function filterTasksForDay(tasks, dateStr) {
     .filter(t => !t.repeat || t.repeat[weekday]);
 }
 
-export default function TaskList({ tasks, todayLog, onComplete, onComment, onAdd }) {
+export default function TaskList({
+  tasks = [],
+  todayLog = [],
+  onComplete,
+  onComment,
+  onAdd,
+  compactOnly = false
+}) {
   const [taskName, setTaskName] = useState("");
   const [taskDesc, setTaskDesc] = useState("");
-  const [repeat, setRepeat] = useState([1, 1, 1, 1, 1, 0, 0]); // Default: ukedager
+  const [repeat, setRepeat] = useState([1, 1, 1, 1, 1, 0, 0]);
 
-  // Legg til ny oppgave
-  const handleAdd = e => {
-    e.preventDefault();
-    if (
-      taskName.trim() &&
-      tasks.length < MAX_TASKS &&
-      repeat.some(Boolean)
-    ) {
-      onAdd({
-        name: taskName.trim(),
-        desc: taskDesc.trim(),
-        repeat
-      });
-      setTaskName("");
-      setTaskDesc("");
-      setRepeat([1, 1, 1, 1, 1, 0, 0]);
-    }
-  };
-
-  return (
-    <div>
+  if (compactOnly) {
+    return (
       <form
-        onSubmit={handleAdd}
-        style={{ marginBottom: 18, display: "flex", gap: 8, flexWrap: "wrap" }}
+        onSubmit={e => {
+          e.preventDefault();
+          if (
+            taskName.trim() &&
+            repeat.some(Boolean)
+          ) {
+            onAdd({
+              name: taskName.trim(),
+              desc: taskDesc.trim(),
+              repeat,
+            });
+            setTaskName("");
+            setTaskDesc("");
+            setRepeat([1, 1, 1, 1, 1, 0, 0]);
+          }
+        }}
+        style={{ marginBottom: 18 }}
       >
         <input
           placeholder="Oppgavenavn"
           value={taskName}
           maxLength={32}
           style={{
-            flex: "1 1 140px",
-            borderRadius: 8,
-            padding: "0.4rem",
-            border: "1px solid #bbb",
+            width: "100%",
+            marginBottom: 6
           }}
           onChange={e => setTaskName(e.target.value)}
         />
@@ -77,19 +71,16 @@ export default function TaskList({ tasks, todayLog, onComplete, onComment, onAdd
           value={taskDesc}
           maxLength={40}
           style={{
-            flex: "2 1 180px",
-            borderRadius: 8,
-            padding: "0.4rem",
-            border: "1px solid #bbb",
+            width: "100%",
+            marginBottom: 8
           }}
           onChange={e => setTaskDesc(e.target.value)}
         />
         <div style={{
-          display: "flex", alignItems: "center", gap: 2,
-          flex: "1 1 160px", marginTop: 6
+          display: "flex", gap: 4, marginBottom: 8, flexWrap: "wrap"
         }}>
-          {WEEKDAYS.map((d, idx) => (
-            <label key={idx} style={{ fontSize: 13, color: "#333", margin: "0 2px" }}>
+          {["M", "T", "O", "T", "F", "L", "S"].map((d, idx) => (
+            <label key={idx} style={{ fontSize: 13, color: "#333" }}>
               <input
                 type="checkbox"
                 checked={!!repeat[idx]}
@@ -107,48 +98,45 @@ export default function TaskList({ tasks, todayLog, onComplete, onComment, onAdd
         <button
           type="submit"
           style={{
-            border: "none",
-            borderRadius: 10,
-            background: "#6ad375",
-            color: "#fff",
-            fontWeight: 600,
-            padding: "0.4rem 0.8rem",
-            cursor: "pointer"
+            width: "100%"
           }}
           disabled={
             !taskName.trim() ||
-            tasks.length >= MAX_TASKS ||
             !repeat.some(Boolean)
           }
         >
           Legg til
         </button>
       </form>
-      {tasks.length === 0 && (
+    );
+  }
+
+  return (
+    <div>
+      {tasks.length === 0 ? (
         <div style={{ color: "#aaa", textAlign: "center", margin: 20 }}>
-          Ingen oppgaver for i dag.<br />
-          (Se statistikk-fanen for å se alle oppgaver)
+          Ingen oppgaver for i dag.
         </div>
+      ) : (
+        tasks.map((t, idx) => (
+          <TaskRow
+            key={t.name + idx}
+            task={t}
+            idx={idx}
+            utført={!!todayLog[idx]}
+            onComplete={() => onComplete(idx)}
+            onComment={txt => onComment(idx, txt)}
+          />
+        ))
       )}
-      {tasks.map((t, idx) => (
-        <TaskRow
-          key={idx}
-          task={t}
-          idx={idx}
-          utført={!!todayLog[idx]}
-          onComplete={() => onComplete(idx)}
-          onComment={txt => onComment(idx, txt)}
-        />
-      ))}
     </div>
   );
 }
 
 function TaskRow({ task, idx, utført, onComplete, onComment }) {
-  // En egen state for animasjon og emoji-variant
   const [animation, setAnimation] = useState("confetti");
   const [emojiList, setEmojiList] = useState(EMOJI_VARIANTS[0]);
-  const { reward } = useReward(`rew${idx}`, animation, { emoji: emojiList });
+  const { reward } = useReward(`reward${idx}`, animation, { emoji: emojiList });
   const [showComment, setShowComment] = useState(false);
   const [comment, setComment] = useState(task.comment || "");
 
@@ -160,7 +148,7 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
       if (anim === "emoji") {
         setEmojiList(EMOJI_VARIANTS[Math.floor(Math.random() * EMOJI_VARIANTS.length)]);
       }
-      reward();
+      setTimeout(() => reward(), 120); // Liten delay for visuell respons
     }
   };
 
@@ -188,16 +176,14 @@ function TaskRow({ task, idx, utført, onComplete, onComment }) {
           {task.desc}
         </span>
       )}
-      <span style={{ fontSize: 12, color: "#297", marginTop: 2 }}>
-        {task.repeat &&
-          <span>
-            {task.repeat.map((v, idx) =>
-              v ? WEEKDAYS_FULL[idx].slice(0, 2) + " " : ""
-            )}
-          </span>
-        }
-      </span>
-      <span id={`rew${idx}`} style={{ position: "absolute", right: 22, top: 5 }}></span>
+      {task.repeat && (
+        <span style={{ fontSize: 12, color: "#297", marginTop: 2 }}>
+          {["Ma", "Ti", "On", "To", "Fr", "Lø", "Sø"].map(
+            (d, i) => task.repeat[i] ? d + " " : ""
+          )}
+        </span>
+      )}
+      <span id={`reward${idx}`} style={{ position: "absolute", right: 22, top: 5 }}></span>
       {utført && (
         <span style={{ color: "#53af67", marginTop: 5 }}>✅ Utført!</span>
       )}

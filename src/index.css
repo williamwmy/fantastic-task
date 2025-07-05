@@ -1,4 +1,4 @@
-/* Hele skjermen skal ha gradient */
+/* Hele skjermen: gradient bakgrunn */
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -6,14 +6,13 @@ html, body, #root {
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Knapp-disabled-stil */
+/* Knapp: disabled stil */
 button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-
-/* Inputs og textarea */
+/* Input, textarea, select grunnstil */
 input, textarea, select {
   font-size: 16px;
   width: 100%;
@@ -26,7 +25,7 @@ input, textarea, select {
   font-family: inherit;
 }
 
-/* Fokus-stil for inputs */
+/* Fokus */
 input:focus, textarea:focus, select:focus {
   outline: none;
   background: #eaf1fb;
@@ -47,21 +46,28 @@ button {
   font-family: inherit;
 }
 
-/* Hover på knapp */
 button:hover {
   background: #70aee0;
 }
 
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background: #f2f4f7 url("data:image/svg+xml;utf8,<svg fill='gray' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 0.8rem center;
-  background-size: 1rem;
-  padding-right: 2.2rem; /* plass til pilen */
+/* Flytende knapp (pluss-knappen) */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: #82bcf4;
+  color: white;
+  font-size: 2rem;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 100; /* Add this line */
 }
 
-/* SELECT */
+/* SELECT - penere dropdown med pil */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -71,7 +77,7 @@ select {
   padding-right: 2.2rem;
 }
 
-/* CHECKBOX */
+/* Checkbox - egendefinert */
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -101,4 +107,43 @@ input[type="checkbox"]:checked::after {
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+/* Modal content */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+}
+
+@keyframes pop-effect {
+  0% {
+    transform: scale(0.5) translateY(30px) rotate(-20deg);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1.25) translateY(-6px) rotate(10deg);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.1) translateY(-18px) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9) translateY(-40px) rotate(6deg);
+    opacity: 0;
+  }
 }
