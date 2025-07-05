@@ -129,20 +129,29 @@ export default function App() {
 
   return (
     <div style={{
-      maxWidth: 480,
-      margin: "2rem auto",
-      padding: "1.5rem",
-      background: "linear-gradient(135deg, #d0e6fa 0%, #f8e8ee 100%)",
-      borderRadius: "2rem",
-      minHeight: "97vh"
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflowY: "auto",
+      padding: "1.5rem"
     }}>
-      <h1 style={{
-        textAlign: "center",
-        fontWeight: 700,
-        marginBottom: 12
-      }}>
-        Fantastic Task ⭐️
+      <h1
+        style={{
+          textAlign: "center",
+          fontWeight: 800,
+          fontSize: "2.2rem",
+          marginBottom: "1rem",
+          background: "linear-gradient(90deg, #3b82f6, #9333ea)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          textShadow: "1px 1px 2px rgba(0,0,0,0.15)"
+        }}
+      >
+        ⭐️ Fantastic Task
       </h1>
+
       <ProfileSelector
         profiles={data.profiles}
         current={profileIdx}
