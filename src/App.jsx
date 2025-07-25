@@ -10,6 +10,7 @@ import FamilyAdminPanel from "./components/FamilyAdminPanel";
 import TaskVerification from "./components/TaskVerification";
 import PointsHistory from "./components/PointsHistory";
 import CreateTaskForm from "./components/CreateTaskForm";
+import StatsView from "./components/StatsView";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
@@ -375,15 +376,9 @@ export default function App() {
       </Modal>
 
       {/* Stats Modal */}
-      <Modal open={showStats} onClose={() => setShowStats(false)}>
-        <h3>Statistikk</h3>
-        <div style={{ padding: '1rem' }}>
-          <p>Statistikk-visning kommer her...</p>
-          <button onClick={() => setShowStats(false)} style={{ marginTop: 10 }}>
-            Lukk
-          </button>
-        </div>
-      </Modal>
+      {showStats && (
+        <StatsView onClose={() => setShowStats(false)} />
+      )}
 
       {/* All Tasks Modal */}
       <PermissionGate permission="edit_tasks">
