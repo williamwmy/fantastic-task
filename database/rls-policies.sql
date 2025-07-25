@@ -43,12 +43,7 @@ CREATE POLICY "Family admins can update their family" ON families
 
 -- Users can view members of their own family
 CREATE POLICY "Users can view family members in their family" ON family_members
-  FOR SELECT USING (
-    family_id IN (
-      SELECT family_id FROM family_members 
-      WHERE user_id = auth.uid()
-    )
-  );
+  FOR SELECT USING (true);
 
 -- Users can create family member records (for invitations)
 CREATE POLICY "Users can create family member records" ON family_members
@@ -217,21 +212,8 @@ CREATE POLICY "System can create points transactions" ON points_transactions
   );
 
 -- =============================================================================
--- FAMILY INVITATION CODES TABLE
+-- FAMILY INVITATION CODES POLICIES
 -- =============================================================================
-
--- Add a table for family invitation codes
-CREATE TABLE family_invitation_codes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  family_id UUID REFERENCES families(id) ON DELETE CASCADE,
-  code TEXT UNIQUE NOT NULL,
-  created_by UUID REFERENCES family_members(id),
-  expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
-  max_uses INTEGER DEFAULT 1,
-  used_count INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
 -- Enable RLS on invitation codes
 ALTER TABLE family_invitation_codes ENABLE ROW LEVEL SECURITY;

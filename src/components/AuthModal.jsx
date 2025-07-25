@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import Modal from './Modal'
 
-const AuthModal = ({ open, onClose }) => {
-  const { signUp, signIn, resetPassword, createFamily, joinFamilyWithCode } = useAuth()
-  const [mode, setMode] = useState('signin') // 'signin', 'signup', 'reset', 'create-family', 'join-family'
+const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
+  const { user, signUp, signIn, resetPassword, createFamily, joinFamilyWithCode } = useAuth()
+  const [mode, setMode] = useState(showFamilySetup ? 'create-family' : 'signin') // 'signin', 'signup', 'reset', 'create-family', 'join-family'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -370,16 +370,32 @@ const AuthModal = ({ open, onClose }) => {
           </div>
         )}
 
-        {mode === 'signin' && renderSignInForm()}
-        {mode === 'signup' && renderSignUpForm()}
-        {mode === 'reset' && renderResetForm()}
+        {!showFamilySetup && mode === 'signin' && renderSignInForm()}
+        {!showFamilySetup && mode === 'signup' && renderSignUpForm()}
+        {!showFamilySetup && mode === 'reset' && renderResetForm()}
         {mode === 'create-family' && renderCreateFamilyForm()}
         {mode === 'join-family' && renderJoinFamilyForm()}
         
-        {mode === 'signin' && (
+        {!showFamilySetup && mode === 'signin' && (
           <div style={{ textAlign: 'center', marginTop: '1rem' }}>
             <span style={linkStyle} onClick={() => setMode('join-family')}>
               Har du en familiekode?
+            </span>
+          </div>
+        )}
+        
+        {showFamilySetup && mode === 'create-family' && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <span style={linkStyle} onClick={() => setMode('join-family')}>
+              Eller bli med i en eksisterende familie
+            </span>
+          </div>
+        )}
+        
+        {showFamilySetup && mode === 'join-family' && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <span style={linkStyle} onClick={() => setMode('create-family')}>
+              Eller opprett en ny familie
             </span>
           </div>
         )}

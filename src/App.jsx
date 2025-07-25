@@ -41,12 +41,27 @@ export default function App() {
     return <div>Laster...</div>;
   }
 
-  if (!user || !family || !currentMember) {
+  if (!user) {
     return (
       <AuthModal 
         open={showAuthModal} 
         onClose={() => setShowAuthModal(false)}
       />
+    );
+  }
+
+  // If user is logged in but has no family, show family setup
+  if (user && (!family || !currentMember)) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h2>Velkommen til Fantastic Task!</h2>
+        <p>Du må enten opprette en familie eller bli med i en eksisterende familie for å komme i gang.</p>
+        <AuthModal 
+          open={true} 
+          onClose={() => {}} 
+          showFamilySetup={true}
+        />
+      </div>
     );
   }
 

@@ -89,6 +89,23 @@ CREATE TABLE points_transactions (
 );
 
 -- =============================================================================
+-- FAMILY INVITATIONS
+-- =============================================================================
+
+-- Family invitation codes - for inviting new members to families
+CREATE TABLE family_invitation_codes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  family_id UUID REFERENCES families(id) ON DELETE CASCADE,
+  code TEXT UNIQUE NOT NULL,
+  created_by UUID REFERENCES family_members(id),
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  max_uses INTEGER DEFAULT 1,
+  used_count INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =============================================================================
 -- INDEXES (Optional - add for performance)
 -- =============================================================================
 
