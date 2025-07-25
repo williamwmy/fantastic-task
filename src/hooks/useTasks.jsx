@@ -422,11 +422,20 @@ export const TasksProvider = ({ children }) => {
 
       if (transactionError) throw transactionError
 
-      // Update member's points balance
+      // Update member's points balance by reading current balance first
+      const { data: currentMember, error: memberError } = await supabase
+        .from('family_members')
+        .select('points_balance')
+        .eq('id', memberId)
+        .single()
+
+      if (memberError) throw memberError
+
+      const newBalance = (currentMember.points_balance || 0) + points
       const { error: balanceError } = await supabase
         .from('family_members')
         .update({
-          points_balance: supabase.raw(`points_balance + ${points}`)
+          points_balance: newBalance
         })
         .eq('id', memberId)
 
@@ -461,11 +470,20 @@ export const TasksProvider = ({ children }) => {
 
       if (transactionError) throw transactionError
 
-      // Update member's points balance
+      // Update member's points balance by reading current balance first
+      const { data: currentMember, error: memberError } = await supabase
+        .from('family_members')
+        .select('points_balance')
+        .eq('id', memberId)
+        .single()
+
+      if (memberError) throw memberError
+
+      const newBalance = (currentMember.points_balance || 0) - points
       const { error: balanceError } = await supabase
         .from('family_members')
         .update({
-          points_balance: supabase.raw(`points_balance - ${points}`)
+          points_balance: Math.max(0, newBalance) // Prevent negative balance
         })
         .eq('id', memberId)
 

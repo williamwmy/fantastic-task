@@ -108,14 +108,19 @@ export const AuthProvider = ({ children }) => {
       if (!currentUserId) throw new Error('No user ID available')
 
       // Find the invitation code
-      const { data: invitation, error: inviteError } = await supabase
+      const { data: invitations, error: inviteError } = await supabase
         .from('family_invitation_codes')
         .select('*')
         .eq('code', code)
         .eq('is_active', true)
         .gt('expires_at', new Date().toISOString())
-        .lt('used_count', supabase.raw('max_uses'))
-        .single()
+
+      if (inviteError) {
+        throw new Error('Error finding invitation code')
+      }
+
+      // Filter for codes that haven't reached max uses
+      const invitation = invitations.find(inv => inv.used_count < inv.max_uses)
 
       if (inviteError || !invitation) {
         throw new Error('Invalid or expired invitation code')
