@@ -31,7 +31,8 @@ const TaskList = ({ selectedDate }) => {
   const { 
     tasks, 
     getTasksForMember, 
-    getCompletionsForMember
+    getCompletionsForMember,
+    completeTask
   } = useTasks()
   
   const { currentMember, familyMembers } = useFamily()
