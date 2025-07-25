@@ -9,7 +9,8 @@ import {
   FaUser, 
   FaExclamationTriangle,
   FaCheckCircle,
-  FaHourglassHalf
+  FaHourglassHalf,
+  FaEdit
 } from 'react-icons/fa'
 import TaskCompletion from './TaskCompletion'
 import TaskAssignment from './TaskAssignment'
@@ -37,6 +38,7 @@ const TaskList = ({ selectedDate }) => {
   
   const [completingTask, setCompletingTask] = useState(null)
   const [assigningTask, setAssigningTask] = useState(null)
+  const [quickCompletingTask, setQuickCompletingTask] = useState(null)
 
   // Get tasks available for today
   const todayTasks = filterTasksForDay(tasks, selectedDate)
@@ -108,7 +110,26 @@ const TaskList = ({ selectedDate }) => {
     }
   }
 
-  const handleCompleteTask = (task, assignment) => {
+  const handleQuickCompleteTask = async (task, assignment) => {
+    setQuickCompletingTask(task.id)
+    
+    const completionData = {
+      task_id: task.id,
+      assignment_id: assignment?.id || null,
+      completed_by: currentMember.id,
+      points_awarded: task.points || 0
+    }
+    
+    const { error } = await completeTask(completionData)
+    
+    if (error) {
+      alert('Feil ved fullføring av oppgave: ' + error.message)
+    }
+    
+    setQuickCompletingTask(null)
+  }
+
+  const handleDetailedCompleteTask = (task, assignment) => {
     setCompletingTask({ task, assignment })
   }
 
@@ -313,24 +334,48 @@ const TaskList = ({ selectedDate }) => {
                   flexWrap: 'wrap'
                 }}>
                   {!completion && (
-                    <button
-                      onClick={() => handleCompleteTask(task, assignment)}
-                      style={{
-                        padding: '0.75rem 1rem',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.5rem',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}
-                    >
-                      <FaCheck />
-                      Fullfør
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleQuickCompleteTask(task, assignment)}
+                        disabled={quickCompletingTask === task.id}
+                        style={{
+                          padding: '0.75rem 1rem',
+                          backgroundColor: quickCompletingTask === task.id ? '#6c757d' : '#28a745',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.5rem',
+                          cursor: quickCompletingTask === task.id ? 'not-allowed' : 'pointer',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          opacity: quickCompletingTask === task.id ? 0.7 : 1
+                        }}
+                      >
+                        <FaCheck />
+                        {quickCompletingTask === task.id ? 'Fullfører...' : 'Fullfør'}
+                      </button>
+                      
+                      <button
+                        onClick={() => handleDetailedCompleteTask(task, assignment)}
+                        title="Fullfør med tid, kommentarer og bilder"
+                        style={{
+                          padding: '0.75rem 0.75rem',
+                          backgroundColor: '#6c757d',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.5rem',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        <FaEdit />
+                      </button>
+                    </>
                   )}
                   
                   <PermissionGate permission="assign_tasks">
