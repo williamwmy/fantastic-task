@@ -9,6 +9,7 @@ import AuthModal from "./components/AuthModal";
 import FamilyAdminPanel from "./components/FamilyAdminPanel";
 import TaskVerification from "./components/TaskVerification";
 import PointsHistory from "./components/PointsHistory";
+import CreateTaskForm from "./components/CreateTaskForm";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
@@ -110,18 +111,20 @@ export default function App() {
             onClick={() => setShowProfileModal(true)}
             title="Bytt profil"
             style={{ 
-              width: 44, 
-              height: 44, 
+              width: 48, 
+              height: 48, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 22, 
+              fontSize: 24, 
               background: "#eaf1fb", 
               color: "#297", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center",
               border: "none",
-              cursor: "pointer"
+              cursor: "pointer",
+              minWidth: "48px",
+              minHeight: "48px"
             }}
           >
             <FaUser />
@@ -130,18 +133,20 @@ export default function App() {
             onClick={() => setShowStats(true)}
             title="Statistikk"
             style={{ 
-              width: 44, 
-              height: 44, 
+              width: 48, 
+              height: 48, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 22, 
+              fontSize: 24, 
               background: "#eaf1fb", 
               color: "#297", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center",
               border: "none",
-              cursor: "pointer"
+              cursor: "pointer",
+              minWidth: "48px",
+              minHeight: "48px"
             }}
           >
             <FaChartBar />
@@ -151,18 +156,20 @@ export default function App() {
               onClick={() => setShowAllTasks(true)}
               title="Alle oppgaver"
               style={{ 
-                width: 44, 
-                height: 44, 
+                width: 48, 
+                height: 48, 
                 borderRadius: "50%", 
                 padding: 0, 
-                fontSize: 22, 
+                fontSize: 24, 
                 background: "#eaf1fb", 
                 color: "#297", 
                 display: "flex", 
                 alignItems: "center", 
                 justifyContent: "center",
                 border: "none",
-                cursor: "pointer"
+                cursor: "pointer",
+                minWidth: "48px",
+                minHeight: "48px"
               }}
             >
               <FaList />
@@ -354,13 +361,10 @@ export default function App() {
 
       {/* Add Modal */}
       <PermissionGate permission="edit_tasks">
-        <Modal open={showAddModal} onClose={() => setShowAddModal(false)}>
-          <h3>Ny oppgave</h3>
-          <div style={{ padding: '1rem' }}>
-            <p>Task creation form would go here...</p>
-            <button onClick={() => setShowAddModal(false)}>Lukk</button>
-          </div>
-        </Modal>
+        <CreateTaskForm 
+          open={showAddModal} 
+          onClose={() => setShowAddModal(false)}
+        />
       </PermissionGate>
 
       {/* Profile Modal */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaCheck, FaClock, FaCoins, FaComment } from 'react-icons/fa'
+import { FaCheck, FaClock, FaCoins, FaComment, FaCamera, FaTimes } from 'react-icons/fa'
 import Modal from './Modal'
 
 const TaskCompletion = ({ task, assignment, open, onClose }) => {
@@ -9,7 +9,44 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
   const { currentMember } = useFamily()
   const [timeSpent, setTimeSpent] = useState('')
   const [comment, setComment] = useState('')
+  const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+    const maxFiles = 3
+    const maxSize = 5 * 1024 * 1024 // 5MB
+
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`Bildet "${file.name}" er for stort. Maksimal størrelse er 5MB.`)
+        return false
+      }
+      if (!file.type.startsWith('image/')) {
+        alert(`"${file.name}" er ikke et gyldig bildeformat.`)
+        return false
+      }
+      return true
+    }).slice(0, maxFiles)
+
+    const newImages = validFiles.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      id: Math.random().toString(36).substr(2, 9)
+    }))
+
+    setImages(prev => [...prev, ...newImages].slice(0, maxFiles))
+  }
+
+  const removeImage = (imageId) => {
+    setImages(prev => {
+      const imageToRemove = prev.find(img => img.id === imageId)
+      if (imageToRemove) {
+        URL.revokeObjectURL(imageToRemove.preview)
+      }
+      return prev.filter(img => img.id !== imageId)
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,7 +59,8 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
       completed_by: currentMember.id,
       time_spent_minutes: timeSpent ? parseInt(timeSpent) : null,
       comment: comment.trim() || null,
-      points_awarded: task.points || 0
+      points_awarded: task.points || 0,
+      images: images.map(img => img.file) // Include image files for potential upload
     }
     
     const { error } = await completeTask(completionData)
@@ -30,9 +68,13 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
     if (error) {
       alert('Feil ved fullføring av oppgave: ' + error.message)
     } else {
+      // Clean up image previews
+      images.forEach(image => URL.revokeObjectURL(image.preview))
+      
       onClose()
       setTimeSpent('')
       setComment('')
+      setImages([])
     }
     
     setLoading(false)
@@ -184,6 +226,117 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
             </small>
           </div>
 
+          {/* Image upload */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 600, 
+              marginBottom: '0.5rem'
+            }}>
+              <FaCamera />
+              Bilder:
+            </label>
+            
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+              id="image-upload"
+            />
+            
+            <label
+              htmlFor="image-upload"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.75rem 1rem',
+                backgroundColor: '#f8f9fa',
+                border: '2px dashed #dee2e6',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                color: '#6c757d',
+                fontSize: '0.9rem',
+                marginBottom: '0.5rem',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#e9ecef'
+                e.target.style.borderColor = '#adb5bd'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#f8f9fa'
+                e.target.style.borderColor = '#dee2e6'
+              }}
+            >
+              <FaCamera />
+              Velg bilder (maks 3)
+            </label>
+            
+            {images.length > 0 && (
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: window.innerWidth < 480 ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(120px, 1fr))',
+                gap: '0.5rem',
+                marginTop: '0.5rem'
+              }}>
+                {images.map(image => (
+                  <div
+                    key={image.id}
+                    style={{
+                      position: 'relative',
+                      aspectRatio: '1',
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '0.5rem',
+                      overflow: 'hidden',
+                      border: '1px solid #dee2e6'
+                    }}
+                  >
+                    <img
+                      src={image.preview}
+                      alt="Preview"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(image.id)}
+                      style={{
+                        position: 'absolute',
+                        top: '0.25rem',
+                        right: '0.25rem',
+                        width: '1.5rem',
+                        height: '1.5rem',
+                        backgroundColor: 'rgba(220, 53, 69, 0.9)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.7rem'
+                      }}
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <small style={{ color: '#6c757d', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
+              Valgfritt - last opp bilder som viser at oppgaven er fullført (maks 3 bilder, 5MB hver)
+            </small>
+          </div>
+
           {/* Points info */}
           <div style={{
             backgroundColor: isChildUser ? '#fff3cd' : '#d1ecf1',
@@ -210,7 +363,8 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
           <div style={{ 
             display: 'flex', 
             gap: '0.5rem',
-            justifyContent: 'flex-end'
+            justifyContent: 'flex-end',
+            flexWrap: 'wrap'
           }}>
             <button
               type="button"

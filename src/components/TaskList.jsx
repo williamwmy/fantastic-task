@@ -206,7 +206,8 @@ const TaskList = ({ selectedDate }) => {
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '1rem',
+                      gap: '0.75rem',
+                      flexWrap: 'wrap',
                       fontSize: '0.9rem',
                       color: '#6c757d'
                     }}>
@@ -248,7 +249,12 @@ const TaskList = ({ selectedDate }) => {
                     marginBottom: '0.75rem',
                     fontSize: '0.9rem'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '1rem',
+                      flexWrap: 'wrap'
+                    }}>
                       <div>
                         <strong>Tildelt av:</strong> {
                           familyMembers.find(m => m.id === assignment.assigned_by)?.nickname || 'Ukjent'
@@ -303,7 +309,8 @@ const TaskList = ({ selectedDate }) => {
                 <div style={{ 
                   display: 'flex', 
                   gap: '0.5rem',
-                  justifyContent: 'flex-end'
+                  justifyContent: 'flex-end',
+                  flexWrap: 'wrap'
                 }}>
                   {!completion && (
                     <button
