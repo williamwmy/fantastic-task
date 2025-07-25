@@ -1,145 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { loadData, saveData } from "./localStorage";
-import ProfileSelector from "./ProfileSelector";
-import TaskList, { filterTasksForDay } from "./TaskList";
-import StatsBarChart from "./StatsBarChart";
-import Modal from "./Modal";
-import AllTasksEditor from "./AllTasksEditor";
-import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useAuth } from "./hooks/useAuth.jsx";
+import { useFamily } from "./hooks/useFamily.jsx";
+import { useTasks } from "./hooks/useTasks.jsx";
+import ProfileSelector from "./components/ProfileSelector";
+import TaskList from "./components/TaskList";
+import Modal from "./components/Modal";
+import AuthModal from "./components/AuthModal";
+import FamilyAdminPanel from "./components/FamilyAdminPanel";
+import TaskVerification from "./components/TaskVerification";
+import PointsHistory from "./components/PointsHistory";
+import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
+import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
+import packageJson from "../package.json";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-function defaultProfile(name) {
-  return {
-    name,
-    tasks: [],
-    log: {}
-  };
-}
-
 export default function App() {
-  const [data, setData] = useState(() =>
-    loadData() || {
-      profiles: [defaultProfile("Min profil")]
-    }
-  );
-  const [profileIdx, setProfileIdx] = useState(0);
-  const profile = data.profiles[profileIdx];
-
+  const { user, isLoading: authLoading } = useAuth();
+  const { family, currentMember } = useFamily();
+  const { getPendingVerifications } = useTasks();
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showAllTasks, setShowAllTasks] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showTaskVerification, setShowTaskVerification] = useState(false);
+  const [showPointsHistory, setShowPointsHistory] = useState(false);
   const [selectedDate, setSelectedDate] = useState(todayStr());
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
+  // Show auth modal if not logged in
   useEffect(() => {
-    saveData(data);
-  }, [data]);
+    if (!authLoading && !user) {
+      setShowAuthModal(true);
+    }
+  }, [authLoading, user]);
 
-  const todayTasks = filterTasksForDay(profile.tasks, selectedDate);
-  let todayLog = profile.log[selectedDate] || todayTasks.map(() => ({ done: false, comment: "" }));
+  if (authLoading) {
+    return <div>Laster...</div>;
+  }
 
-  // Migrer gamle boolean-verdier til objekt
-  todayLog = todayLog.map(entry =>
-    typeof entry === "object"
-      ? entry
-      : { done: !!entry, comment: "" }
-  );
-
-  const addProfile = name => {
-    setData(d => ({
-      ...d,
-      profiles: [...d.profiles, defaultProfile(name)]
-    }));
-    setProfileIdx(data.profiles.length);
-  };
-
-  const handleRenameProfile = (idx, newName) => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      copy.profiles[idx].name = newName;
-      return copy;
-    });
-  };
-
-  const handleDeleteProfile = idx => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      copy.profiles.splice(idx, 1);
-      return {
-        ...copy,
-        profiles: copy.profiles,
-      };
-    });
-    setProfileIdx(prev =>
-      prev === idx ? 0 : prev > idx ? prev - 1 : prev
+  if (!user || !family || !currentMember) {
+    return (
+      <AuthModal 
+        open={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+      />
     );
-  };
+  }
 
-  const handleTaskAdd = t => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      copy.profiles[profileIdx].tasks.push(t);
-      return copy;
-    });
-  };
-
-  const handleTaskToggle = idx => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      const log = copy.profiles[profileIdx].log;
-      if (!log[selectedDate]) {
-        log[selectedDate] = todayTasks.map(() => ({ done: false, comment: "" }));
-      }
-      // Migrer gamle booleans til objekt
-      log[selectedDate] = log[selectedDate].map(entry =>
-        typeof entry === "object"
-          ? entry
-          : { done: !!entry, comment: "" }
-      );
-      log[selectedDate][idx].done = !log[selectedDate][idx].done;
-      return copy;
-    });
-  };
-
-  const handleComment = (idx, txt) => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      const log = copy.profiles[profileIdx].log;
-      if (!log[selectedDate]) {
-        log[selectedDate] = todayTasks.map(() => ({ done: false, comment: "" }));
-      }
-      log[selectedDate][idx].comment = txt;
-      return copy;
-    });
-  };
-
-  const handleEditLog = (date, idx, value) => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      const allTasks = copy.profiles[profileIdx].tasks;
-      const tasksThatDay = filterTasksForDay(allTasks, date);
-      if (!copy.profiles[profileIdx].log[date]) {
-        copy.profiles[profileIdx].log[date] = tasksThatDay.map(() => false);
-      }
-      copy.profiles[profileIdx].log[date][idx] = value;
-      return copy;
-    });
-  };
-
-  useEffect(() => {
-    setData(d => {
-      const copy = JSON.parse(JSON.stringify(d));
-      const log = copy.profiles[profileIdx].log;
-      const key = todayStr();
-      const tasksToday = filterTasksForDay(copy.profiles[profileIdx].tasks, key);
-      if (!log[key] || log[key].length !== tasksToday.length) {
-        log[key] = tasksToday.map(() => false);
-      }
-      return copy;
-    });
-    // eslint-disable-next-line
-  }, [profileIdx, profile.tasks.length]);
+  // Get pending verifications for notification badge
+  const pendingVerifications = getPendingVerifications();
+  const pendingCount = pendingVerifications.length;
 
   return (
     <div style={{ minHeight: "100vh", padding: "1rem" }}>
@@ -150,59 +63,197 @@ export default function App() {
         alignItems: "center",
         marginBottom: "1rem"
       }}>
-        {/* Farget sirkel med forbokstav */}
-        <div style={{
-          width: 44,
-          height: 44,
-          borderRadius: "50%",
-          background: "#82bcf4",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white",
-          fontWeight: 700,
-          fontSize: 22,
-          marginRight: 8
-        }}>
-          {profile.name[0].toUpperCase()}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {/* Profile circle */}
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: currentMember.avatar_color || "#82bcf4",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontWeight: 700,
+            fontSize: 22,
+          }}>
+            {currentMember.nickname[0].toUpperCase()}
+          </div>
+          {/* Points display */}
+          <div style={{ 
+            padding: "0.25rem 0.75rem", 
+            background: "#eaf1fb", 
+            borderRadius: "1rem",
+            fontWeight: 600
+          }}>
+            {currentMember.points_balance} poeng
+          </div>
         </div>
+        
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <button
             onClick={() => setShowProfileModal(true)}
             title="Bytt profil"
-            style={{ width: 44, height: 44, borderRadius: "50%", padding: 0, fontSize: 22, background: "#eaf1fb", color: "#297", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ 
+              width: 44, 
+              height: 44, 
+              borderRadius: "50%", 
+              padding: 0, 
+              fontSize: 22, 
+              background: "#eaf1fb", 
+              color: "#297", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer"
+            }}
           >
             <FaUser />
           </button>
           <button
             onClick={() => setShowStats(true)}
             title="Statistikk"
-            style={{ width: 44, height: 44, borderRadius: "50%", padding: 0, fontSize: 22, background: "#eaf1fb", color: "#297", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ 
+              width: 44, 
+              height: 44, 
+              borderRadius: "50%", 
+              padding: 0, 
+              fontSize: 22, 
+              background: "#eaf1fb", 
+              color: "#297", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer"
+            }}
           >
             <FaChartBar />
           </button>
+          <PermissionGate permission="edit_tasks">
+            <button
+              onClick={() => setShowAllTasks(true)}
+              title="Alle oppgaver"
+              style={{ 
+                width: 44, 
+                height: 44, 
+                borderRadius: "50%", 
+                padding: 0, 
+                fontSize: 22, 
+                background: "#eaf1fb", 
+                color: "#297", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              <FaList />
+            </button>
+          </PermissionGate>
+          
+          <PermissionGate permission="view_all_stats">
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowTaskVerification(true)}
+                title="Verifiser barns oppgaver"
+                style={{ 
+                  width: 44, 
+                  height: 44, 
+                  borderRadius: "50%", 
+                  padding: 0, 
+                  fontSize: 22, 
+                  background: "#17a2b8", 
+                  color: "white", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                <FaChild />
+              </button>
+              {pendingCount > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: -5,
+                  right: -5,
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: 20,
+                  height: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  fontWeight: 700
+                }}>
+                  {pendingCount}
+                </div>
+              )}
+            </div>
+          </PermissionGate>
+          
           <button
-            onClick={() => setShowAllTasks(true)}
-            title="Alle oppgaver"
-            style={{ width: 44, height: 44, borderRadius: "50%", padding: 0, fontSize: 22, background: "#eaf1fb", color: "#297", display: "flex", alignItems: "center", justifyContent: "center" }}
+            onClick={() => setShowPointsHistory(true)}
+            title="Poenghistorikk"
+            style={{ 
+              width: 44, 
+              height: 44, 
+              borderRadius: "50%", 
+              padding: 0, 
+              fontSize: 22, 
+              background: "#eaf1fb", 
+              color: "#297", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer"
+            }}
           >
-            <FaList />
+            <FaHistory />
           </button>
+
+          <RoleButton
+            permission="manage_family"
+            onClick={() => setShowAdminPanel(true)}
+            title="Admin-panel"
+            style={{ 
+              width: 44, 
+              height: 44, 
+              borderRadius: "50%", 
+              padding: 0, 
+              fontSize: 22, 
+              background: "#dc3545", 
+              color: "white", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              border: "none",
+              cursor: "pointer"
+            }}
+          >
+            <FaCog />
+          </RoleButton>
         </div>
       </div>
 
-      {/* Date navigation */}
       {/* Task List */}
-      <TaskList
-        tasks={todayTasks}
-        todayLog={todayLog}
-        onComplete={handleTaskToggle}
-        onComment={handleComment}
-        onAdd={handleTaskAdd}
-      />
+      <TaskList selectedDate={selectedDate} />
 
-      {/* Flyttet datovelgeren hit */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20, margin: "32px 0" }}>
+      {/* Date navigation */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 20, 
+        margin: "32px 0",
+        justifyContent: "center"
+      }}>
         <button
           onClick={() => {
             const d = new Date(selectedDate);
@@ -227,8 +278,17 @@ export default function App() {
         >
           <FaChevronLeft />
         </button>
-        <span style={{ minWidth: 140, textAlign: "center", fontSize: 22, fontWeight: 700 }}>
-          {new Date(selectedDate).toLocaleDateString("no-NO", { weekday: "long", day: "2-digit", month: "2-digit" })}
+        <span style={{ 
+          minWidth: 140, 
+          textAlign: "center", 
+          fontSize: 22, 
+          fontWeight: 700 
+        }}>
+          {new Date(selectedDate).toLocaleDateString("no-NO", { 
+            weekday: "long", 
+            day: "2-digit", 
+            month: "2-digit" 
+          })}
         </span>
         <button
           onClick={() => {
@@ -254,7 +314,8 @@ export default function App() {
         >
           <FaChevronRight />
         </button>
-        <button
+        <RoleButton
+          permission="edit_tasks"
           onClick={() => setShowAddModal(true)}
           aria-label="Legg til oppgave"
           style={{
@@ -273,65 +334,83 @@ export default function App() {
           }}
         >
           <FaPlus />
-        </button>
+        </RoleButton>
       </div>
 
       {/* Add Modal */}
-      <Modal open={showAddModal} onClose={() => setShowAddModal(false)}>
-        <h3>Ny oppgave</h3>
-        <TaskList
-          tasks={[]}
-          todayLog={[]}
-          onAdd={t => {
-            handleTaskAdd(t);
-            setShowAddModal(false);
-          }}
-          onComplete={() => {}}
-          onComment={() => {}}
-          compactOnly={true}
-        />
-        <button onClick={() => setShowAddModal(false)} style={{ marginTop: 10 }}>Lukk</button>
-      </Modal>
+      <PermissionGate permission="edit_tasks">
+        <Modal open={showAddModal} onClose={() => setShowAddModal(false)}>
+          <h3>Ny oppgave</h3>
+          <div style={{ padding: '1rem' }}>
+            <p>Task creation form would go here...</p>
+            <button onClick={() => setShowAddModal(false)}>Lukk</button>
+          </div>
+        </Modal>
+      </PermissionGate>
 
       {/* Profile Modal */}
       <Modal open={showProfileModal} onClose={() => setShowProfileModal(false)}>
-        <h3>Velg profil</h3>
         <ProfileSelector
-          profiles={data.profiles}
-          current={profileIdx}
-          onSelect={i => {
-            setProfileIdx(i);
-            setShowProfileModal(false);
-          }}
-          onAdd={addProfile}
-          onRename={handleRenameProfile}
-          onDelete={handleDeleteProfile}
+          onClose={() => setShowProfileModal(false)}
         />
-        <button onClick={() => setShowProfileModal(false)} style={{ marginTop: 10 }}>Lukk</button>
       </Modal>
 
       {/* Stats Modal */}
       <Modal open={showStats} onClose={() => setShowStats(false)}>
         <h3>Statistikk</h3>
-        <StatsBarChart log={profile.log || {}} tasks={profile.tasks} />
-        <button onClick={() => setShowStats(false)} style={{ marginTop: 10 }}>Lukk</button>
+        <div style={{ padding: '1rem' }}>
+          <p>Statistikk-visning kommer her...</p>
+          <button onClick={() => setShowStats(false)} style={{ marginTop: 10 }}>
+            Lukk
+          </button>
+        </div>
       </Modal>
 
       {/* All Tasks Modal */}
-      <Modal open={showAllTasks} onClose={() => setShowAllTasks(false)}>
-        <h3>Alle oppgaver</h3>
-        <AllTasksEditor
-          tasks={profile.tasks}
-          onChange={tasks => {
-            setData(d => {
-              const copy = JSON.parse(JSON.stringify(d));
-              copy.profiles[profileIdx].tasks = tasks;
-              return copy;
-            });
-          }}
-        />
-        <button onClick={() => setShowAllTasks(false)} style={{ marginTop: 10 }}>Lukk</button>
+      <PermissionGate permission="edit_tasks">
+        <Modal open={showAllTasks} onClose={() => setShowAllTasks(false)}>
+          <h3>Alle oppgaver</h3>
+          <div style={{ padding: '1rem' }}>
+            <p>Oppgave-redigering kommer her...</p>
+            <button onClick={() => setShowAllTasks(false)} style={{ marginTop: 10 }}>
+              Lukk
+            </button>
+          </div>
+        </Modal>
+      </PermissionGate>
+
+      {/* Admin Panel Modal */}
+      <Modal open={showAdminPanel} onClose={() => setShowAdminPanel(false)}>
+        <FamilyAdminPanel onClose={() => setShowAdminPanel(false)} />
       </Modal>
+
+      {/* Task Verification Modal */}
+      <TaskVerification
+        open={showTaskVerification}
+        onClose={() => setShowTaskVerification(false)}
+      />
+
+      {/* Points History Modal */}
+      <PointsHistory
+        memberId={currentMember?.id}
+        open={showPointsHistory}
+        onClose={() => setShowPointsHistory(false)}
+      />
+
+      {/* Version footer */}
+      <div style={{
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px',
+        fontSize: '0.8rem',
+        color: '#6c757d',
+        backgroundColor: '#f8f9fa',
+        padding: '0.25rem 0.5rem',
+        borderRadius: '0.25rem',
+        border: '1px solid #dee2e6'
+      }}>
+        v{packageJson.version}
+      </div>
     </div>
   );
 }
