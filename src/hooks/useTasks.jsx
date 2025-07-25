@@ -248,6 +248,9 @@ export const TasksProvider = ({ children }) => {
 
       if (error) throw error
 
+      // Reload tasks immediately to update UI
+      await loadTasks()
+
       return { data, error: null }
     } catch (error) {
       console.error('Error creating task:', error)
@@ -308,6 +311,9 @@ export const TasksProvider = ({ children }) => {
 
       if (error) throw error
 
+      // Reload assignments immediately to update UI
+      await loadTaskAssignments()
+
       return { data, error: null }
     } catch (error) {
       console.error('Error assigning task:', error)
@@ -344,6 +350,10 @@ export const TasksProvider = ({ children }) => {
         }
         // If verification is needed, points will be awarded when verified
       }
+
+      // Reload data immediately to update UI
+      await loadTaskCompletions()
+      await loadTasks()
 
       return { data: completion, error: null }
     } catch (error) {
@@ -384,6 +394,9 @@ export const TasksProvider = ({ children }) => {
           completionId
         )
       }
+
+      // Reload data immediately to update UI
+      await loadTaskCompletions()
 
       return { data: completion, error: null }
     } catch (error) {

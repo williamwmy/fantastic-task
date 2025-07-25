@@ -11,6 +11,7 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
   const [comment, setComment] = useState('')
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState('')
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
@@ -68,13 +69,19 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
     if (error) {
       alert('Feil ved fullføring av oppgave: ' + error.message)
     } else {
-      // Clean up image previews
-      images.forEach(image => URL.revokeObjectURL(image.preview))
+      setSuccess('Oppgave fullført!')
       
-      onClose()
-      setTimeSpent('')
-      setComment('')
-      setImages([])
+      // Close modal after showing success briefly
+      setTimeout(() => {
+        // Clean up image previews
+        images.forEach(image => URL.revokeObjectURL(image.preview))
+        
+        onClose()
+        setTimeSpent('')
+        setComment('')
+        setImages([])
+        setSuccess('')
+      }, 1500)
     }
     
     setLoading(false)
@@ -160,6 +167,25 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
             </div>
           )}
         </div>
+
+        {success && (
+          <div style={{
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            padding: '0.75rem',
+            borderRadius: '0.5rem',
+            marginBottom: '1.5rem',
+            border: '1px solid #c3e6cb',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textAlign: 'center',
+            justifyContent: 'center'
+          }}>
+            ✅ {success}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Time spent */}

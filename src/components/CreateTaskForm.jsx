@@ -27,6 +27,7 @@ const CreateTaskForm = ({ open, onClose }) => {
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const daysOfWeek = [
     { value: 0, label: 'Søndag', short: 'Søn' },
@@ -45,6 +46,7 @@ const CreateTaskForm = ({ open, onClose }) => {
       [name]: value
     }))
     setError('')
+    setSuccess('')
   }
 
   const handleDayToggle = (dayValue) => {
@@ -94,16 +96,22 @@ const CreateTaskForm = ({ open, onClose }) => {
     if (error) {
       setError(error.message || 'Feil ved opprettelse av oppgave')
     } else {
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        points: '',
-        estimatedMinutes: '',
-        recurringDays: [],
-        assignedTo: ''
-      })
-      onClose()
+      setSuccess('Oppgave opprettet!')
+      
+      // Close modal after showing success briefly
+      setTimeout(() => {
+        // Reset form
+        setFormData({
+          title: '',
+          description: '',
+          points: '',
+          estimatedMinutes: '',
+          recurringDays: [],
+          assignedTo: ''
+        })
+        setSuccess('')
+        onClose()
+      }, 1500)
     }
 
     setLoading(false)
@@ -189,6 +197,23 @@ const CreateTaskForm = ({ open, onClose }) => {
             fontSize: '0.9rem'
           }}>
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div style={{
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            padding: '0.75rem',
+            borderRadius: '0.5rem',
+            marginBottom: '1.5rem',
+            border: '1px solid #c3e6cb',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            ✅ {success}
           </div>
         )}
 
