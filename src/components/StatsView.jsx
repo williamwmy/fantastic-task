@@ -10,7 +10,7 @@ import {
   FaDownload,
   FaStar,
   FaFire,
-  FaTarget,
+  FaBullseye,
   FaCoins
 } from 'react-icons/fa'
 
@@ -257,7 +257,7 @@ const StatsView = ({ onClose }) => {
                   {member.totalPoints} poeng
                 </div>
                 <div>
-                  <FaTarget style={{ marginRight: '0.25rem' }} />
+                  <FaBullseye style={{ marginRight: '0.25rem' }} />
                   {member.totalTasks} oppgaver
                 </div>
                 {member.totalTimeSpent > 0 && (
@@ -315,7 +315,7 @@ const StatsView = ({ onClose }) => {
           borderRadius: '0.75rem',
           textAlign: 'center'
         }}>
-          <FaTarget size={32} style={{ color: '#28a745', marginBottom: '0.5rem' }} />
+          <FaBullseye size={32} style={{ color: '#28a745', marginBottom: '0.5rem' }} />
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#155724' }}>
             {stats.totalFamilyTasks}
           </div>
