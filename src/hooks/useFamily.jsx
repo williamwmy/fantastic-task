@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { useAuth } from './useAuth.jsx'
 import { supabase } from '../lib/supabase'
+import { mockData, generateMockInvitationCode } from '../lib/mockData'
 
 const FamilyContext = createContext({})
 
@@ -11,6 +12,8 @@ export const useFamily = () => {
   }
   return context
 }
+
+const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
 
 export const FamilyProvider = ({ children }) => {
   const { user } = useAuth()
@@ -23,7 +26,16 @@ export const FamilyProvider = ({ children }) => {
   // Load family data when user changes
   useEffect(() => {
     if (user) {
-      loadFamilyData()
+      if (LOCAL_TEST_USER) {
+        // Use centralized mock data
+        setFamily(mockData.family);
+        setCurrentMember(mockData.currentMember);
+        setFamilyMembers(mockData.familyMembers);
+        setInvitationCodes(mockData.invitationCodes);
+        setLoading(false);
+      } else {
+        loadFamilyData()
+      }
     } else {
       setFamily(null)
       setFamilyMembers([])
@@ -106,6 +118,13 @@ export const FamilyProvider = ({ children }) => {
 
   const generateInvitationCode = async (maxUses = 1, expiresInDays = 7) => {
     try {
+      if (LOCAL_TEST_USER) {
+        // Generate mock invitation code using helper function
+        const mockCode = generateMockInvitationCode(maxUses, expiresInDays);
+        setInvitationCodes(prev => [mockCode, ...prev]);
+        return { data: mockCode, error: null };
+      }
+
       if (!currentMember || currentMember.role !== 'admin') {
         throw new Error('Only admins can generate invitation codes')
       }

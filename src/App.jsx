@@ -11,6 +11,7 @@ import TaskVerification from "./components/TaskVerification";
 import PointsHistory from "./components/PointsHistory";
 import CreateTaskForm from "./components/CreateTaskForm";
 import StatsView from "./components/StatsView";
+import AllTasksEditor from "./AllTasksEditor";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
@@ -20,7 +21,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 export default function App() {
   const { user, isLoading: authLoading } = useAuth();
   const { family, currentMember } = useFamily();
-  const { getPendingVerifications } = useTasks();
+  const { getPendingVerifications, getTasks } = useTasks();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -383,13 +384,14 @@ export default function App() {
       {/* All Tasks Modal */}
       <PermissionGate permission="edit_tasks">
         <Modal open={showAllTasks} onClose={() => setShowAllTasks(false)}>
-          <h3>Alle oppgaver</h3>
-          <div style={{ padding: '1rem' }}>
-            <p>Oppgave-redigering kommer her...</p>
-            <button onClick={() => setShowAllTasks(false)} style={{ marginTop: 10 }}>
-              Lukk
-            </button>
-          </div>
+          <AllTasksEditor
+            tasks={getTasks()}
+            currentMember={currentMember}
+            onClose={() => setShowAllTasks(false)}
+            onTaskUpdate={() => {}}
+            onTaskDelete={() => {}}
+            onTaskCreate={() => {}}
+          />
         </Modal>
       </PermissionGate>
 

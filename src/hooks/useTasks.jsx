@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react'
 import { useAuth } from './useAuth.jsx'
 import { useFamily } from './useFamily.jsx'
 import { supabase } from '../lib/supabase'
+import { mockData, generateMockTask, generateMockTaskCompletion, generateMockPointsTransaction } from '../lib/mockData'
 
 const TasksContext = createContext({})
 
@@ -12,6 +13,8 @@ export const useTasks = () => {
   }
   return context
 }
+
+const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
 
 export const TasksProvider = ({ children }) => {
   const { user } = useAuth()
@@ -29,18 +32,37 @@ export const TasksProvider = ({ children }) => {
   // Load all task-related data when family changes
   useEffect(() => {
     if (family && currentMember) {
-      loadTaskData()
-      setupSubscriptions()
+      if (LOCAL_TEST_USER) {
+        loadMockTaskData()
+      } else {
+        loadTaskData()
+        setupSubscriptions()
+      }
     } else {
       setTasks([])
       setTaskAssignments([])
       setTaskCompletions([])
       setPointsTransactions([])
-      cleanupSubscriptions()
+      if (!LOCAL_TEST_USER) {
+        cleanupSubscriptions()
+      }
     }
 
-    return () => cleanupSubscriptions()
+    return () => {
+      if (!LOCAL_TEST_USER) {
+        cleanupSubscriptions()
+      }
+    }
   }, [family, currentMember])
+
+  const loadMockTaskData = () => {
+    // Use centralized mock data
+    setTasks(mockData.tasks);
+    setTaskAssignments(mockData.taskAssignments);
+    setTaskCompletions(mockData.taskCompletions);
+    setPointsTransactions(mockData.pointsTransactions);
+    setLoading(false);
+  };
 
   const loadTaskData = async () => {
     try {
@@ -232,6 +254,13 @@ export const TasksProvider = ({ children }) => {
 
   const createTask = async (taskData) => {
     try {
+      if (LOCAL_TEST_USER) {
+        // Generate mock task using helper function
+        const mockTask = generateMockTask(taskData);
+        setTasks(prev => [mockTask, ...prev]);
+        return { data: mockTask, error: null };
+      }
+
       if (!currentMember || !family) {
         throw new Error('User not properly authenticated')
       }
@@ -323,6 +352,32 @@ export const TasksProvider = ({ children }) => {
 
   const completeTask = async (completionData) => {
     try {
+      if (LOCAL_TEST_USER) {
+        // Generate mock completion using helper function
+        const mockCompletion = generateMockTaskCompletion(
+          completionData.task_id, 
+          completionData.completed_by, 
+          completionData
+        );
+        setTaskCompletions(prev => [mockCompletion, ...prev]);
+        
+        // Mock points transaction
+        const task = tasks.find(t => t.id === completionData.task_id);
+        const pointsAwarded = completionData.points_awarded || task?.points || 0;
+        if (pointsAwarded > 0) {
+          const mockTransaction = generateMockPointsTransaction(
+            completionData.completed_by,
+            pointsAwarded,
+            'earned',
+            'Task completion',
+            mockCompletion.id
+          );
+          setPointsTransactions(prev => [mockTransaction, ...prev]);
+        }
+        
+        return { data: mockCompletion, error: null };
+      }
+
       const { data: completion, error: completionError } = await supabase
         .from('task_completions')
         .insert(completionData)

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaSearch, FaCopy } from 'react-icons/fa';
-import { useTasks } from '../hooks/useTasks.jsx';
-import CreateTaskForm from './CreateTaskForm';
+import { useTasks } from './hooks/useTasks.jsx';
+import CreateTaskForm from './components/CreateTaskForm';
 
 const AllTasksEditor = ({ 
   tasks, 
