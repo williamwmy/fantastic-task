@@ -12,6 +12,7 @@ import PointsHistory from "./components/PointsHistory";
 import CreateTaskForm from "./components/CreateTaskForm";
 import StatsView from "./components/StatsView";
 import AllTasksEditor from "./AllTasksEditor";
+import LoginPage from "./components/LoginPage";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
@@ -31,26 +32,51 @@ export default function App() {
   const [showTaskVerification, setShowTaskVerification] = useState(false);
   const [showPointsHistory, setShowPointsHistory] = useState(false);
   const [selectedDate, setSelectedDate] = useState(todayStr());
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Show auth modal if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      setShowAuthModal(true);
-    }
-  }, [authLoading, user]);
 
   if (authLoading) {
-    return <div>Laster...</div>;
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #d0e6fa 0%, #f8e8ee 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          backgroundColor: '#82bcf4',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1rem',
+          animation: 'pulse 2s infinite'
+        }}>
+          <FaList size={40} color="white" />
+        </div>
+        <div style={{
+          fontSize: '1.2rem',
+          color: '#495057',
+          fontWeight: 500
+        }}>
+          Laster Fantastic Task...
+        </div>
+        <style jsx>{`
+          @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   if (!user) {
-    return (
-      <AuthModal 
-        open={showAuthModal} 
-        onClose={() => setShowAuthModal(false)}
-      />
-    );
+    return <LoginPage />;
   }
 
   // If user is logged in but has no family, show family setup
