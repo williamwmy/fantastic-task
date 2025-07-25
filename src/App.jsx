@@ -21,7 +21,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 export default function App() {
   const { user, isLoading: authLoading } = useAuth();
   const { family, currentMember } = useFamily();
-  const { getPendingVerifications, getTasks } = useTasks();
+  const { getPendingVerifications, getTasks, loadTaskData } = useTasks();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -388,9 +388,9 @@ export default function App() {
             tasks={getTasks()}
             currentMember={currentMember}
             onClose={() => setShowAllTasks(false)}
-            onTaskUpdate={() => {}}
-            onTaskDelete={() => {}}
-            onTaskCreate={() => {}}
+            onTaskUpdate={() => loadTaskData && loadTaskData()}
+            onTaskDelete={() => loadTaskData && loadTaskData()}
+            onTaskCreate={() => loadTaskData && loadTaskData()}
           />
         </Modal>
       </PermissionGate>

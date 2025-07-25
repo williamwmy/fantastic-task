@@ -273,24 +273,12 @@ const AllTasksEditor = ({
           }}>
             <h3>Ny oppgave</h3>
             <CreateTaskForm
-              onSubmit={async (data) => {
-                try {
-                  setError(null);
-                  const { error: createError } = await createTask(data);
-                  if (createError) {
-                    setError('Kunne ikke opprette oppgave: ' + createError.message);
-                    return;
-                  }
-                  setShowCreateForm(false);
-                  setSuccess('Ny oppgave opprettet!');
-                  onTaskCreate && onTaskCreate();
-                  setTimeout(() => setSuccess(null), 3000);
-                } catch (error) {
-                  console.error('Error creating task:', error);
-                  setError('Noe gikk galt ved opprettelse av oppgave');
-                }
+              open={showCreateForm}
+              onClose={() => {
+                setShowCreateForm(false);
+                // Refresh tasks by calling parent callback
+                onTaskCreate && onTaskCreate();
               }}
-              onCancel={() => setShowCreateForm(false)}
             />
           </div>
         </div>
