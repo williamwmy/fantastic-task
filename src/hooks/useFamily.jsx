@@ -41,10 +41,19 @@ export const FamilyProvider = ({ children }) => {
         .from('family_members')
         .select('*, families(*)')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (memberError) {
         console.error('Error loading family member:', memberError)
+        return
+      }
+
+      // If no family membership found, user needs to create/join a family
+      if (!memberData) {
+        setFamily(null)
+        setCurrentMember(null)
+        setFamilyMembers([])
+        setInvitationCodes([])
         return
       }
 
