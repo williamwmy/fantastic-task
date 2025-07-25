@@ -328,7 +328,7 @@ const AllTasksEditor = ({
                 onClick={() => setDeleteConfirm(null)}
                 style={{
                   padding: '0.5rem 1rem',
-                  background: '#95a5a6',
+                  background: '#6c757d',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.25rem',
@@ -358,7 +358,7 @@ const AllTasksEditor = ({
           onClick={onClose}
           style={{
             padding: '0.5rem 1rem',
-            background: '#95a5a6',
+            background: '#6c757d',
             color: 'white',
             border: 'none',
             borderRadius: '0.25rem',
@@ -476,8 +476,8 @@ const TaskRow = ({
                   alignItems: 'center',
                   gap: '0.25rem',
                   padding: '0.25rem 0.5rem',
-                  background: editData.recurring_days.includes(day) ? '#82bcf4' : '#f0f0f0',
-                  color: editData.recurring_days.includes(day) ? 'white' : 'black',
+                  background: editData.recurring_days.includes(day) ? '#82bcf4' : '#6c757d',
+                  color: 'white',
                   borderRadius: '0.25rem',
                   cursor: 'pointer'
                 }}
@@ -536,7 +536,7 @@ const TaskRow = ({
             onClick={onCancelEdit}
             style={{
               padding: '0.5rem 1rem',
-              background: '#95a5a6',
+              background: '#6c757d',
               color: 'white',
               border: 'none',
               borderRadius: '0.25rem',

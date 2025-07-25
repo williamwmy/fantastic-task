@@ -94,7 +94,9 @@ export const mockTasks = [
     created_by: mockCurrentMember.id,
     is_active: true,
     created_at: now,
-    recurring_pattern: 'daily'
+    recurring_type: 'daily',
+    recurring_days: [1, 2, 3, 4, 5], // Ukedager
+    flexible_interval: null
   },
   {
     id: 'mock-task-2',
@@ -105,7 +107,9 @@ export const mockTasks = [
     created_by: mockCurrentMember.id,
     is_active: true,
     created_at: now,
-    recurring_pattern: 'weekly'
+    recurring_type: 'weekly_flexible',
+    recurring_days: null,
+    flexible_interval: 7
   },
   {
     id: 'mock-task-3',
@@ -116,7 +120,9 @@ export const mockTasks = [
     created_by: mockCurrentMember.id,
     is_active: true,
     created_at: now,
-    recurring_pattern: 'daily'
+    recurring_type: 'daily',
+    recurring_days: [0, 1, 2, 3, 4, 5, 6], // Alle dager
+    flexible_interval: null
   },
   {
     id: 'mock-task-4',
@@ -127,7 +133,9 @@ export const mockTasks = [
     created_by: mockCurrentMember.id,
     is_active: true,
     created_at: now,
-    recurring_pattern: 'weekly'
+    recurring_type: 'monthly_flexible',
+    recurring_days: null,
+    flexible_interval: 30
   }
 ];
 
@@ -249,6 +257,9 @@ export const generateMockTask = (taskData) => {
     created_by: mockCurrentMember.id,
     is_active: true,
     created_at: new Date().toISOString(),
+    recurring_type: 'daily',
+    recurring_days: null,
+    flexible_interval: null,
     ...taskData
   };
 };

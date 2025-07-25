@@ -28,7 +28,8 @@ export default function ProfileSelector({ profiles, current, onSelect, onAdd, on
           </form>
         ) : (
           <div key={idx} style={{
-            background: current === idx ? "#82bcf4" : "#e6ecf7",
+            background: current === idx ? "#82bcf4" : "#6c757d",
+            color: "white",
             padding: "0.4rem 0.9rem",
             borderRadius: 13,
             cursor: "pointer",

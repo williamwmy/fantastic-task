@@ -21,7 +21,9 @@ const CreateTaskForm = ({ open, onClose }) => {
     description: '',
     points: '',
     estimatedMinutes: '',
+    recurringType: 'daily',
     recurringDays: [],
+    flexibleInterval: 7, // days for flexible recurring
     assignedTo: ''
   })
   
@@ -37,6 +39,31 @@ const CreateTaskForm = ({ open, onClose }) => {
     { value: 4, label: 'Torsdag', short: 'Tor' },
     { value: 5, label: 'Fredag', short: 'Fre' },
     { value: 6, label: 'Lørdag', short: 'Lør' }
+  ]
+
+  const recurringTypeOptions = [
+    { 
+      value: 'daily', 
+      label: 'Spesifikke dager', 
+      description: 'Oppgaven vises på valgte dager hver uke'
+    },
+    { 
+      value: 'weekly_flexible', 
+      label: 'Ukentlig (fleksibel)', 
+      description: 'Må gjøres én gang i uken, dukker opp igjen 7 dager etter fullføring'
+    },
+    { 
+      value: 'monthly_flexible', 
+      label: 'Månedlig (fleksibel)', 
+      description: 'Må gjøres én gang i måneden, dukker opp igjen 30 dager etter fullføring'
+    }
+  ]
+
+  const quickSelectOptions = [
+    { label: 'Alle dager', days: [0, 1, 2, 3, 4, 5, 6] },
+    { label: 'Ukedager', days: [1, 2, 3, 4, 5] },
+    { label: 'Helg', days: [0, 6] },
+    { label: 'Tøm valg', days: [] }
   ]
 
   const handleInputChange = (e) => {
@@ -55,6 +82,13 @@ const CreateTaskForm = ({ open, onClose }) => {
       recurringDays: prev.recurringDays.includes(dayValue)
         ? prev.recurringDays.filter(d => d !== dayValue)
         : [...prev.recurringDays, dayValue].sort()
+    }))
+  }
+
+  const handleQuickSelect = (days) => {
+    setFormData(prev => ({
+      ...prev,
+      recurringDays: [...days].sort()
     }))
   }
 
@@ -87,7 +121,9 @@ const CreateTaskForm = ({ open, onClose }) => {
       description: formData.description.trim() || null,
       points: formData.points ? parseInt(formData.points) : 0,
       estimated_minutes: formData.estimatedMinutes ? parseInt(formData.estimatedMinutes) : null,
-      recurring_days: formData.recurringDays.length > 0 ? formData.recurringDays : null,
+      recurring_type: formData.recurringType,
+      recurring_days: formData.recurringType === 'daily' && formData.recurringDays.length > 0 ? formData.recurringDays : null,
+      flexible_interval: formData.recurringType !== 'daily' ? formData.flexibleInterval : null,
       created_by: currentMember.id
     }
 
@@ -106,7 +142,9 @@ const CreateTaskForm = ({ open, onClose }) => {
           description: '',
           points: '',
           estimatedMinutes: '',
+          recurringType: 'daily',
           recurringDays: [],
+          flexibleInterval: 7,
           assignedTo: ''
         })
         setSuccess('')
@@ -123,7 +161,9 @@ const CreateTaskForm = ({ open, onClose }) => {
       description: '',
       points: '',
       estimatedMinutes: '',
+      recurringType: 'daily',
       recurringDays: [],
+      flexibleInterval: 7,
       assignedTo: ''
     })
     setError('')
@@ -370,7 +410,7 @@ const CreateTaskForm = ({ open, onClose }) => {
             </div>
           </div>
 
-          {/* Recurring days */}
+          {/* Recurring type */}
           <div style={{ marginBottom: '2rem' }}>
             <label style={{ 
               display: 'flex',
@@ -381,8 +421,104 @@ const CreateTaskForm = ({ open, onClose }) => {
               color: '#333'
             }}>
               <FaCalendarAlt />
-              Gjentakende dager
+              Gjentakelsesmønster
             </label>
+            
+            {recurringTypeOptions.map((option) => (
+              <div 
+                key={option.value}
+                style={{
+                  marginBottom: '0.75rem',
+                  padding: '0.75rem',
+                  border: `2px solid ${formData.recurringType === option.value ? '#82bcf4' : '#e9ecef'}`,
+                  borderRadius: '0.5rem',
+                  backgroundColor: formData.recurringType === option.value ? '#f8f9ff' : '#fff',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onClick={() => setFormData(prev => ({ ...prev, recurringType: option.value }))}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <input
+                    type="radio"
+                    name="recurringType"
+                    value={option.value}
+                    checked={formData.recurringType === option.value}
+                    readOnly
+                    style={{ margin: 0 }}
+                  />
+                  <strong style={{ color: '#333' }}>{option.label}</strong>
+                </div>
+                <small style={{ color: '#6c757d', marginLeft: '1.25rem' }}>
+                  {option.description}
+                </small>
+              </div>
+            ))}
+          </div>
+
+          {/* Days selection - only show for daily recurring */}
+          {formData.recurringType === 'daily' && (
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontWeight: 600, 
+                marginBottom: '0.75rem',
+                color: '#333'
+              }}>
+                <FaCalendarAlt />
+                Velg dager
+              </label>
+
+            {/* Quick select buttons */}
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+              marginBottom: '1rem',
+              padding: '0.75rem',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '0.5rem',
+              border: '1px solid #e9ecef'
+            }}>
+              <small style={{ 
+                color: '#6c757d', 
+                fontWeight: 600,
+                marginBottom: '0.5rem',
+                width: '100%'
+              }}>
+                Hurtigvalg:
+              </small>
+              {quickSelectOptions.map((option, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleQuickSelect(option.days)}
+                  style={{
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    backgroundColor: '#fff',
+                    color: '#495057',
+                    border: '1px solid #ced4da',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = '#e9ecef'
+                    e.target.style.borderColor = '#adb5bd'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = '#fff'
+                    e.target.style.borderColor = '#ced4da'
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             
             <div style={{ 
               display: 'grid', 
@@ -432,6 +568,47 @@ const CreateTaskForm = ({ open, onClose }) => {
               }
             </small>
           </div>
+          )}
+
+          {/* For flexible recurring tasks, show interval setting */}
+          {(formData.recurringType === 'weekly_flexible' || formData.recurringType === 'monthly_flexible') && (
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontWeight: 600, 
+                marginBottom: '0.75rem',
+                color: '#333'
+              }}>
+                <FaClock />
+                Gjentakelsesintervall
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="number"
+                  min="1"
+                  max={formData.recurringType === 'weekly_flexible' ? "52" : "365"}
+                  value={formData.flexibleInterval}
+                  onChange={(e) => setFormData(prev => ({ ...prev, flexibleInterval: parseInt(e.target.value) || 1 }))}
+                  style={{
+                    width: '80px',
+                    padding: '0.5rem',
+                    border: '2px solid #e9ecef',
+                    borderRadius: '0.5rem',
+                    fontSize: '1rem',
+                    textAlign: 'center'
+                  }}
+                />
+                <span style={{ color: '#6c757d' }}>
+                  {formData.recurringType === 'weekly_flexible' ? 'dager (anbefalt: 7)' : 'dager (anbefalt: 30)'}
+                </span>
+              </div>
+              <small style={{ color: '#6c757d', fontSize: '0.8rem', marginTop: '0.5rem', display: 'block' }}>
+                Oppgaven dukker opp igjen automatisk etter dette antall dager når den fullføres
+              </small>
+            </div>
+          )}
 
           {/* Action buttons */}
           <div style={{ 
