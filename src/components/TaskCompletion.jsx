@@ -60,8 +60,9 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
       completed_by: currentMember.id,
       time_spent_minutes: timeSpent ? parseInt(timeSpent) : null,
       comment: comment.trim() || null,
-      points_awarded: task.points || 0,
-      images: images.map(img => img.file) // Include image files for potential upload
+      points_awarded: task.points || 0
+      // Note: Images are included in UI but not yet stored in database
+      // TODO: Implement image storage with Supabase Storage
     }
     
     const { error } = await completeTask(completionData)
@@ -360,6 +361,8 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
             
             <small style={{ color: '#6c757d', fontSize: '0.8rem', display: 'block', marginTop: '0.25rem' }}>
               Valgfritt - last opp bilder som viser at oppgaven er fullført (maks 3 bilder, 5MB hver)
+              <br />
+              <em style={{ color: '#ffc107' }}>⚠️ Bildelagring kommer i neste versjon</em>
             </small>
           </div>
 
