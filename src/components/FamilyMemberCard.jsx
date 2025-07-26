@@ -122,7 +122,13 @@ const FamilyMemberCard = ({ member, onClose }) => {
   }
 
   return (
-    <Modal open={true} onClose={onClose}>
+    <Modal 
+      open={true} 
+      onClose={onClose}
+      title="Rediger medlem"
+      subtitle="Endre profilinnstillinger og roller"
+      icon={<FaEdit />}
+    >
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{
@@ -344,18 +350,6 @@ const FamilyMemberCard = ({ member, onClose }) => {
           </div>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          <button
-            onClick={onClose}
-            style={{
-              ...buttonStyle,
-              backgroundColor: '#6c757d',
-              color: 'white'
-            }}
-          >
-            Lukk
-          </button>
-        </div>
       </div>
     </Modal>
   )
