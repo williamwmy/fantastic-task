@@ -2,11 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaSearch, FaCopy } from 'react-icons/fa';
 import { useTasks } from './hooks/useTasks.jsx';
 import CreateTaskForm from './components/CreateTaskForm';
+import Modal from './components/Modal';
 
 const AllTasksEditor = ({ 
   tasks, 
   currentMember, 
-  onClose,
   onTaskUpdate,
   onTaskDelete,
   onTaskCreate 
@@ -251,122 +251,62 @@ const AllTasksEditor = ({
       </div>
 
       {/* Create task form modal */}
-      {showCreateForm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <h3>Ny oppgave</h3>
-            <CreateTaskForm
-              open={showCreateForm}
-              onClose={() => {
-                setShowCreateForm(false);
-                // Refresh tasks by calling parent callback
-                onTaskCreate && onTaskCreate();
-              }}
-            />
-          </div>
-        </div>
-      )}
+      <CreateTaskForm
+        open={showCreateForm}
+        onClose={() => {
+          setShowCreateForm(false);
+          // Refresh tasks by calling parent callback
+          onTaskCreate && onTaskCreate();
+        }}
+      />
 
       {/* Delete confirmation */}
-      {deleteConfirm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            maxWidth: '400px',
-            width: '90%'
-          }}>
-            <h3>Bekreft sletting</h3>
-            <p>Er du sikker på at du vil slette denne oppgaven?</p>
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>
-              Dette vil også slette all historikk knyttet til oppgaven.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button
-                onClick={() => handleDeleteTask(deleteConfirm)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Slett
-              </button>
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Avbryt
-              </button>
-            </div>
-          </div>
+      <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} hideCloseButton={true}>
+        <h3>Bekreft sletting</h3>
+        <p>Er du sikker på at du vil slette denne oppgaven?</p>
+        <p style={{ color: '#666', fontSize: '0.9rem' }}>
+          Dette vil også slette all historikk knyttet til oppgaven.
+        </p>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          <button
+            onClick={() => handleDeleteTask(deleteConfirm)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#e74c3c',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: 'pointer'
+            }}
+          >
+            Slett
+          </button>
+          <button
+            onClick={() => setDeleteConfirm(null)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: 'pointer'
+            }}
+          >
+            Avbryt
+          </button>
         </div>
-      )}
+      </Modal>
 
       {/* Footer */}
       <div style={{ 
         borderTop: '1px solid #eee', 
         paddingTop: '1rem', 
         marginTop: '1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+        textAlign: 'center'
       }}>
         <span style={{ color: '#666' }}>
           {filteredTasks.length} av {tasks.length} oppgaver
         </span>
-        <button 
-          onClick={onClose}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.25rem',
-            cursor: 'pointer'
-          }}
-        >
-          Lukk
-        </button>
       </div>
     </div>
   );

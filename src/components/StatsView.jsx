@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
+import Modal from './Modal.jsx'
 import { 
   FaTrophy, 
   FaMedal, 
@@ -14,7 +15,7 @@ import {
   FaCoins
 } from 'react-icons/fa'
 
-const StatsView = ({ onClose }) => {
+const StatsView = ({ open = true, onClose }) => {
   const { tasks, taskCompletions, pointsTransactions } = useTasks()
   const { familyMembers, currentMember } = useFamily()
   const [timeframe, setTimeframe] = useState('week') // 'week', 'month', 'all'
@@ -515,37 +516,16 @@ const StatsView = ({ onClose }) => {
   )
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem'
-    }}>
+    <Modal open={open} onClose={onClose}>
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '1rem',
         width: '100%',
-        maxWidth: '1000px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+        maxWidth: '1000px'
       }}>
         {/* Header */}
         <div style={{ 
-          padding: '1.5rem',
+          paddingBottom: '1rem',
           borderBottom: '2px solid #f8f9fa',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: 'white',
-          borderRadius: '1rem 1rem 0 0',
-          zIndex: 10
+          marginBottom: '1.5rem'
         }}>
           <div style={{ 
             display: 'flex', 
@@ -576,20 +556,6 @@ const StatsView = ({ onClose }) => {
               >
                 <FaDownload />
                 Eksporter CSV
-              </button>
-              
-              <button
-                onClick={onClose}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Lukk
               </button>
             </div>
           </div>
@@ -654,14 +620,14 @@ const StatsView = ({ onClose }) => {
         </div>
         
         {/* Content */}
-        <div style={{ padding: '1.5rem' }}>
+        <div>
           {activeTab === 'leaderboard' && renderLeaderboard()}
           {activeTab === 'tasks' && renderTaskStats()}
           {activeTab === 'time' && renderTaskStats()}
           {activeTab === 'achievements' && renderAchievements()}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 

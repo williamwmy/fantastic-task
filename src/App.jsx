@@ -89,19 +89,32 @@ export default function App() {
   const pendingCount = pendingVerifications.length;
 
   return (
-    <div style={{ minHeight: "100vh", padding: "1rem" }}>
+    <div style={{ 
+      minHeight: "100vh", 
+      padding: "0.5rem",
+      maxWidth: "100vw",
+      overflowX: "hidden"
+    }}>
       {/* Top bar */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: "1rem"
+        marginBottom: "1rem",
+        flexWrap: "wrap",
+        gap: "0.5rem"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "0.5rem",
+          minWidth: "0", // Allow flex item to shrink
+          flex: "1 1 auto"
+        }}>
           {/* Profile circle */}
           <div style={{
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             borderRadius: "50%",
             background: currentMember.avatar_color || "#82bcf4",
             display: "flex",
@@ -109,31 +122,39 @@ export default function App() {
             justifyContent: "center",
             color: "white",
             fontWeight: 700,
-            fontSize: 22,
+            fontSize: 18,
+            flexShrink: 0
           }}>
             {currentMember.nickname[0].toUpperCase()}
           </div>
           {/* Points display */}
           <div style={{ 
-            padding: "0.25rem 0.75rem", 
+            padding: "0.25rem 0.5rem", 
             background: "#6c757d", 
             borderRadius: "1rem",
-            fontWeight: 600
+            fontWeight: 600,
+            fontSize: "0.875rem",
+            whiteSpace: "nowrap"
           }}>
             {currentMember.points_balance} poeng
           </div>
         </div>
         
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ 
+          display: "flex", 
+          gap: "0.25rem",
+          flexWrap: "wrap",
+          justifyContent: "flex-end"
+        }}>
           <button
             onClick={() => setShowProfileModal(true)}
             title="Bytt profil"
             style={{ 
-              width: 48, 
-              height: 48, 
+              width: 36, 
+              height: 36, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 24, 
+              fontSize: 16, 
               background: "#6c757d", 
               color: "white", 
               display: "flex", 
@@ -141,8 +162,7 @@ export default function App() {
               justifyContent: "center",
               border: "none",
               cursor: "pointer",
-              minWidth: "48px",
-              minHeight: "48px"
+              flexShrink: 0
             }}
           >
             <FaUser />
@@ -151,11 +171,11 @@ export default function App() {
             onClick={() => setShowStats(true)}
             title="Statistikk"
             style={{ 
-              width: 48, 
-              height: 48, 
+              width: 36, 
+              height: 36, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 24, 
+              fontSize: 16, 
               background: "#6c757d", 
               color: "white", 
               display: "flex", 
@@ -163,8 +183,7 @@ export default function App() {
               justifyContent: "center",
               border: "none",
               cursor: "pointer",
-              minWidth: "48px",
-              minHeight: "48px"
+              flexShrink: 0
             }}
           >
             <FaChartBar />
@@ -174,11 +193,11 @@ export default function App() {
               onClick={() => setShowAllTasks(true)}
               title="Alle oppgaver"
               style={{ 
-                width: 48, 
-                height: 48, 
+                width: 36, 
+                height: 36, 
                 borderRadius: "50%", 
                 padding: 0, 
-                fontSize: 24, 
+                fontSize: 16, 
                 background: "#6c757d", 
                 color: "white", 
                 display: "flex", 
@@ -186,8 +205,7 @@ export default function App() {
                 justifyContent: "center",
                 border: "none",
                 cursor: "pointer",
-                minWidth: "48px",
-                minHeight: "48px"
+                flexShrink: 0
               }}
             >
               <FaList />
@@ -195,16 +213,16 @@ export default function App() {
           </PermissionGate>
           
           <PermissionGate permission="view_all_stats">
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 onClick={() => setShowTaskVerification(true)}
                 title="Verifiser barns oppgaver"
                 style={{ 
-                  width: 44, 
-                  height: 44, 
+                  width: 36, 
+                  height: 36, 
                   borderRadius: "50%", 
                   padding: 0, 
-                  fontSize: 22, 
+                  fontSize: 16, 
                   background: "#17a2b8", 
                   color: "white", 
                   display: "flex", 
@@ -219,17 +237,17 @@ export default function App() {
               {pendingCount > 0 && (
                 <div style={{
                   position: 'absolute',
-                  top: -5,
-                  right: -5,
+                  top: -4,
+                  right: -4,
                   backgroundColor: '#dc3545',
                   color: 'white',
                   borderRadius: '50%',
-                  width: 20,
-                  height: 20,
+                  width: 16,
+                  height: 16,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: 700
                 }}>
                   {pendingCount}
@@ -242,18 +260,19 @@ export default function App() {
             onClick={() => setShowPointsHistory(true)}
             title="Poenghistorikk"
             style={{ 
-              width: 44, 
-              height: 44, 
+              width: 36, 
+              height: 36, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 22, 
+              fontSize: 16, 
               background: "#6c757d", 
               color: "white", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center",
               border: "none",
-              cursor: "pointer"
+              cursor: "pointer",
+              flexShrink: 0
             }}
           >
             <FaHistory />
@@ -264,18 +283,19 @@ export default function App() {
             onClick={() => setShowAdminPanel(true)}
             title="Admin-panel"
             style={{ 
-              width: 44, 
-              height: 44, 
+              width: 36, 
+              height: 36, 
               borderRadius: "50%", 
               padding: 0, 
-              fontSize: 22, 
+              fontSize: 16, 
               background: "#dc3545", 
               color: "white", 
               display: "flex", 
               alignItems: "center", 
               justifyContent: "center",
               border: "none",
-              cursor: "pointer"
+              cursor: "pointer",
+              flexShrink: 0
             }}
           >
             <FaCog />
@@ -290,9 +310,10 @@ export default function App() {
       <div style={{ 
         display: "flex", 
         alignItems: "center", 
-        gap: 20, 
-        margin: "32px 0",
-        justifyContent: "center"
+        gap: "0.5rem", 
+        margin: "1rem 0",
+        justifyContent: "center",
+        flexWrap: "wrap"
       }}>
         <button
           onClick={() => {
@@ -305,24 +326,27 @@ export default function App() {
             color: "white",
             border: "none",
             borderRadius: "50%",
-            width: 60,
-            height: 60,
-            fontSize: 28,
+            width: 48,
+            height: 48,
+            fontSize: 20,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 2px 8px #0001",
-            cursor: "pointer"
+            cursor: "pointer",
+            flexShrink: 0
           }}
           aria-label="Forrige dag"
         >
           <FaChevronLeft />
         </button>
         <span style={{ 
-          minWidth: 140, 
+          minWidth: "120px", 
           textAlign: "center", 
-          fontSize: 22, 
-          fontWeight: 700 
+          fontSize: "1rem", 
+          fontWeight: 700,
+          padding: "0.5rem",
+          whiteSpace: "nowrap"
         }}>
           {new Date(selectedDate).toLocaleDateString("no-NO", { 
             weekday: "long", 
@@ -341,14 +365,15 @@ export default function App() {
             color: "white",
             border: "none",
             borderRadius: "50%",
-            width: 60,
-            height: 60,
-            fontSize: 28,
+            width: 48,
+            height: 48,
+            fontSize: 20,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 2px 8px #0001",
-            cursor: "pointer"
+            cursor: "pointer",
+            flexShrink: 0
           }}
           aria-label="Neste dag"
         >
@@ -363,14 +388,15 @@ export default function App() {
             color: "white",
             border: "none",
             borderRadius: "50%",
-            width: 60,
-            height: 60,
-            fontSize: 32,
+            width: 48,
+            height: 48,
+            fontSize: 24,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 2px 8px #0001",
-            cursor: "pointer"
+            cursor: "pointer",
+            flexShrink: 0
           }}
         >
           <FaPlus />
@@ -393,17 +419,23 @@ export default function App() {
       </Modal>
 
       {/* Stats Modal */}
-      {showStats && (
-        <StatsView onClose={() => setShowStats(false)} />
-      )}
+      <StatsView 
+        open={showStats} 
+        onClose={() => setShowStats(false)} 
+      />
 
       {/* All Tasks Modal */}
       <PermissionGate permission="edit_tasks">
-        <Modal open={showAllTasks} onClose={() => setShowAllTasks(false)}>
+        <Modal 
+          open={showAllTasks} 
+          onClose={() => setShowAllTasks(false)}
+          title="Alle oppgaver"
+          subtitle="Rediger og administrer familiens oppgaver"
+          icon={<FaList />}
+        >
           <AllTasksEditor
             tasks={getTasks()}
             currentMember={currentMember}
-            onClose={() => setShowAllTasks(false)}
             onTaskUpdate={() => loadTaskData && loadTaskData()}
             onTaskDelete={() => loadTaskData && loadTaskData()}
             onTaskCreate={() => loadTaskData && loadTaskData()}
@@ -412,8 +444,14 @@ export default function App() {
       </PermissionGate>
 
       {/* Admin Panel Modal */}
-      <Modal open={showAdminPanel} onClose={() => setShowAdminPanel(false)}>
-        <FamilyAdminPanel onClose={() => setShowAdminPanel(false)} />
+      <Modal 
+        open={showAdminPanel} 
+        onClose={() => setShowAdminPanel(false)}
+        title="Admin-panel"
+        subtitle="Administrer familie og innstillinger"
+        icon={<FaCog />}
+      >
+        <FamilyAdminPanel />
       </Modal>
 
       {/* Task Verification Modal */}

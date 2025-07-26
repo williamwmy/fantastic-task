@@ -48,53 +48,48 @@ const TaskVerification = ({ open, onClose }) => {
 
   if (!canVerify) {
     return (
-      <Modal open={open} onClose={onClose}>
+      <Modal 
+        open={open} 
+        onClose={onClose}
+        title="Ingen tilgang"
+        icon={<FaTimes />}
+      >
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <FaTimes size={48} style={{ color: '#dc3545', marginBottom: '1rem' }} />
-          <h3>Ingen tilgang</h3>
           <p>Du har ikke tillatelse til å verifisere oppgaver.</p>
-          <button onClick={onClose} style={{
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontWeight: 600
-          }}>
-            Lukk
-          </button>
         </div>
       </Modal>
     )
   }
 
+  const titleWithBadge = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      Verifiser barns oppgaver
+      <span style={{
+        backgroundColor: pendingVerifications.length > 0 ? '#dc3545' : '#28a745',
+        color: 'white',
+        borderRadius: '50%',
+        width: 24,
+        height: 24,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.8rem',
+        fontWeight: 700
+      }}>
+        {pendingVerifications.length}
+      </span>
+    </div>
+  )
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal 
+      open={open} 
+      onClose={onClose}
+      title={titleWithBadge}
+      subtitle="Godkjenn eller avvis oppgaver fullført av barn"
+      icon={<FaChild />}
+    >
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem' 
-        }}>
-          <FaChild size={24} style={{ color: '#17a2b8' }} />
-          <h2 style={{ margin: 0 }}>Verifiser barns oppgaver</h2>
-          <span style={{
-            backgroundColor: pendingVerifications.length > 0 ? '#dc3545' : '#28a745',
-            color: 'white',
-            borderRadius: '50%',
-            width: 24,
-            height: 24,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '0.8rem',
-            fontWeight: 700
-          }}>
-            {pendingVerifications.length}
-          </span>
-        </div>
 
         {pendingVerifications.length === 0 ? (
           <div style={{
@@ -256,27 +251,6 @@ const TaskVerification = ({ open, onClose }) => {
           </div>
         )}
 
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '2rem',
-          paddingTop: '1rem',
-          borderTop: '1px solid #dee2e6'
-        }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Lukk
-          </button>
-        </div>
       </div>
     </Modal>
   )

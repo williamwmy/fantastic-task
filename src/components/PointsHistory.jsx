@@ -76,33 +76,32 @@ const PointsHistory = ({ memberId, open, onClose }) => {
       .reduce((sum, t) => sum + t.points, 0)
   }
 
+  const memberAvatar = (
+    <div style={{
+      width: 32,
+      height: 32,
+      borderRadius: '50%',
+      backgroundColor: member?.avatar_color || '#82bcf4',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      fontWeight: 700,
+      fontSize: 14
+    }}>
+      {member?.nickname?.[0]?.toUpperCase()}
+    </div>
+  )
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal 
+      open={open} 
+      onClose={onClose}
+      title={`${member?.nickname}s poenghistorikk`}
+      subtitle="Oversikt over poeng tjent og brukt"
+      icon={memberAvatar}
+    >
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.5rem', 
-          marginBottom: '1.5rem' 
-        }}>
-          <div style={{
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            backgroundColor: member?.avatar_color || '#82bcf4',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 700,
-            fontSize: 14
-          }}>
-            {member?.nickname?.[0]?.toUpperCase()}
-          </div>
-          <h2 style={{ margin: 0 }}>
-            {member?.nickname}s poenghistorikk
-          </h2>
-        </div>
 
         {/* Summary */}
         <div style={{
@@ -278,25 +277,6 @@ const PointsHistory = ({ memberId, open, onClose }) => {
           )}
         </div>
 
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '1.5rem'
-        }}>
-          <button 
-            onClick={onClose}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Lukk
-          </button>
-        </div>
       </div>
     </Modal>
   )

@@ -172,7 +172,7 @@ describe('CreateTaskForm', () => {
     await user.type(screen.getByPlaceholderText("F.eks. 'Rydde rommet', 'Gjøre lekser', 'Støvsuge stua'"), 'Test Data')
     
     // Cancel
-    await user.click(screen.getByRole('button', { name: /avbryt/i }))
+    await user.click(screen.getByRole('button', { name: /lukk/i }))
     
     expect(mockProps.onClose).toHaveBeenCalled()
   })

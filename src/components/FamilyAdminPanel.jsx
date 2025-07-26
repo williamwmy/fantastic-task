@@ -15,7 +15,7 @@ import {
   FaTimes
 } from 'react-icons/fa'
 
-const FamilyAdminPanel = ({ onClose }) => {
+const FamilyAdminPanel = () => {
   const { 
     family, 
     familyMembers, 
@@ -38,23 +38,7 @@ const FamilyAdminPanel = ({ onClose }) => {
   if (!isAdmin) {
     return (
       <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <FaShieldAlt size={48} style={{ color: '#dc3545', marginBottom: '1rem' }} />
-        <h3>Ingen tilgang</h3>
         <p>Kun administratorer kan få tilgang til familieinnstillinger.</p>
-        <button 
-          onClick={onClose}
-          style={{
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontWeight: 600
-          }}
-        >
-          Lukk
-        </button>
       </div>
     )
   }
@@ -90,7 +74,6 @@ const FamilyAdminPanel = ({ onClose }) => {
   const handleSignOut = async () => {
     if (confirm('Er du sikker på at du vil logge ut?')) {
       await signOut()
-      onClose()
     }
   }
 
@@ -326,10 +309,6 @@ const FamilyAdminPanel = ({ onClose }) => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <FaShieldAlt size={32} style={{ color: '#82bcf4' }} />
-        <h2 style={{ margin: 0 }}>Admin-panel</h2>
-      </div>
 
       {/* Tab navigation */}
       <div style={{ 
@@ -373,23 +352,6 @@ const FamilyAdminPanel = ({ onClose }) => {
         />
       )}
 
-      <div style={{ 
-        textAlign: 'center', 
-        marginTop: '2rem',
-        paddingTop: '2rem',
-        borderTop: '1px solid #dee2e6'
-      }}>
-        <button 
-          onClick={onClose}
-          style={{
-            ...buttonStyle,
-            backgroundColor: '#6c757d',
-            color: 'white'
-          }}
-        >
-          Lukk admin-panel
-        </button>
-      </div>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
+import Modal from './Modal.jsx'
 import { 
   FaPlus, 
   FaClock, 
@@ -169,62 +170,52 @@ const CreateTaskForm = ({ open, onClose }) => {
     setError('')
   }
 
-  if (!open) return null
+  const submitButton = (
+    <button
+      type="submit"
+      form="create-task-form"
+      disabled={loading || !formData.title.trim()}
+      style={{
+        padding: '0.5rem 1rem',
+        backgroundColor: formData.title.trim() ? '#28a745' : '#adb5bd',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.25rem',
+        cursor: formData.title.trim() ? 'pointer' : 'not-allowed',
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}
+      onMouseOver={(e) => {
+        if (formData.title.trim()) {
+          e.target.style.backgroundColor = '#218838'
+        }
+      }}
+      onMouseOut={(e) => {
+        if (formData.title.trim()) {
+          e.target.style.backgroundColor = '#28a745'
+        }
+      }}
+    >
+      <FaPlus />
+      {loading ? 'Legger til...' : 'Legg til oppgave'}
+    </button>
+  )
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '1rem'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '0.75rem',
-        padding: '2rem',
-        width: '100%',
-        maxWidth: '600px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
-      }}>
-        {/* Header */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.75rem', 
-          marginBottom: '2rem',
-          paddingBottom: '1rem',
-          borderBottom: '2px solid #f8f9fa'
-        }}>
-          <div style={{
-            width: '3rem',
-            height: '3rem',
-            backgroundColor: '#82bcf4',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white'
-          }}>
-            <FaPlus size={20} />
-          </div>
-          <div>
-            <h2 style={{ margin: 0, color: '#333', fontSize: '1.5rem' }}>
-              Opprett ny oppgave
-            </h2>
-            <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d', fontSize: '0.9rem' }}>
-              Lag en oppgave som familiemedlemmer kan fullføre
-            </p>
-          </div>
-        </div>
+    <Modal 
+      open={open} 
+      onClose={() => {
+        resetForm()
+        onClose()
+      }}
+      title="Opprett ny oppgave"
+      subtitle="Lag en oppgave som familiemedlemmer kan fullføre"
+      icon={<FaPlus size={20} />}
+      customButtons={submitButton}
+    >
 
         {error && (
           <div style={{
@@ -257,7 +248,7 @@ const CreateTaskForm = ({ open, onClose }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form id="create-task-form" onSubmit={handleSubmit}>
           {/* Title */}
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ 
@@ -610,73 +601,8 @@ const CreateTaskForm = ({ open, onClose }) => {
             </div>
           )}
 
-          {/* Action buttons */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '0.75rem',
-            justifyContent: 'flex-end',
-            paddingTop: '1.5rem',
-            borderTop: '2px solid #f8f9fa',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              type="button"
-              onClick={() => {
-                resetForm()
-                onClose()
-              }}
-              style={{
-                padding: '0.875rem 1.5rem',
-                backgroundColor: '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                cursor: 'pointer',
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                transition: 'background-color 0.2s ease'
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
-            >
-              Avbryt
-            </button>
-            
-            <button
-              type="submit"
-              disabled={loading || !formData.title.trim()}
-              style={{
-                padding: '0.875rem 1.5rem',
-                backgroundColor: formData.title.trim() ? '#28a745' : '#adb5bd',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.5rem',
-                cursor: formData.title.trim() ? 'pointer' : 'not-allowed',
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                transition: 'background-color 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                if (formData.title.trim()) {
-                  e.target.style.backgroundColor = '#218838'
-                }
-              }}
-              onMouseOut={(e) => {
-                if (formData.title.trim()) {
-                  e.target.style.backgroundColor = '#28a745'
-                }
-              }}
-            >
-              <FaPlus />
-              {loading ? 'Legger til...' : 'Legg til oppgave'}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   )
 }
 
