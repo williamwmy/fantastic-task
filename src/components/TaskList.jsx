@@ -83,13 +83,18 @@ const TaskList = ({ selectedDate }) => {
       // Check both verified_by field and verification_status field for test compatibility
       if (completion.verified_by || completion.verification_status === 'approved') {
         return { status: 'completed', color: '#28a745', icon: FaCheckCircle }
-      } else if (completion.verification_status === 'pending' || !completion.verified_by) {
-        return { status: 'pending_verification', color: '#ffc107', icon: FaHourglassHalf }
-      } else if (currentMember?.role && currentMember.role !== 'child') {
-        // Adults automatically have their completions approved
-        return { status: 'completed', color: '#28a745', icon: FaCheckCircle }
       } else {
-        return { status: 'pending_verification', color: '#ffc107', icon: FaHourglassHalf }
+        // Check who completed the task (not who is viewing it)
+        const completedByMember = completion.completed_by_member || 
+                                 (completion.completed_by && familyMembers.find(m => m.id === completion.completed_by))
+        
+        // Only children need verification - adults are automatically approved
+        if (completedByMember?.role === 'child') {
+          return { status: 'pending_verification', color: '#ffc107', icon: FaHourglassHalf }
+        } else {
+          // Adults (admin/member) automatically have their completions approved
+          return { status: 'completed', color: '#28a745', icon: FaCheckCircle }
+        }
       }
     }
     

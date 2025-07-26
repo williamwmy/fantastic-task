@@ -21,10 +21,11 @@ vi.mock('../../hooks/useTasks.jsx', () => ({
 
 // Mock the family hook
 const mockFamilyHook = {
-  currentMember: { id: 'member-1', nickname: 'Test User', avatar_color: '#82bcf4' },
+  currentMember: { id: 'member-1', nickname: 'Test User', avatar_color: '#82bcf4', role: 'admin' },
   familyMembers: [
-    { id: 'member-1', nickname: 'Test User', avatar_color: '#82bcf4' },
-    { id: 'member-2', nickname: 'Family Member', avatar_color: '#ff6b6b' }
+    { id: 'member-1', nickname: 'Test User', avatar_color: '#82bcf4', role: 'admin' },
+    { id: 'member-2', nickname: 'Family Member', avatar_color: '#ff6b6b', role: 'member' },
+    { id: 'member-3', nickname: 'Child User', avatar_color: '#4ecdc4', role: 'child' }
   ],
   hasPermission: vi.fn(() => true)
 }
@@ -189,7 +190,9 @@ describe('TaskList', () => {
           ...mockTasks[1].assignment,
           completion: {
             ...mockTasks[1].assignment.completion,
-            verification_status: 'pending'
+            verification_status: 'pending',
+            completed_by_member: { id: 'member-3', role: 'child' }, // Child completion needs verification
+            completed_by: 'member-3'
           }
         }
       }
@@ -200,6 +203,33 @@ describe('TaskList', () => {
     render(<TaskList selectedDate={selectedDate} />)
     
     expect(screen.getByText(/venter/i)).toBeInTheDocument()
+  })
+
+  it('should show admin/member completions as completed without verification', () => {
+    const tasksWithAdultCompletion = [
+      {
+        ...mockTasks[1],
+        assignment: {
+          ...mockTasks[1].assignment,
+          completion: {
+            ...mockTasks[1].assignment.completion,
+            verified_by: null, // Not verified yet
+            verification_status: 'pending', // But should still show as completed for adults
+            completed_by_member: { id: 'member-1', role: 'admin' }, // Admin completion doesn't need verification
+            completed_by: 'member-1'
+          }
+        }
+      }
+    ]
+    
+    mockTasksHook.getTasksForDate.mockReturnValue(tasksWithAdultCompletion)
+    
+    render(<TaskList selectedDate={selectedDate} />)
+    
+    // Should show as completed, not pending verification
+    const godkjentElements = screen.getAllByText(/godkjent/i)
+    expect(godkjentElements.length).toBeGreaterThan(0)
+    expect(screen.queryByText(/venter/i)).not.toBeInTheDocument()
   })
 
   it('should update when selectedDate changes', () => {
