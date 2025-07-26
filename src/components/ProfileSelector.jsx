@@ -3,7 +3,7 @@ import { useFamily } from '../hooks/useFamily.jsx'
 import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus } from 'react-icons/fa'
 import FamilyMemberCard from './FamilyMemberCard'
 
-const ProfileSelector = ({ onClose }) => {
+const ProfileSelector = () => {
   const { 
     familyMembers, 
     currentMember, 
@@ -32,7 +32,6 @@ const ProfileSelector = ({ onClose }) => {
 
   const handleMemberSelect = (member) => {
     setCurrentMember(member)
-    if (onClose) onClose()
   }
 
   const handleEditMember = (member) => {
@@ -230,28 +229,6 @@ const ProfileSelector = ({ onClose }) => {
         />
       )}
 
-      <div style={{ 
-        marginTop: '1.5rem', 
-        textAlign: 'center',
-        display: 'flex',
-        gap: '0.5rem',
-        justifyContent: 'center'
-      }}>
-        <button 
-          onClick={onClose}
-          style={{
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontWeight: 600
-          }}
-        >
-          Lukk
-        </button>
-      </div>
     </div>
   )
 }

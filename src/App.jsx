@@ -412,10 +412,14 @@ export default function App() {
       </PermissionGate>
 
       {/* Profile Modal */}
-      <Modal open={showProfileModal} onClose={() => setShowProfileModal(false)}>
-        <ProfileSelector
-          onClose={() => setShowProfileModal(false)}
-        />
+      <Modal 
+        open={showProfileModal} 
+        onClose={() => setShowProfileModal(false)}
+        title="Familiemedlemmer"
+        subtitle="Bytt mellom familiemedlemmer"
+        icon={<FaUser />}
+      >
+        <ProfileSelector />
       </Modal>
 
       {/* Stats Modal */}
