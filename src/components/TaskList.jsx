@@ -53,9 +53,12 @@ const TaskList = ({ selectedDate }) => {
   
   // Get completions for current member for selected date
   const myCompletions = getCompletionsForMember(currentMember?.id, selectedDate)
+  
+  // Get ALL completions for current member (not filtered by date) to show completion status
+  const allMyCompletions = getCompletionsForMember(currentMember?.id)
 
   const isTaskCompleted = (taskId) => {
-    return myCompletions.some(completion => completion.task_id === taskId)
+    return allMyCompletions.some(completion => completion.task_id === taskId)
   }
 
   const getTaskAssignment = (taskId) => {
@@ -63,7 +66,7 @@ const TaskList = ({ selectedDate }) => {
   }
 
   const getTaskCompletion = (taskId) => {
-    return myCompletions.find(completion => completion.task_id === taskId)
+    return allMyCompletions.find(completion => completion.task_id === taskId)
   }
 
   const isTaskOverdue = (assignment) => {
@@ -218,7 +221,7 @@ const TaskList = ({ selectedDate }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {todayTasks.map(task => {
             const assignment = getTaskAssignment(task.id) || task.assignment
-            const completion = getTaskCompletion(task.id) || (task.assignment?.completion && task.assignment.is_completed ? task.assignment.completion : null)
+            const completion = getTaskCompletion(task.id) || task.assignment?.completion
             const { status, color, icon: StatusIcon } = getTaskStatus(task)
             
             return (
