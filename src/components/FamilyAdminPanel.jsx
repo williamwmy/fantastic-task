@@ -115,72 +115,74 @@ const FamilyAdminPanel = () => {
           borderRadius: '0.5rem',
           marginTop: '1rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
-                Familienavn:
-              </label>
-              {editingFamilyName ? (
-                <input
-                  type="text"
-                  value={familyNameInput}
-                  onChange={(e) => setFamilyNameInput(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid #ddd',
-                    borderRadius: '0.25rem',
-                    fontSize: '1rem'
-                  }}
-                  autoFocus
-                />
-              ) : (
-                <span style={{ fontSize: '1.1rem' }}>{family?.name}</span>
-              )}
-            </div>
-            
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {editingFamilyName ? (
-                <>
-                  <button
-                    onClick={() => {
-                      setEditingFamilyName(false)
-                      setFamilyNameInput(family?.name || '')
-                    }}
-                    style={{
-                      ...buttonStyle,
-                      backgroundColor: '#6c757d',
-                      color: 'white'
-                    }}
-                  >
-                    <FaTimes />
-                  </button>
-                  <button
-                    onClick={handleSaveFamilyName}
-                    disabled={loading}
-                    style={{
-                      ...buttonStyle,
-                      backgroundColor: '#28a745',
-                      color: 'white'
-                    }}
-                  >
-                    <FaSave />
-                  </button>
-                </>
-              ) : (
+          <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
+            Familienavn:
+          </label>
+          
+          {editingFamilyName ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input
+                type="text"
+                value={familyNameInput}
+                onChange={(e) => setFamilyNameInput(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '0.25rem',
+                  fontSize: '1rem',
+                  boxSizing: 'border-box'
+                }}
+                autoFocus
+              />
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                 <button
-                  onClick={() => setEditingFamilyName(true)}
+                  onClick={() => {
+                    setEditingFamilyName(false)
+                    setFamilyNameInput(family?.name || '')
+                  }}
                   style={{
                     ...buttonStyle,
-                    backgroundColor: '#82bcf4',
-                    color: 'white'
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    fontSize: '0.9rem'
                   }}
                 >
-                  <FaEdit />
+                  <FaTimes />
+                  Avbryt
                 </button>
-              )}
+                <button
+                  onClick={handleSaveFamilyName}
+                  disabled={loading}
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  <FaSave />
+                  {loading ? 'Lagrer...' : 'Lagre'}
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 500 }}>{family?.name}</span>
+              <button
+                onClick={() => setEditingFamilyName(true)}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: '#82bcf4',
+                  color: 'white',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <FaEdit />
+                Rediger
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
