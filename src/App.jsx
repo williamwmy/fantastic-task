@@ -5,7 +5,6 @@ import { useTasks } from "./hooks/useTasks.jsx";
 import ProfileSelector from "./components/ProfileSelector";
 import TaskList from "./components/TaskList";
 import Modal from "./components/Modal";
-import AuthModal from "./components/AuthModal";
 import FamilyAdminPanel from "./components/FamilyAdminPanel";
 import TaskVerification from "./components/TaskVerification";
 import PointsHistory from "./components/PointsHistory";
@@ -13,6 +12,7 @@ import CreateTaskForm from "./components/CreateTaskForm";
 import StatsView from "./components/StatsView";
 import AllTasksEditor from "./AllTasksEditor";
 import LoginPage from "./components/LoginPage";
+import FamilySetupPage from "./components/FamilySetupPage";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
@@ -64,7 +64,7 @@ export default function App() {
         }}>
           Laster Fantastic Task...
         </div>
-        <style jsx>{`
+        <style>{`
           @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.1); opacity: 0.7; }
@@ -81,17 +81,7 @@ export default function App() {
 
   // If user is logged in but has no family, show family setup
   if (user && (!family || !currentMember)) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h2>Velkommen til Fantastic Task!</h2>
-        <p>Du må enten opprette en familie eller bli med i en eksisterende familie for å komme i gang.</p>
-        <AuthModal 
-          open={true} 
-          onClose={() => {}} 
-          showFamilySetup={true}
-        />
-      </div>
-    );
+    return <FamilySetupPage initialMode="create-family" />;
   }
 
   // Get pending verifications for notification badge
