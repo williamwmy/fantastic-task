@@ -523,6 +523,9 @@ export const TasksProvider = ({ children }) => {
 
       if (completionError) throw completionError
 
+      // Debug: Log the completion data returned from Supabase
+      console.log('Completion data from Supabase:', completion)
+
       // Handle points transaction
       const task = completion.tasks
       const member = completion.completed_by_member
@@ -539,9 +542,15 @@ export const TasksProvider = ({ children }) => {
         // If verification is needed, points will be awarded when verified
       }
 
-      // Reload data immediately to update UI
-      await loadTaskCompletions()
-      await loadTasks()
+      // Update local state immediately for better UX
+      setTaskCompletions(prev => [completion, ...prev])
+      
+      // Reload data immediately to update UI (async for consistency)
+      loadTaskCompletions()
+      loadTasks()
+
+      // Debug: Log completion data
+      console.log('Task completion created:', completion)
 
       return { data: completion, error: null }
     } catch (error) {
@@ -706,8 +715,23 @@ export const TasksProvider = ({ children }) => {
     if (date) {
       const dateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
       completions = completions.filter(c => 
-        c.completed_at.startsWith(dateStr)
+        c.completed_at && c.completed_at.startsWith(dateStr)
       )
+      
+      // Debug logging
+      console.log('getCompletionsForMember debug:', {
+        memberId,
+        date,
+        dateStr,
+        allCompletions: safeCompletions.length,
+        memberCompletions: safeCompletions.filter(c => c.completed_by === memberId).length,
+        filteredCompletions: completions.length,
+        completionDates: safeCompletions.filter(c => c.completed_by === memberId).map(c => ({
+          id: c.id,
+          completed_at: c.completed_at,
+          matches: c.completed_at && c.completed_at.startsWith(dateStr)
+        }))
+      })
     }
     
     return completions
