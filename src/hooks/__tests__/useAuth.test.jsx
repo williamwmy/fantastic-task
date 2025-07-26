@@ -18,10 +18,19 @@ describe('useAuth', () => {
 
   describe('Authentication Provider', () => {
     it('should initialize with loading state', () => {
+      // Mock both getSession and onAuthStateChange to prevent immediate state changes
+      supabase.auth.getSession.mockReturnValueOnce(
+        new Promise(() => {}) // Never resolves during test
+      )
+      supabase.auth.onAuthStateChange.mockReturnValueOnce({
+        data: { subscription: { unsubscribe: vi.fn() } }
+      })
+
       const { result } = renderHook(() => useAuth(), {
         wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>
       })
 
+      // Check initial loading state immediately
       expect(result.current.isLoading).toBe(true)
       expect(result.current.user).toBe(null)
     })
@@ -31,8 +40,13 @@ describe('useAuth', () => {
         user: { id: 'test-user', email: 'test@example.com' }
       }
 
-      supabase.auth.getSession.mockResolvedValue({
-        data: { session: mockSession }
+      // Mock both auth methods properly
+      supabase.auth.getSession.mockResolvedValueOnce({
+        data: { session: mockSession },
+        error: null
+      })
+      supabase.auth.onAuthStateChange.mockReturnValueOnce({
+        data: { subscription: { unsubscribe: vi.fn() } }
       })
 
       const { result } = renderHook(() => useAuth(), {

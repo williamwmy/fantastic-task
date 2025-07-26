@@ -671,7 +671,7 @@ const CreateTaskForm = ({ open, onClose }) => {
               }}
             >
               <FaPlus />
-              {loading ? 'Oppretter...' : 'Opprett oppgave'}
+              {loading ? 'Legger til...' : 'Legg til oppgave'}
             </button>
           </div>
         </form>

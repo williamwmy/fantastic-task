@@ -113,7 +113,8 @@ describe('LoginPage', () => {
       
       await user.click(screen.getByText('Opprett familie'))
       
-      expect(screen.getByRole('button', { name: 'Opprett familie' })).toBeInTheDocument()
+      const createFamilyButtons = screen.getAllByRole('button', { name: 'Opprett familie' })
+      expect(createFamilyButtons.length).toBeGreaterThan(0)
       expect(screen.getByPlaceholderText('F.eks. Familie Hansen')).toBeInTheDocument()
       expect(screen.getByPlaceholderText('F.eks. Mamma, Pappa, Ole')).toBeInTheDocument()
       expect(screen.queryByPlaceholderText('din@email.com')).not.toBeInTheDocument()
@@ -125,7 +126,8 @@ describe('LoginPage', () => {
       
       await user.click(screen.getByText('Bli med i familie'))
       
-      expect(screen.getByRole('button', { name: 'Bli med i familie' })).toBeInTheDocument()
+      const joinButtons = screen.getAllByRole('button', { name: 'Bli med i familie' })
+      expect(joinButtons.length).toBeGreaterThan(0)
       expect(screen.getByPlaceholderText('Skriv inn familiekoden')).toBeInTheDocument()
       expect(screen.queryByPlaceholderText('din@email.com')).not.toBeInTheDocument()
     })
@@ -141,7 +143,8 @@ describe('LoginPage', () => {
         
         await user.type(screen.getByPlaceholderText('din@email.com'), 'test@example.com')
         await user.type(screen.getByPlaceholderText('Ditt passord'), 'password123')
-        await user.click(screen.getByRole('button', { name: 'Logg inn' }))
+        const loginButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+        await user.click(loginButtons[loginButtons.length - 1])
         
         expect(mockAuthMethods.signIn).toHaveBeenCalledWith('test@example.com', 'password123')
       })
@@ -156,8 +159,9 @@ describe('LoginPage', () => {
         
         await user.type(screen.getByPlaceholderText('din@email.com'), 'test@example.com')
         await user.type(screen.getByPlaceholderText('Ditt passord'), 'wrongpassword')
-        await user.click(screen.getByRole('button', { name: 'Logg inn' }))
-        
+        const loginButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+        await user.click(loginButtons[loginButtons.length - 1])
+
         await waitFor(() => {
           expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
         })
@@ -265,17 +269,8 @@ describe('LoginPage', () => {
         await user.type(screen.getByPlaceholderText('F.eks. Familie Hansen'), 'Familie Test')
         await user.type(screen.getByPlaceholderText('F.eks. Mamma, Pappa, Ole'), 'Test Bruker')
         
-        // Use form selector to be more specific about which button to click
-        const form = screen.getByRole('form') || screen.getByTestId('create-family-form') || document.querySelector('form')
-        const submitButton = form ? form.querySelector('button[type="submit"]') : screen.getAllByRole('button', { name: 'Opprett familie' }).find(btn => btn.type === 'submit')
-        
-        if (submitButton) {
-          await user.click(submitButton)
-        } else {
-          // Fallback: click the last button with this name (should be submit button)
-          const buttons = screen.getAllByRole('button', { name: 'Opprett familie' })
-          await user.click(buttons[buttons.length - 1])
-        }
+        const buttons = screen.getAllByRole('button', { name: 'Opprett familie' })
+        await user.click(buttons[buttons.length - 1])
         
         expect(mockAuthMethods.createFamily).toHaveBeenCalledWith('Familie Test', 'Test Bruker')
         
@@ -321,15 +316,16 @@ describe('LoginPage', () => {
       
       await user.type(screen.getByPlaceholderText('din@email.com'), 'test@example.com')
       await user.type(screen.getByPlaceholderText('Ditt passord'), 'password123')
-      
-      const submitButton = screen.getByRole('button', { name: 'Logg inn' })
+      const loginButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+      const submitButton = loginButtons[loginButtons.length - 1]
       await user.click(submitButton)
       
       expect(screen.getByText('Behandler...')).toBeInTheDocument()
       expect(submitButton).toBeDisabled()
       
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Logg inn' })).toBeInTheDocument()
+        const refreshedButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+        expect(refreshedButtons.length).toBeGreaterThan(0)
       })
     })
   })
@@ -346,7 +342,8 @@ describe('LoginPage', () => {
       // Trigger an error
       await user.type(screen.getByPlaceholderText('din@email.com'), 'test@example.com')
       await user.type(screen.getByPlaceholderText('Ditt passord'), 'password123')
-      await user.click(screen.getByRole('button', { name: 'Logg inn' }))
+      const loginButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+      await user.click(loginButtons[loginButtons.length - 1])
       
       await waitFor(() => {
         expect(screen.getByText('Test error')).toBeInTheDocument()
@@ -369,7 +366,8 @@ describe('LoginPage', () => {
       // Trigger an error
       await user.type(screen.getByPlaceholderText('din@email.com'), 'test@example.com')
       await user.type(screen.getByPlaceholderText('Ditt passord'), 'password123')
-      await user.click(screen.getByRole('button', { name: 'Logg inn' }))
+      const loginButtons = screen.getAllByRole('button', { name: 'Logg inn' })
+      await user.click(loginButtons[loginButtons.length - 1])
       
       await waitFor(() => {
         expect(screen.getByText('Test error')).toBeInTheDocument()

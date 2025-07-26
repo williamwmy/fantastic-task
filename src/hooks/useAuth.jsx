@@ -12,39 +12,57 @@ export const useAuth = () => {
   return context
 }
 
-const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
-
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+export const AuthProvider = ({ children, initialUser }) => {
+  const [user, setUser] = useState(initialUser || null)
+  const [isLoading, setIsLoading] = useState(initialUser === undefined)
 
   useEffect(() => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
+    // Don't override initial user when provided for testing
+    if (initialUser && !LOCAL_TEST_USER) {
+      setIsLoading(false);
+      return;
+    }
+    
     if (LOCAL_TEST_USER) {
-      setUser(mockUser);
+      setUser({ ...mockUser, id: 'test-user-id' });
       setIsLoading(false);
       return;
     }
     // ...existing Supabase logic...
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      setIsLoading(false)
-    }
-    getInitialSession()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
         setUser(session?.user ?? null)
         setIsLoading(false)
+      } catch (error) {
+        console.error('Session error:', error)
+        setIsLoading(false)
       }
-    )
-    return () => subscription.unsubscribe()
+    }
+    getInitialSession()
+    
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          setUser(session?.user ?? null)
+          setIsLoading(false)
+        }
+      )
+      return () => subscription.unsubscribe()
+    } catch (error) {
+      console.error('Auth state change error:', error)
+      setIsLoading(false)
+    }
   }, [])
 
   // MOCKED FUNCTIONS
   const signUp = async (email, password, familyCode = null) => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
-      return { data: { user }, error: null };
+      return { data: { user: { ...mockUser, id: 'test-user-id' } }, error: null };
     }
     
     try {
@@ -73,8 +91,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signIn = async (email, password) => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
-      return { data: { user }, error: null };
+      return { data: { user: { ...mockUser, id: 'test-user-id' } }, error: null };
     }
     
     try {
@@ -92,6 +112,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
       setUser(null);
       return { error: null };
@@ -108,6 +130,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const resetPassword = async (email) => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
       return { data: null, error: null };
     }
@@ -126,6 +150,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const joinFamilyWithCode = async (code, userId = null) => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
       return { error: null };
     }
@@ -193,6 +219,8 @@ export const AuthProvider = ({ children }) => {
   }
 
   const createFamily = async (familyName, userNickname) => {
+    const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
+    
     if (LOCAL_TEST_USER) {
       return { data: { ...mockFamily, name: familyName }, error: null };
     }

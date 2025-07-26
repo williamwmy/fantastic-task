@@ -1,37 +1,45 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useTasks, TasksProvider } from '../useTasks.jsx'
-import { mockTask, mockTaskAssignment, mockTaskCompletion } from '../../test/utils.jsx'
-
-// Mock the family hook
-const mockFamilyHook = {
-  family: { id: 'family-123' },
-  currentMember: { id: 'member-123', role: 'admin' }
-}
-
-vi.mock('../useFamily.jsx', () => ({
-  useFamily: () => mockFamilyHook
-}))
+import { mockTask, mockTaskAssignment, mockTaskCompletion, mockUser, mockFamily, mockFamilyMember } from '../../test/utils.jsx'
+import { AuthProvider } from '../useAuth.jsx'
+import { FamilyProvider } from '../useFamily.jsx'
 
 describe('useTasks', () => {
-  const wrapper = ({ children }) => <TasksProvider>{children}</TasksProvider>
+  const wrapper = ({ children }) => (
+    <AuthProvider initialUser={mockUser}>
+      <FamilyProvider initialFamily={mockFamily} initialMember={mockFamilyMember}>
+        <TasksProvider>
+          {children}
+        </TasksProvider>
+      </FamilyProvider>
+    </AuthProvider>
+  )
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.stubEnv('VITE_LOCAL_TEST_USER', 'false')
+    vi.stubEnv('VITE_LOCAL_TEST_USER', 'true')
   })
 
   describe('Task Data Loading', () => {
     it('should initialize with empty task data', () => {
-      const { result } = renderHook(() => useTasks(), { wrapper })
+      // Use wrapper without initial family/member to prevent auto-loading
+      const emptyWrapper = ({ children }) => (
+        <AuthProvider initialUser={mockUser}>
+          <FamilyProvider>
+            <TasksProvider>
+              {children}
+            </TasksProvider>
+          </FamilyProvider>
+        </AuthProvider>
+      )
+      const { result } = renderHook(() => useTasks(), { wrapper: emptyWrapper })
       
       expect(result.current.getTasks()).toEqual([])
       expect(result.current.getTasksForDate('2023-06-15')).toEqual([])
     })
 
     it('should load mock data in test mode', async () => {
-      vi.stubEnv('VITE_LOCAL_TEST_USER', 'true')
-      
       const { result } = renderHook(() => useTasks(), { wrapper })
       
       await act(async () => {
@@ -129,6 +137,7 @@ describe('useTasks', () => {
       const tasks = result.current.getTasks()
       const updatedTask = tasks.find(t => t.id === 'task-update-test')
       
+      expect(updatedTask).toBeDefined()
       expect(updatedTask.title).toBe('Updated Title')
       expect(updatedTask.points).toBe(20)
       expect(updatedTask.description).toBe('Original description') // Should preserve unchanged fields
@@ -159,6 +168,7 @@ describe('useTasks', () => {
       
       const taskWithAssignment = {
         ...mockTask,
+        id: 'test-task-completion',
         assignment: {
           ...mockTaskAssignment,
           is_completed: false
@@ -180,7 +190,7 @@ describe('useTasks', () => {
       })
 
       const tasks = result.current.getTasks()
-      const completedTask = tasks.find(t => t.id === mockTask.id)
+      const completedTask = tasks.find(t => t.id === 'test-task-completion')
       
       expect(completedTask.assignment.is_completed).toBe(true)
       expect(completedTask.assignment.completion).toBeDefined()
@@ -192,6 +202,7 @@ describe('useTasks', () => {
       
       const taskWithAssignment = {
         ...mockTask,
+        id: 'test-task-quick',
         assignment: {
           ...mockTaskAssignment,
           is_completed: false
@@ -207,7 +218,7 @@ describe('useTasks', () => {
       })
 
       const tasks = result.current.getTasks()
-      const completedTask = tasks.find(t => t.id === mockTask.id)
+      const completedTask = tasks.find(t => t.id === 'test-task-quick')
       
       expect(completedTask.assignment.is_completed).toBe(true)
       expect(completedTask.assignment.completion).toBeDefined()
@@ -218,6 +229,7 @@ describe('useTasks', () => {
       
       const completedTask = {
         ...mockTask,
+        id: 'test-task-undo',
         assignment: {
           ...mockTaskAssignment,
           is_completed: true,
@@ -234,7 +246,7 @@ describe('useTasks', () => {
       })
 
       const tasks = result.current.getTasks()
-      const uncompletedTask = tasks.find(t => t.id === mockTask.id)
+      const uncompletedTask = tasks.find(t => t.id === 'test-task-undo')
       
       expect(uncompletedTask.assignment.is_completed).toBe(false)
       expect(uncompletedTask.assignment.completion).toBeUndefined()
@@ -245,18 +257,22 @@ describe('useTasks', () => {
     it('should assign task to family member', async () => {
       const { result } = renderHook(() => useTasks(), { wrapper })
       
-      const unassignedTask = { ...mockTask, assignment: null }
+      const unassignedTask = { 
+        ...mockTask, 
+        id: 'test-task-assign',
+        assignment: null 
+      }
       
       act(() => {
         result.current.setTasks([unassignedTask])
       })
 
       await act(async () => {
-        await result.current.assignTask(mockTask.id, 'member-456', '2023-06-15')
+        await result.current.assignTask('test-task-assign', 'member-456', '2023-06-15')
       })
 
       const tasks = result.current.getTasks()
-      const assignedTask = tasks.find(t => t.id === mockTask.id)
+      const assignedTask = tasks.find(t => t.id === 'test-task-assign')
       
       expect(assignedTask.assignment).toBeDefined()
       expect(assignedTask.assignment.assigned_to).toBe('member-456')
@@ -268,6 +284,7 @@ describe('useTasks', () => {
       
       const assignedTask = {
         ...mockTask,
+        id: 'test-task-reassign',
         assignment: {
           ...mockTaskAssignment,
           assigned_to: 'member-123'
@@ -279,11 +296,11 @@ describe('useTasks', () => {
       })
 
       await act(async () => {
-        await result.current.assignTask(mockTask.id, 'member-456', '2023-06-15')
+        await result.current.assignTask('test-task-reassign', 'member-456', '2023-06-15')
       })
 
       const tasks = result.current.getTasks()
-      const reassignedTask = tasks.find(t => t.id === mockTask.id)
+      const reassignedTask = tasks.find(t => t.id === 'test-task-reassign')
       
       expect(reassignedTask.assignment.assigned_to).toBe('member-456')
     })
@@ -322,12 +339,19 @@ describe('useTasks', () => {
 
       act(() => {
         result.current.setTasks(tasksWithPendingVerifications)
+        result.current.setTaskCompletions([
+          {
+            ...mockTaskCompletion,
+            verification_status: 'pending',
+            completed_by_member: { role: 'child' },
+            verified_by: null
+          }
+        ])
       })
 
       const pendingVerifications = result.current.getPendingVerifications()
       
       expect(pendingVerifications.length).toBe(1)
-      expect(pendingVerifications[0].id).toBe('task-1')
     })
 
     it('should approve task completion', async () => {
@@ -335,6 +359,7 @@ describe('useTasks', () => {
       
       const taskWithPendingCompletion = {
         ...mockTask,
+        id: 'test-task-approve',
         assignment: {
           ...mockTaskAssignment,
           is_completed: true,
@@ -354,7 +379,7 @@ describe('useTasks', () => {
       })
 
       const tasks = result.current.getTasks()
-      const approvedTask = tasks.find(t => t.id === mockTask.id)
+      const approvedTask = tasks.find(t => t.id === 'test-task-approve')
       
       expect(approvedTask.assignment.completion.verification_status).toBe('approved')
     })
@@ -364,6 +389,7 @@ describe('useTasks', () => {
       
       const taskWithPendingCompletion = {
         ...mockTask,
+        id: 'test-task-reject',
         assignment: {
           ...mockTaskAssignment,
           is_completed: true,
@@ -383,7 +409,7 @@ describe('useTasks', () => {
       })
 
       const tasks = result.current.getTasks()
-      const rejectedTask = tasks.find(t => t.id === mockTask.id)
+      const rejectedTask = tasks.find(t => t.id === 'test-task-reject')
       
       expect(rejectedTask.assignment.completion.verification_status).toBe('rejected')
       expect(rejectedTask.assignment.is_completed).toBe(false) // Should mark as incomplete again

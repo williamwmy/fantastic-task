@@ -39,9 +39,9 @@ const StatsView = ({ onClose }) => {
 
   // Statistics calculations
   const stats = useMemo(() => {
-    const filteredCompletions = taskCompletions.filter(c => 
+    const filteredCompletions = Array.isArray(taskCompletions) ? taskCompletions.filter(c => 
       getDateFilter(c.completed_at)
-    )
+    ) : []
     
     const memberStats = familyMembers.map(member => {
       const memberCompletions = filteredCompletions.filter(c => 
@@ -61,9 +61,10 @@ const StatsView = ({ onClose }) => {
       const avgTimePerTask = totalTasks > 0 ? totalTimeSpent / totalTasks : 0
       
       // Calculate streaks and achievements
-      const recentCompletions = taskCompletions
-        .filter(c => c.completed_by === member.id)
-        .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at))
+      const recentCompletions = Array.isArray(taskCompletions)
+        ? taskCompletions.filter(c => c.completed_by === member.id)
+            .sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at))
+        : []
       
       let currentStreak = 0
       let maxStreak = 0

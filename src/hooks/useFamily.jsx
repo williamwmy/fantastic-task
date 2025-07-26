@@ -15,16 +15,21 @@ export const useFamily = () => {
 
 const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
 
-export const FamilyProvider = ({ children }) => {
+export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
   const { user } = useAuth()
-  const [family, setFamily] = useState(null)
-  const [familyMembers, setFamilyMembers] = useState([])
-  const [currentMember, setCurrentMember] = useState(null)
+  const [family, setFamily] = useState(initialFamily || null)
+  const [familyMembers, setFamilyMembers] = useState(initialMember ? [initialMember] : [])
+  const [currentMember, setCurrentMember] = useState(initialMember || null)
   const [invitationCodes, setInvitationCodes] = useState([])
   const [loading, setLoading] = useState(false)
 
   // Load family data when user changes
   useEffect(() => {
+    // Don't override initial props in test mode
+    if (initialFamily && initialMember) {
+      return
+    }
+    
     if (user) {
       if (LOCAL_TEST_USER) {
         // Use centralized mock data
@@ -42,7 +47,7 @@ export const FamilyProvider = ({ children }) => {
       setCurrentMember(null)
       setInvitationCodes([])
     }
-  }, [user])
+  }, [user, initialFamily, initialMember])
 
   const loadFamilyData = async () => {
     try {
