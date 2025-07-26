@@ -58,9 +58,9 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
       task_id: task.id,
       assignment_id: assignment?.id || null,
       completed_by: currentMember.id,
-      time_spent_minutes: timeSpent ? parseInt(timeSpent) : null,
+      time_spent_minutes: timeSpent && timeSpent.trim() ? parseInt(timeSpent.trim()) : null,
       comment: comment.trim() || null,
-      points_awarded: task.points || 0
+      points_awarded: Number(task.points) || 0
       // Note: Images are included in UI but not yet stored in database
       // TODO: Implement image storage with Supabase Storage
     }

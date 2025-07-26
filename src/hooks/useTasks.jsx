@@ -540,12 +540,15 @@ export const TasksProvider = ({ children }) => {
 
   const awardPoints = async (memberId, points, type, description, taskCompletionId = null) => {
     try {
+      // Ensure points is a valid number
+      const validPoints = Number(points) || 0
+      
       // Create points transaction
       const { data: transaction, error: transactionError } = await supabase
         .from('points_transactions')
         .insert({
           family_member_id: memberId,
-          points,
+          points: validPoints,
           transaction_type: type,
           description,
           task_completion_id: taskCompletionId
@@ -564,7 +567,7 @@ export const TasksProvider = ({ children }) => {
 
       if (memberError) throw memberError
 
-      const newBalance = (currentMember.points_balance || 0) + points
+      const newBalance = (currentMember.points_balance || 0) + validPoints
       const { error: balanceError } = await supabase
         .from('family_members')
         .update({
