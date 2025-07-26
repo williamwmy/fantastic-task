@@ -515,8 +515,29 @@ const StatsView = ({ open = true, onClose }) => {
     </div>
   )
 
+  const csvButton = (
+    <button
+      onClick={exportToCSV}
+      style={{
+        padding: '0.5rem 1rem',
+        backgroundColor: '#28a745',
+        color: 'white',
+        border: 'none',
+        borderRadius: '0.25rem',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        fontSize: '0.9rem'
+      }}
+    >
+      <FaDownload />
+      Eksporter CSV
+    </button>
+  )
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} customButtons={csvButton}>
       <div style={{
         width: '100%',
         maxWidth: '1000px'
@@ -537,27 +558,6 @@ const StatsView = ({ open = true, onClose }) => {
               <FaChartBar />
               Familiestatistikk
             </h2>
-            
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={exportToCSV}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.9rem'
-                }}
-              >
-                <FaDownload />
-                Eksporter CSV
-              </button>
-            </div>
           </div>
           
           {/* Timeframe selector */}
