@@ -399,15 +399,36 @@ export const TasksProvider = ({ children }) => {
 
   const completeTask = async (assignmentIdOrData, completionData) => {
     try {
+      // Validate input
+      if (!assignmentIdOrData) {
+        throw new Error('Assignment ID or completion data is required');
+      }
+      
       // Handle both signatures: completeTask(completionData) and completeTask(assignmentId, completionData)
       let finalCompletionData;
       if (typeof assignmentIdOrData === 'string') {
         // Called as completeTask(assignmentId) or completeTask(assignmentId, completionData)
         const assignmentId = assignmentIdOrData;
-        const task = tasks.find(t => t.assignment?.id === assignmentId);
-        if (!task) {
-          throw new Error('Task with assignment not found');
+        
+        if (!assignmentId) {
+          throw new Error('Assignment ID is required');
         }
+        
+        // First try to find task with attached assignment (for mock/test data)
+        let task = tasks.find(t => t.assignment?.id === assignmentId);
+        
+        // If not found, look for the task using the assignments data
+        if (!task && Array.isArray(taskAssignments)) {
+          const assignment = taskAssignments.find(a => a.id === assignmentId);
+          if (assignment) {
+            task = tasks.find(t => t.id === assignment.task_id);
+          }
+        }
+        
+        if (!task) {
+          throw new Error(`Task with assignment ID ${assignmentId} not found`);
+        }
+        
         finalCompletionData = {
           assignment_id: assignmentId,
           task_id: task.id,
@@ -417,6 +438,19 @@ export const TasksProvider = ({ children }) => {
       } else {
         // Called as completeTask(completionData)
         finalCompletionData = assignmentIdOrData;
+      }
+
+      // Validate required fields in finalCompletionData first
+      if (!finalCompletionData || typeof finalCompletionData !== 'object') {
+        throw new Error('Invalid completion data provided')
+      }
+      
+      if (!finalCompletionData.task_id) {
+        throw new Error('task_id is required in completion data')
+      }
+      
+      if (!finalCompletionData.completed_by) {
+        throw new Error('completed_by is required in completion data')
       }
 
       // Validate and clean the completion data before sending to Supabase
@@ -435,11 +469,6 @@ export const TasksProvider = ({ children }) => {
                        !isNaN(Number(finalCompletionData.points_awarded))
                        ? Number(finalCompletionData.points_awarded)
                        : 0
-      }
-
-      // Validate required fields
-      if (!cleanedData.task_id || !cleanedData.completed_by) {
-        throw new Error('Required fields missing: task_id and completed_by are required')
       }
 
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {

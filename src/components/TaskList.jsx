@@ -130,11 +130,11 @@ const TaskList = ({ selectedDate }) => {
     setQuickCompletingTask(task.id)
     
     try {
-      if (quickCompleteTask) {
-        // Use quickCompleteTask with assignment ID for tests
-        await quickCompleteTask(assignment?.id)
+      if (quickCompleteTask && assignment?.id) {
+        // Use quickCompleteTask with assignment ID for tests (only if assignment exists)
+        await quickCompleteTask(assignment.id)
       } else {
-        // Fallback to regular completeTask
+        // Fallback to regular completeTask with completion data
         const completionData = {
           task_id: task.id,
           assignment_id: assignment?.id || null,
