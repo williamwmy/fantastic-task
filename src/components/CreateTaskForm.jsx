@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
 import Modal from './Modal.jsx'
@@ -16,6 +16,7 @@ import {
 const CreateTaskForm = ({ open, onClose }) => {
   const { createTask } = useTasks()
   const { familyMembers, currentMember } = useFamily()
+  const timeoutRef = useRef(null)
   
   const [formData, setFormData] = useState({
     title: '',
@@ -31,6 +32,15 @@ const CreateTaskForm = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const daysOfWeek = [
     { value: 0, label: 'Søndag', short: 'Søn' },
@@ -136,7 +146,7 @@ const CreateTaskForm = ({ open, onClose }) => {
       setSuccess('Oppgave opprettet!')
       
       // Close modal after showing success briefly
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         // Reset form
         setFormData({
           title: '',

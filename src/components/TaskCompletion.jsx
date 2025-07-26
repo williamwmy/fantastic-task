@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
 import { FaCheck, FaClock, FaCoins, FaComment, FaCamera, FaTimes } from 'react-icons/fa'
@@ -7,11 +7,21 @@ import Modal from './Modal'
 const TaskCompletion = ({ task, assignment, open, onClose }) => {
   const { completeTask } = useTasks()
   const { currentMember } = useFamily()
+  const timeoutRef = useRef(null)
   const [timeSpent, setTimeSpent] = useState('')
   const [comment, setComment] = useState('')
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
@@ -73,7 +83,7 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
       setSuccess('Oppgave fullført!')
       
       // Close modal after showing success briefly
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         // Clean up image previews
         images.forEach(image => URL.revokeObjectURL(image.preview))
         
