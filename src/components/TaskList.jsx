@@ -58,7 +58,8 @@ const TaskList = ({ selectedDate }) => {
   const allMyCompletions = getCompletionsForMember(currentMember?.id)
 
   const isTaskCompleted = (taskId) => {
-    return allMyCompletions.some(completion => completion.task_id === taskId)
+    // Check if task is completed on the currently selected date
+    return getTaskCompletion(taskId) !== undefined
   }
 
   const getTaskAssignment = (taskId) => {
@@ -66,7 +67,23 @@ const TaskList = ({ selectedDate }) => {
   }
 
   const getTaskCompletion = (taskId) => {
-    return allMyCompletions.find(completion => completion.task_id === taskId)
+    // First check if there's a completion for this specific date
+    const dateCompletion = myCompletions.find(completion => completion.task_id === taskId)
+    if (dateCompletion) {
+      return dateCompletion
+    }
+    
+    // For recurring tasks, we only want to show completion on the day it was completed
+    // So we need to check if there's a completion for this task on the selected date
+    const selectedDateStr = typeof selectedDate === 'string' ? selectedDate : selectedDate.toISOString().split('T')[0]
+    
+    return allMyCompletions.find(completion => {
+      if (completion.task_id !== taskId) return false
+      
+      // Check if completion was on the selected date
+      const completionDateStr = completion.completed_at ? completion.completed_at.split('T')[0] : null
+      return completionDateStr === selectedDateStr
+    })
   }
 
   const isTaskOverdue = (assignment) => {
