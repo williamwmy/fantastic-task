@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the current branch
+current_branch=$(git branch --show-current)
+
+# Only auto-bump version on main branch
+if [ "$current_branch" = "main" ]; then
+  echo "🚀 Auto-bumping version before push to main branch..."
+  
+  # Check if there are any commits since last tag
+  if git describe --tags --exact-match HEAD >/dev/null 2>&1; then
+    echo "ℹ️  Current commit already has a tag, skipping version bump."
+  else
+    # Check the nature of changes to determine bump type
+    # Look at commit messages since last tag to determine version bump type
+    last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+    
+    # Get commit messages since last tag
+    commit_messages=$(git log ${last_tag}..HEAD --pretty=format:"%s" 2>/dev/null)
+    
+    # Determine version bump type based on conventional commits
+    if echo "$commit_messages" | grep -E "^(BREAKING CHANGE|[^:]+!:)" >/dev/null; then
+      bump_type="major"
+      echo "📈 Detected breaking changes, bumping major version"
+    elif echo "$commit_messages" | grep -E "^feat(\([^)]*\))?:" >/dev/null; then
+      bump_type="minor"
+      echo "✨ Detected new features, bumping minor version"
+    else
+      bump_type="patch"
+      echo "🔧 Detected fixes/improvements, bumping patch version"
+    fi
+    
+    # Bump version using npm
+    echo "Bumping $bump_type version..."
+    npm version $bump_type --no-git-tag-version
+    
+    # Add the updated package.json to git
+    git add package.json
+    
+    # Amend the last commit to include version bump
+    git commit --amend --no-edit
+    
+    # Get the new version
+    new_version=$(node -p "require('./package.json').version")
+    echo "✅ Version bumped to $new_version"
+    
+    # Create and push tag
+    git tag "v$new_version"
+    echo "🏷️  Created tag v$new_version"
+  fi
+else
+  echo "ℹ️  Not on main branch ($current_branch), skipping auto version bump."
+fi
+
+echo "🚀 Proceeding with push..."

@@ -9,6 +9,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` - Run ESLint on the codebase
 - `npm run preview` - Preview the production build locally
 
+## Version Management
+
+The project uses automatic semantic versioning with Husky hooks:
+
+- **Automatic**: Version is auto-bumped on push to main branch based on commit messages
+  - `feat:` commits → minor version bump
+  - `fix:`, `chore:`, etc. → patch version bump  
+  - `BREAKING CHANGE` or `!` in commit → major version bump
+- **Manual**: Use these commands for manual version control:
+  - `npm run version:patch` - Bump patch version (1.0.0 → 1.0.1)
+  - `npm run version:minor` - Bump minor version (1.0.0 → 1.1.0)
+  - `npm run version:major` - Bump major version (1.0.0 → 2.0.0)
+  - `npm run version:show` - Show current version
+
+**Commit Convention**: Use conventional commits for automatic version detection:
+- `feat: add new feature` - triggers minor bump
+- `fix: resolve bug` - triggers patch bump
+- `feat!: breaking change` - triggers major bump
+
 ## Architecture Overview
 
 This is a React task management PWA ("Fantastic Task") built with Vite. The app features:
