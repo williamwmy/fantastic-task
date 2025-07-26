@@ -419,17 +419,40 @@ export const TasksProvider = ({ children }) => {
         finalCompletionData = assignmentIdOrData;
       }
 
+      // Validate and clean the completion data before sending to Supabase
+      const cleanedData = {
+        task_id: finalCompletionData.task_id,
+        assignment_id: finalCompletionData.assignment_id || null,
+        completed_by: finalCompletionData.completed_by,
+        time_spent_minutes: finalCompletionData.time_spent_minutes && 
+                           !isNaN(Number(finalCompletionData.time_spent_minutes)) 
+                           ? Number(finalCompletionData.time_spent_minutes) 
+                           : null,
+        comment: finalCompletionData.comment && typeof finalCompletionData.comment === 'string' 
+                ? finalCompletionData.comment.trim() || null 
+                : null,
+        points_awarded: finalCompletionData.points_awarded && 
+                       !isNaN(Number(finalCompletionData.points_awarded))
+                       ? Number(finalCompletionData.points_awarded)
+                       : 0
+      }
+
+      // Validate required fields
+      if (!cleanedData.task_id || !cleanedData.completed_by) {
+        throw new Error('Required fields missing: task_id and completed_by are required')
+      }
+
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
         // Generate mock completion using helper function
         const mockCompletion = generateMockTaskCompletion(
-          finalCompletionData.task_id, 
-          finalCompletionData.completed_by, 
-          finalCompletionData
+          cleanedData.task_id, 
+          cleanedData.completed_by, 
+          cleanedData
         );
         setTaskCompletions(prev => [mockCompletion, ...prev]);
         // Update the relevant task's assignment with completion
         setTasks(prev => prev.map(task =>
-          (task.id === finalCompletionData.task_id || task.assignment?.id === finalCompletionData.assignment_id) && task.assignment
+          (task.id === cleanedData.task_id || task.assignment?.id === cleanedData.assignment_id) && task.assignment
             ? {
                 ...task,
                 assignment: {
@@ -441,11 +464,11 @@ export const TasksProvider = ({ children }) => {
             : task
         ));
         // Mock points transaction
-        const task = tasks.find(t => t.id === finalCompletionData.task_id || t.assignment?.id === finalCompletionData.assignment_id);
-        const pointsAwarded = finalCompletionData.points_awarded || task?.points || 0;
+        const task = tasks.find(t => t.id === cleanedData.task_id || t.assignment?.id === cleanedData.assignment_id);
+        const pointsAwarded = cleanedData.points_awarded || task?.points || 0;
         if (pointsAwarded > 0) {
           const mockTransaction = generateMockPointsTransaction(
-            finalCompletionData.completed_by,
+            cleanedData.completed_by,
             pointsAwarded,
             'earned',
             'Task completion',
@@ -456,9 +479,12 @@ export const TasksProvider = ({ children }) => {
         return { data: mockCompletion, error: null };
       }
 
+      // Debug: Log the data being sent to Supabase
+      console.log('Sending completion data to Supabase:', cleanedData)
+
       const { data: completion, error: completionError } = await supabase
         .from('task_completions')
-        .insert(finalCompletionData)
+        .insert(cleanedData)
         .select(`
           *,
           tasks(*),
@@ -471,7 +497,7 @@ export const TasksProvider = ({ children }) => {
       // Handle points transaction
       const task = completion.tasks
       const member = completion.completed_by_member
-      const pointsAwarded = finalCompletionData.points_awarded || task.points || 0
+      const pointsAwarded = cleanedData.points_awarded || task.points || 0
 
       if (pointsAwarded > 0) {
         // For child members, points are pending until verified
@@ -716,7 +742,7 @@ export const TasksProvider = ({ children }) => {
     }
   }
 
-  const rejectCompletion = async (completionId, reason) => {
+  const rejectCompletion = async (completionId, _reason) => {
     try {
       // For tests/mock mode, update tasks in memory
       setTasks(prev => prev.map(task => {
