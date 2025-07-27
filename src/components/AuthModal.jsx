@@ -153,14 +153,23 @@ const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
       <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Logg inn</h2>
       
       <input
-        type="email"
+        type="text"
         name="email"
-        placeholder="E-post"
+        placeholder="E-post eller brukernavn"
         value={formData.email}
         onChange={handleInputChange}
         required
         style={inputStyle}
       />
+      
+      <div style={{ 
+        fontSize: '0.8rem', 
+        color: '#666', 
+        marginBottom: '1rem',
+        marginTop: '-0.5rem'
+      }}>
+        Skriv inn e-post adresse eller brukernavn (uten @)
+      </div>
       
       <input
         type="password"

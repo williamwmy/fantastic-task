@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus } from 'react-icons/fa'
+import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus, FaKey } from 'react-icons/fa'
 import FamilyMemberCard from './FamilyMemberCard'
+import CreateLocalUserModal from './CreateLocalUserModal'
+import ChangePasswordModal from './ChangePasswordModal'
 
 const ProfileSelector = () => {
   const { 
@@ -13,6 +15,8 @@ const ProfileSelector = () => {
   } = useFamily()
   
   const [editingMember, setEditingMember] = useState(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [changingPasswordFor, setChangingPasswordFor] = useState(null)
 
   const getRoleIcon = (role) => {
     switch (role) {
@@ -51,10 +55,41 @@ const ProfileSelector = () => {
 
   return (
     <div>
-      <h3 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <FaUser />
-        Familiemedlemmer ({familyMembers.length})
-      </h3>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1rem'
+      }}>
+        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FaUser />
+          Familiemedlemmer ({familyMembers.length})
+        </h3>
+        
+        {canManageMembers && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '2rem',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              transition: 'all 0.2s ease'
+            }}
+            title="Opprett ny profil"
+          >
+            <FaUserPlus />
+            Ny profil
+          </button>
+        )}
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {familyMembers.map(member => (
@@ -124,6 +159,18 @@ const ProfileSelector = () => {
                 <span style={{ fontSize: '0.9rem' }}>
                   {getRoleText(member.role)}
                 </span>
+                {member.is_local_user && (
+                  <span style={{
+                    fontSize: '0.75rem',
+                    backgroundColor: '#e3f2fd',
+                    color: '#1565c0',
+                    padding: '0.15rem 0.4rem',
+                    borderRadius: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    LOKAL
+                  </span>
+                )}
                 <span style={{ fontSize: '0.9rem' }}>
                   • {member.points_balance} poeng
                 </span>
@@ -152,6 +199,28 @@ const ProfileSelector = () => {
                 >
                   <FaEdit />
                 </button>
+                
+                {member.is_local_user && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setChangingPasswordFor(member)
+                    }}
+                    style={{
+                      padding: '0.5rem',
+                      backgroundColor: '#ffc107',
+                      color: '#212529',
+                      border: 'none',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Endre passord"
+                  >
+                    <FaKey />
+                  </button>
+                )}
                 
                 <button
                   onClick={(e) => {
@@ -226,6 +295,29 @@ const ProfileSelector = () => {
         <FamilyMemberCard
           member={editingMember}
           onClose={() => setEditingMember(null)}
+        />
+      )}
+
+      {/* Create local user modal */}
+      {showCreateModal && (
+        <CreateLocalUserModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={(newUser) => {
+            // Could show a success message here
+            console.log('New user created:', newUser)
+          }}
+        />
+      )}
+
+      {/* Change password modal */}
+      {changingPasswordFor && (
+        <ChangePasswordModal
+          member={changingPasswordFor}
+          onClose={() => setChangingPasswordFor(null)}
+          onSuccess={() => {
+            // Could show a success message here
+            console.log('Password changed for:', changingPasswordFor.nickname)
+          }}
         />
       )}
 

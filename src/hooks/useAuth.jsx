@@ -90,7 +90,7 @@ export const AuthProvider = ({ children, initialUser }) => {
     }
   }
 
-  const signIn = async (email, password) => {
+  const signIn = async (email, password, familyCode = null) => {
     const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
     
     if (LOCAL_TEST_USER) {
@@ -98,6 +98,12 @@ export const AuthProvider = ({ children, initialUser }) => {
     }
     
     try {
+      // First try local user authentication (username-based)
+      if (!email.includes('@')) {
+        return await signInLocalUser(email, password, familyCode)
+      }
+
+      // Regular Supabase email authentication
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -107,6 +113,63 @@ export const AuthProvider = ({ children, initialUser }) => {
       return { data, error: null }
     } catch (error) {
       console.error('Sign in error:', error)
+      return { data: null, error }
+    }
+  }
+
+  const signInLocalUser = async (username, password, familyCode = null) => {
+    try {
+      let query = supabase
+        .from('family_members')
+        .select(`
+          *,
+          families!inner(*)
+        `)
+        .eq('username', username)
+        .eq('is_local_user', true)
+
+      // If family code provided, also filter by family
+      if (familyCode) {
+        query = query.eq('families.invitation_code', familyCode)
+      }
+
+      const { data: members, error: fetchError } = await query
+
+      if (fetchError) throw fetchError
+      if (!members || members.length === 0) {
+        throw new Error('Brukernavn ikke funnet')
+      }
+
+      const member = members[0]
+
+      // Verify password using database function
+      const { data: passwordValid, error: verifyError } = await supabase
+        .rpc('verify_password', {
+          password: password,
+          hash: member.password_hash
+        })
+
+      if (verifyError) throw verifyError
+      if (!passwordValid) {
+        throw new Error('Feil passord')
+      }
+
+      // Create a mock user object for local users
+      const localUser = {
+        id: `local_${member.id}`,
+        email: null,
+        user_metadata: {
+          is_local_user: true,
+          family_member_id: member.id,
+          nickname: member.nickname,
+          family_id: member.family_id
+        }
+      }
+
+      setUser(localUser)
+      return { data: { user: localUser }, error: null }
+    } catch (error) {
+      console.error('Local user sign in error:', error)
       return { data: null, error }
     }
   }
@@ -259,6 +322,73 @@ export const AuthProvider = ({ children, initialUser }) => {
     }
   }
 
+  const createLocalUser = async (familyId, username, password, nickname, role = 'member', createdByAdminId) => {
+    try {
+      // Hash password using database function
+      const { data: hashedPassword, error: hashError } = await supabase
+        .rpc('hash_password', { password })
+
+      if (hashError) throw hashError
+
+      // Create local user family member
+      const { data: member, error: memberError } = await supabase
+        .from('family_members')
+        .insert({
+          family_id: familyId,
+          username: username,
+          password_hash: hashedPassword,
+          nickname: nickname,
+          role: role,
+          is_local_user: true,
+          created_by_admin: createdByAdminId
+        })
+        .select()
+        .single()
+
+      if (memberError) throw memberError
+      return { data: member, error: null }
+    } catch (error) {
+      console.error('Create local user error:', error)
+      return { data: null, error }
+    }
+  }
+
+  const changeLocalUserPassword = async (memberId, newPassword, adminId) => {
+    try {
+      // Verify admin has permission
+      const { data: admin, error: adminError } = await supabase
+        .from('family_members')
+        .select('role, family_id')
+        .eq('id', adminId)
+        .single()
+
+      if (adminError) throw adminError
+      if (admin.role !== 'admin') {
+        throw new Error('Kun administratorer kan endre passord')
+      }
+
+      // Hash new password
+      const { data: hashedPassword, error: hashError } = await supabase
+        .rpc('hash_password', { password: newPassword })
+
+      if (hashError) throw hashError
+
+      // Update password
+      const { error: updateError } = await supabase
+        .from('family_members')
+        .update({ password_hash: hashedPassword })
+        .eq('id', memberId)
+        .eq('family_id', admin.family_id)
+        .eq('is_local_user', true)
+
+      if (updateError) throw updateError
+      return { error: null }
+    } catch (error) {
+      console.error('Change local user password error:', error)
+      return { error }
+    }
+  }
+
   const value = {
     user,
     isLoading,
@@ -267,7 +397,9 @@ export const AuthProvider = ({ children, initialUser }) => {
     signOut,
     resetPassword,
     joinFamilyWithCode,
-    createFamily
+    createFamily,
+    createLocalUser,
+    changeLocalUserPassword
   }
 
   return (

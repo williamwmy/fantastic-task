@@ -54,11 +54,27 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
       setLoading(true)
 
       // Get the user's family membership
-      const { data: memberData, error: memberError } = await supabase
-        .from('family_members')
-        .select('*, families(*)')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      let memberData, memberError
+      
+      if (user.user_metadata?.is_local_user) {
+        // For local users, get member data using family_member_id from user metadata
+        const result = await supabase
+          .from('family_members')
+          .select('*, families(*)')
+          .eq('id', user.user_metadata.family_member_id)
+          .maybeSingle()
+        memberData = result.data
+        memberError = result.error
+      } else {
+        // For regular Supabase users, use user_id
+        const result = await supabase
+          .from('family_members')
+          .select('*, families(*)')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        memberData = result.data
+        memberError = result.error
+      }
 
       if (memberError) {
         console.error('Error loading family member:', memberError)
