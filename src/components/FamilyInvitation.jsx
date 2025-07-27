@@ -85,9 +85,7 @@ const FamilyInvitation = () => {
         <h4 style={{ margin: '0 0 1rem 0' }}>Din families kode</h4>
         
         <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
+          textAlign: 'center',
           marginBottom: '1rem'
         }}>
           <div style={{ 
@@ -95,23 +93,27 @@ const FamilyInvitation = () => {
             fontWeight: 'bold', 
             fontFamily: 'monospace',
             color: '#28a745',
-            letterSpacing: '0.2rem'
+            letterSpacing: '0.2rem',
+            marginBottom: '1rem'
           }}>
             {family.family_code}
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
             <button
               onClick={handleCopyCode}
               style={{
                 ...buttonStyle,
                 backgroundColor: copiedCode ? '#28a745' : '#6c757d',
-                padding: '0.75rem'
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem'
               }}
               title="Kopier kode"
             >
               {copiedCode ? <FaCheck /> : <FaCopy />}
-              {copiedCode ? 'Kopiert!' : 'Kopier'}
+              <span style={{ marginLeft: '0.5rem' }}>
+                {copiedCode ? 'Kopiert!' : 'Kopier'}
+              </span>
             </button>
             
             <button
@@ -120,24 +122,17 @@ const FamilyInvitation = () => {
               style={{
                 ...buttonStyle,
                 backgroundColor: '#dc3545',
-                padding: '0.75rem'
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem'
               }}
               title="Generer ny kode"
             >
               <FaSync />
-              {loading ? 'Oppdaterer...' : 'Ny kode'}
+              <span style={{ marginLeft: '0.5rem' }}>
+                {loading ? 'Oppdaterer...' : 'Ny kode'}
+              </span>
             </button>
           </div>
-        </div>
-        
-        <div style={{ 
-          fontSize: '0.9rem', 
-          color: '#666',
-          backgroundColor: '#e9ecef',
-          padding: '0.5rem',
-          borderRadius: '0.25rem'
-        }}>
-          <strong>Permanent kode</strong> - Ingen utløpsdato eller begrensninger på antall bruk
         </div>
       </div>
       
