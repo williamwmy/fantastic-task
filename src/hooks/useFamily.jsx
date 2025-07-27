@@ -434,33 +434,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         return { error: null }
       }
 
-      // Delete all task completions for this family
-      const { error: completionsError } = await supabase
-        .from('task_completions')
-        .delete()
-        .eq('task_id', 'IN', `(SELECT id FROM tasks WHERE family_id = '${family.id}')`)
-
-      if (completionsError) {
-        // Alternative approach using a subquery
-        const { data: familyTasks, error: tasksError } = await supabase
-          .from('tasks')
-          .select('id')
-          .eq('family_id', family.id)
-
-        if (tasksError) throw tasksError
-
-        if (familyTasks && familyTasks.length > 0) {
-          const taskIds = familyTasks.map(task => task.id)
-          const { error: deleteCompletionsError } = await supabase
-            .from('task_completions')
-            .delete()
-            .in('task_id', taskIds)
-
-          if (deleteCompletionsError) throw deleteCompletionsError
-        }
-      }
-
-      // Delete all points transactions for family members
+      // Step 1: Delete all points transactions for family members FIRST (no foreign key dependencies)
       const { data: familyMemberIds, error: membersError } = await supabase
         .from('family_members')
         .select('id')
@@ -476,6 +450,24 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
           .in('family_member_id', memberIds)
 
         if (transactionsError) throw transactionsError
+      }
+
+      // Step 2: Delete all task completions for this family (after points transactions are deleted)
+      const { data: familyTasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('family_id', family.id)
+
+      if (tasksError) throw tasksError
+
+      if (familyTasks && familyTasks.length > 0) {
+        const taskIds = familyTasks.map(task => task.id)
+        const { error: deleteCompletionsError } = await supabase
+          .from('task_completions')
+          .delete()
+          .in('task_id', taskIds)
+
+        if (deleteCompletionsError) throw deleteCompletionsError
       }
 
       // Reset all family members' points balance to 0
