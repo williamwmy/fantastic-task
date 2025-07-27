@@ -74,6 +74,16 @@ vi.mock('../../hooks/useTasks.jsx', () => ({
     loadTaskData: vi.fn(),
     getTasksForMember: vi.fn(() => []),
     getCompletionsForMember: vi.fn(() => []),
+    getTasksForDate: vi.fn(() => []),
+    getTaskAssignmentsForDate: vi.fn(() => []),
+    getPointsTransactionsForMember: vi.fn(() => []),
+    completeTask: vi.fn(),
+    addTaskCompletion: vi.fn(),
+    verifyCompletion: vi.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
+    assignTask: vi.fn(),
     tasks: [],
     taskAssignments: [],
     completions: []
@@ -106,7 +116,7 @@ describe('Avatar to ProfileSelector Integration', () => {
     })
 
     // Step 4: Verify all family members are displayed
-    expect(screen.getByText('Test Admin')).toBeInTheDocument()
+    expect(screen.getAllByText('Test Admin')[0]).toBeInTheDocument()
     expect(screen.getByText('Test Member')).toBeInTheDocument()
     expect(screen.getByText('Test Child')).toBeInTheDocument()
 
