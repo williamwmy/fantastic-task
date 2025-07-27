@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus, FaKey } from 'react-icons/fa'
+import { useAuth } from '../hooks/useAuth.jsx'
+import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus, FaKey, FaSignOutAlt } from 'react-icons/fa'
 import FamilyMemberCard from './FamilyMemberCard'
 import CreateLocalUserModal from './CreateLocalUserModal'
 import ChangePasswordModal from './ChangePasswordModal'
@@ -13,6 +14,8 @@ const ProfileSelector = () => {
     hasPermission,
     removeFamilyMember 
   } = useFamily()
+  
+  const { signOut } = useAuth()
   
   const [editingMember, setEditingMember] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -48,6 +51,12 @@ const ProfileSelector = () => {
       if (error) {
         alert('Feil ved fjerning av medlem: ' + error.message)
       }
+    }
+  }
+
+  const handleSignOut = async () => {
+    if (confirm('Er du sikker på at du vil logge ut?')) {
+      await signOut()
     }
   }
 
@@ -288,6 +297,35 @@ const ProfileSelector = () => {
           <span style={{ fontWeight: 600 }}>{currentMember.nickname}</span>
           <span style={{ color: '#666' }}>({getRoleText(currentMember.role)})</span>
         </div>
+      </div>
+
+      {/* Logout button */}
+      <div style={{
+        marginTop: '1.5rem',
+        display: 'flex',
+        justifyContent: 'center'
+      }}>
+        <button
+          onClick={handleSignOut}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '2rem',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '1rem',
+            transition: 'all 0.2s ease'
+          }}
+          title="Logg ut av applikasjonen"
+        >
+          <FaSignOutAlt />
+          Logg ut
+        </button>
       </div>
 
       {/* Edit member modal */}
