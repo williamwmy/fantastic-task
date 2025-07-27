@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { supabase } from '../lib/supabase'
-import { mockUser, mockFamily } from '../lib/mockData'
+import { mockUser, mockFamily, generateMockFamilyCode } from '../lib/mockData'
 
 const AuthContext = createContext({})
 
@@ -130,7 +130,7 @@ export const AuthProvider = ({ children, initialUser }) => {
 
       // If family code provided, also filter by family
       if (familyCode) {
-        query = query.eq('families.invitation_code', familyCode)
+        query = query.eq('families.family_code', familyCode.toUpperCase())
       }
 
       const { data: members, error: fetchError } = await query
@@ -223,23 +223,15 @@ export const AuthProvider = ({ children, initialUser }) => {
       const currentUserId = userId || user?.id
       if (!currentUserId) throw new Error('No user ID available')
 
-      // Find the invitation code
-      const { data: invitations, error: inviteError } = await supabase
-        .from('family_invitation_codes')
+      // Find the family by family code
+      const { data: familyData, error: familyError } = await supabase
+        .from('families')
         .select('*')
-        .eq('code', code)
-        .eq('is_active', true)
-        .gt('expires_at', new Date().toISOString())
+        .eq('family_code', code.toUpperCase())
+        .single()
 
-      if (inviteError) {
-        throw new Error('Error finding invitation code')
-      }
-
-      // Filter for codes that haven't reached max uses
-      const invitation = invitations.find(inv => inv.used_count < inv.max_uses)
-
-      if (inviteError || !invitation) {
-        throw new Error('Invalid or expired invitation code')
+      if (familyError || !familyData) {
+        throw new Error('Invalid family code')
       }
 
       // Check if user is already a member of this family
@@ -247,7 +239,7 @@ export const AuthProvider = ({ children, initialUser }) => {
         .from('family_members')
         .select('id')
         .eq('user_id', currentUserId)
-        .eq('family_id', invitation.family_id)
+        .eq('family_id', familyData.id)
         .single()
 
       if (existingMember) {
@@ -258,21 +250,13 @@ export const AuthProvider = ({ children, initialUser }) => {
       const { error: memberError } = await supabase
         .from('family_members')
         .insert({
-          family_id: invitation.family_id,
+          family_id: familyData.id,
           user_id: currentUserId,
           nickname: 'Nytt medlem',
           role: 'member'
         })
 
       if (memberError) throw memberError
-
-      // Update invitation code usage
-      const { error: updateError } = await supabase
-        .from('family_invitation_codes')
-        .update({ used_count: invitation.used_count + 1 })
-        .eq('id', invitation.id)
-
-      if (updateError) throw updateError
 
       return { error: null }
     } catch (error) {
@@ -291,11 +275,15 @@ export const AuthProvider = ({ children, initialUser }) => {
     try {
       if (!user) throw new Error('User not authenticated')
 
+      // Generate a new family code
+      const familyCode = generateMockFamilyCode()
+
       // Create family
       const { data: family, error: familyError } = await supabase
         .from('families')
         .insert({
           name: familyName,
+          family_code: familyCode,
           created_by: user.id
         })
         .select()

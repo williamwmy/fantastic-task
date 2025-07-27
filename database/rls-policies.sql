@@ -212,25 +212,12 @@ CREATE POLICY "System can create points transactions" ON points_transactions
   );
 
 -- =============================================================================
--- FAMILY INVITATION CODES POLICIES
+-- FAMILY CODE POLICIES (Simplified invitation system)
 -- =============================================================================
 
--- Enable RLS on invitation codes
-ALTER TABLE family_invitation_codes ENABLE ROW LEVEL SECURITY;
-
--- Family admins can manage invitation codes
-CREATE POLICY "Family admins can manage invitation codes" ON family_invitation_codes
-  FOR ALL USING (
-    family_id IN (
-      SELECT family_id FROM family_members 
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
-
--- Anyone can view valid invitation codes (needed for joining)
-CREATE POLICY "Anyone can view valid invitation codes" ON family_invitation_codes
+-- Anyone can view families by family_code (needed for joining families)
+-- This allows users to join families using the simple 5-character code
+CREATE POLICY "Anyone can view families by code" ON families
   FOR SELECT USING (
-    is_active = true AND 
-    expires_at > NOW() AND 
-    used_count < max_uses
+    family_code != '' AND family_code IS NOT NULL
   );

@@ -1,90 +1,60 @@
 import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaCopy, FaTrash, FaPlus, FaCheck } from 'react-icons/fa'
+import { FaCopy, FaSync, FaCheck } from 'react-icons/fa'
 
 const FamilyInvitation = () => {
   const { 
-    invitationCodes, 
-    generateInvitationCode, 
-    deactivateInvitationCode,
+    family,
+    rotateFamilyCode,
     currentMember 
   } = useFamily()
   
   const [loading, setLoading] = useState(false)
-  const [copiedCode, setCopiedCode] = useState(null)
-  const [maxUses, setMaxUses] = useState(1)
-  const [expiresInDays, setExpiresInDays] = useState(7)
+  const [copiedCode, setCopiedCode] = useState(false)
 
-  const handleGenerateCode = async () => {
+  const handleRotateCode = async () => {
     setLoading(true)
-    const { error } = await generateInvitationCode(maxUses, expiresInDays)
+    const { error } = await rotateFamilyCode()
     if (error) {
-      alert('Feil ved opprettelse av invitasjonskode: ' + error.message)
+      alert('Feil ved oppdatering av familiekode: ' + error.message)
     }
     setLoading(false)
   }
 
-  const handleCopyCode = async (code) => {
+  const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(code)
-      setCopiedCode(code)
-      setTimeout(() => setCopiedCode(null), 2000)
+      await navigator.clipboard.writeText(family.family_code)
+      setCopiedCode(true)
+      setTimeout(() => setCopiedCode(false), 2000)
     } catch (error) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
-      textArea.value = code
+      textArea.value = family.family_code
       document.body.appendChild(textArea)
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
-      setCopiedCode(code)
-      setTimeout(() => setCopiedCode(null), 2000)
+      setCopiedCode(true)
+      setTimeout(() => setCopiedCode(false), 2000)
     }
   }
 
-  const handleDeactivateCode = async (codeId) => {
-    if (confirm('Er du sikker på at du vil deaktivere denne invitasjonskoden?')) {
-      const { error } = await deactivateInvitationCode(codeId)
-      if (error) {
-        alert('Feil ved deaktivering av invitasjonskode: ' + error.message)
-      }
-    }
-  }
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('no-NO', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  const isExpired = (dateString) => {
-    return new Date(dateString) < new Date()
-  }
-
-  const isCodeValid = (code) => {
-    return code.is_active && 
-           !isExpired(code.expires_at) && 
-           code.used_count < code.max_uses
-  }
+  // Simplified - no more complex validation needed
 
   if (currentMember?.role !== 'admin') {
     return (
       <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <p>Kun administratorer kan administrere invitasjonskoder.</p>
+        <p>Kun administratorer kan administrere familiekoden.</p>
       </div>
     )
   }
 
-  const inputStyle = {
-    padding: '0.5rem',
-    border: '1px solid #ddd',
-    borderRadius: '0.25rem',
-    marginRight: '0.5rem',
-    width: '80px'
+  if (!family) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <p>Laster familiedata...</p>
+      </div>
+    )
   }
 
   const buttonStyle = {
@@ -100,149 +70,75 @@ const FamilyInvitation = () => {
     gap: '0.5rem'
   }
 
-  const codeItemStyle = {
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #dee2e6',
-    borderRadius: '0.5rem',
-    padding: '1rem',
-    marginBottom: '0.5rem'
-  }
-
   return (
     <div>
-      <h3>Familieinnvitasjonskoder</h3>
+      <h3>Familiekode</h3>
       
-      {/* Generate new code section */}
+      {/* Current family code */}
       <div style={{ 
-        backgroundColor: '#eaf1fb', 
-        padding: '1rem', 
-        borderRadius: '0.5rem', 
-        marginBottom: '1.5rem' 
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #dee2e6',
+        borderRadius: '0.5rem',
+        padding: '1.5rem',
+        marginBottom: '1.5rem'
       }}>
-        <h4>Opprett ny invitasjonskode</h4>
+        <h4 style={{ margin: '0 0 1rem 0' }}>Din families kode</h4>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-          <label>
-            Maks bruk:
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={maxUses}
-              onChange={(e) => setMaxUses(parseInt(e.target.value))}
-              style={inputStyle}
-            />
-          </label>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '1rem'
+        }}>
+          <div style={{ 
+            fontSize: '2rem', 
+            fontWeight: 'bold', 
+            fontFamily: 'monospace',
+            color: '#28a745',
+            letterSpacing: '0.2rem'
+          }}>
+            {family.family_code}
+          </div>
           
-          <label>
-            Utløper om (dager):
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(parseInt(e.target.value))}
-              style={inputStyle}
-            />
-          </label>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={handleCopyCode}
+              style={{
+                ...buttonStyle,
+                backgroundColor: copiedCode ? '#28a745' : '#6c757d',
+                padding: '0.75rem'
+              }}
+              title="Kopier kode"
+            >
+              {copiedCode ? <FaCheck /> : <FaCopy />}
+              {copiedCode ? 'Kopiert!' : 'Kopier'}
+            </button>
+            
+            <button
+              onClick={handleRotateCode}
+              disabled={loading}
+              style={{
+                ...buttonStyle,
+                backgroundColor: '#dc3545',
+                padding: '0.75rem'
+              }}
+              title="Generer ny kode"
+            >
+              <FaSync />
+              {loading ? 'Oppdaterer...' : 'Ny kode'}
+            </button>
+          </div>
         </div>
         
-        <button
-          onClick={handleGenerateCode}
-          disabled={loading}
-          style={buttonStyle}
-        >
-          <FaPlus />
-          {loading ? 'Oppretter...' : 'Opprett invitasjonskode'}
-        </button>
-      </div>
-
-      {/* Existing codes */}
-      <div>
-        <h4>Eksisterende koder ({invitationCodes.length})</h4>
-        
-        {invitationCodes.length === 0 ? (
-          <p style={{ color: '#666', fontStyle: 'italic' }}>
-            Ingen invitasjonskoder opprettet ennå.
-          </p>
-        ) : (
-          invitationCodes.map(code => (
-            <div key={code.id} style={codeItemStyle}>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center' 
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ 
-                    fontSize: '1.2rem', 
-                    fontWeight: 'bold', 
-                    fontFamily: 'monospace',
-                    color: isCodeValid(code) ? '#28a745' : '#6c757d'
-                  }}>
-                    {code.code}
-                  </div>
-                  
-                  <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem' }}>
-                    <span>Brukt: {code.used_count}/{code.max_uses}</span>
-                    {' • '}
-                    <span>Utløper: {formatDate(code.expires_at)}</span>
-                    {' • '}
-                    <span style={{ 
-                      color: isCodeValid(code) ? '#28a745' : '#dc3545',
-                      fontWeight: 600
-                    }}>
-                      {isCodeValid(code) ? 'Aktiv' : 'Inaktiv'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    onClick={() => handleCopyCode(code.code)}
-                    style={{
-                      ...buttonStyle,
-                      backgroundColor: copiedCode === code.code ? '#28a745' : '#6c757d',
-                      padding: '0.5rem'
-                    }}
-                    title="Kopier kode"
-                  >
-                    {copiedCode === code.code ? <FaCheck /> : <FaCopy />}
-                  </button>
-                  
-                  {isCodeValid(code) && (
-                    <button
-                      onClick={() => handleDeactivateCode(code.id)}
-                      style={{
-                        ...buttonStyle,
-                        backgroundColor: '#dc3545',
-                        padding: '0.5rem'
-                      }}
-                      title="Deaktiver kode"
-                    >
-                      <FaTrash />
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {!isCodeValid(code) && (
-                <div style={{ 
-                  marginTop: '0.5rem', 
-                  padding: '0.25rem 0.5rem', 
-                  backgroundColor: '#f8d7da', 
-                  color: '#721c24', 
-                  borderRadius: '0.25rem',
-                  fontSize: '0.8rem'
-                }}>
-                  {!code.is_active && 'Deaktivert'}
-                  {code.is_active && isExpired(code.expires_at) && 'Utløpt'}
-                  {code.is_active && !isExpired(code.expires_at) && code.used_count >= code.max_uses && 'Alle bruk oppbrukt'}
-                </div>
-              )}
-            </div>
-          ))
-        )}
+        <div style={{ 
+          fontSize: '0.9rem', 
+          color: '#666',
+          backgroundColor: '#e9ecef',
+          padding: '0.5rem',
+          borderRadius: '0.25rem'
+        }}>
+          <strong>Permanent kode</strong> - Ingen utløpsdato eller begrensninger på antall bruk
+        </div>
       </div>
       
       <div style={{ 
@@ -254,10 +150,10 @@ const FamilyInvitation = () => {
       }}>
         <strong>Slik inviterer du andre:</strong>
         <ol style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-          <li>Opprett en invitasjonskode ovenfor</li>
-          <li>Kopier koden ved å klikke på kopier-knappen</li>
+          <li>Kopier familiekoden ovenfor</li>
           <li>Send koden til personen du vil invitere</li>
           <li>De kan bruke koden når de registrerer seg eller i "Bli med i familie"-skjemaet</li>
+          <li>Hvis koden blir lekket, kan du generere en ny kode</li>
         </ol>
       </div>
     </div>

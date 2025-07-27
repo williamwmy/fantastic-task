@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import { useAuth } from './useAuth.jsx'
 import { supabase } from '../lib/supabase'
-import { mockData, generateMockInvitationCode } from '../lib/mockData'
+import { mockData, generateMockFamilyCode } from '../lib/mockData'
 
 const FamilyContext = createContext({})
 
@@ -20,7 +20,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
   const [family, setFamily] = useState(initialFamily || null)
   const [familyMembers, setFamilyMembers] = useState(initialMember ? [initialMember] : [])
   const [currentMember, setCurrentMember] = useState(initialMember || null)
-  const [invitationCodes, setInvitationCodes] = useState([])
+  // Removed invitationCodes state - family code is now part of family object
   const [loading, setLoading] = useState(false)
 
   // Load family data when user changes
@@ -36,7 +36,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         setFamily(mockData.family);
         setCurrentMember(mockData.currentMember);
         setFamilyMembers(mockData.familyMembers);
-        setInvitationCodes(mockData.invitationCodes);
+        // Family code is now part of family object
         setLoading(false);
       } else {
         loadFamilyData()
@@ -45,7 +45,6 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
       setFamily(null)
       setFamilyMembers([])
       setCurrentMember(null)
-      setInvitationCodes([])
     }
   }, [user, initialFamily, initialMember])
 
@@ -86,7 +85,6 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         setFamily(null)
         setCurrentMember(null)
         setFamilyMembers([])
-        setInvitationCodes([])
         return
       }
 
@@ -107,10 +105,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
           setFamilyMembers(allMembers)
         }
 
-        // Load invitation codes if user is admin
-        if (memberData.role === 'admin') {
-          await loadInvitationCodes(memberData.family_id)
-        }
+        // Family code is now part of family object - no need to load separate invitation codes
       }
     } catch (error) {
       console.error('Error loading family data:', error)
@@ -119,87 +114,39 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     }
   }
 
-  const loadInvitationCodes = async (familyId) => {
+  // loadInvitationCodes removed - family code is now part of family object
+
+  const rotateFamilyCode = async () => {
     try {
-      const { data, error } = await supabase
-        .from('family_invitation_codes')
-        .select('*')
-        .eq('family_id', familyId)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error loading invitation codes:', error)
-      } else {
-        setInvitationCodes(data)
-      }
-    } catch (error) {
-      console.error('Error loading invitation codes:', error)
-    }
-  }
-
-  const generateInvitationCode = async (maxUses = 1, expiresInDays = 7) => {
-    try {
-      if (LOCAL_TEST_USER) {
-        // Generate mock invitation code using helper function
-        const mockCode = generateMockInvitationCode(maxUses, expiresInDays);
-        setInvitationCodes(prev => [mockCode, ...prev]);
-        return { data: mockCode, error: null };
-      }
-
       if (!currentMember || currentMember.role !== 'admin') {
-        throw new Error('Only admins can generate invitation codes')
+        throw new Error('Only admins can rotate family code')
       }
 
-      // Generate a random 8-character code
-      const code = Math.random().toString(36).substring(2, 10).toUpperCase()
-      
-      const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + expiresInDays)
+      // Generate a new 5-character code
+      const newCode = generateMockFamilyCode()
+
+      if (LOCAL_TEST_USER) {
+        // Update mock family data
+        setFamily(prev => ({ ...prev, family_code: newCode }));
+        return { data: { family_code: newCode }, error: null };
+      }
 
       const { data, error } = await supabase
-        .from('family_invitation_codes')
-        .insert({
-          family_id: family.id,
-          code,
-          created_by: currentMember.id,
-          expires_at: expiresAt.toISOString(),
-          max_uses: maxUses
-        })
+        .from('families')
+        .update({ family_code: newCode })
+        .eq('id', family.id)
         .select()
         .single()
 
       if (error) throw error
 
-      // Refresh invitation codes
-      await loadInvitationCodes(family.id)
+      // Update local family state
+      setFamily(prev => ({ ...prev, family_code: newCode }))
 
       return { data, error: null }
     } catch (error) {
-      console.error('Error generating invitation code:', error)
+      console.error('Error rotating family code:', error)
       return { data: null, error }
-    }
-  }
-
-  const deactivateInvitationCode = async (codeId) => {
-    try {
-      if (!currentMember || currentMember.role !== 'admin') {
-        throw new Error('Only admins can deactivate invitation codes')
-      }
-
-      const { error } = await supabase
-        .from('family_invitation_codes')
-        .update({ is_active: false })
-        .eq('id', codeId)
-
-      if (error) throw error
-
-      // Refresh invitation codes
-      await loadInvitationCodes(family.id)
-
-      return { error: null }
-    } catch (error) {
-      console.error('Error deactivating invitation code:', error)
-      return { error }
     }
   }
 
@@ -287,11 +234,15 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     try {
       if (!user) throw new Error('User not authenticated')
 
+      // Generate a new family code
+      const familyCode = generateMockFamilyCode()
+
       // Create family
       const { data: newFamily, error: familyError } = await supabase
         .from('families')
         .insert({
           name,
+          family_code: familyCode,
           created_by: user.id
         })
         .select()
@@ -321,27 +272,19 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     }
   }
 
-  const joinFamily = async (inviteCode) => {
+  const joinFamily = async (familyCode) => {
     try {
       if (!user) throw new Error('User not authenticated')
 
-      // Find the invitation code
-      const { data: invitations, error: inviteError } = await supabase
-        .from('family_invitation_codes')
+      // Find the family by family code
+      const { data: familyData, error: familyError } = await supabase
+        .from('families')
         .select('*')
-        .eq('code', inviteCode)
-        .eq('is_active', true)
-        .gt('expires_at', new Date().toISOString())
+        .eq('family_code', familyCode.toUpperCase())
+        .single()
 
-      if (inviteError) {
-        throw new Error('Error finding invitation code')
-      }
-
-      // Filter for codes that haven't reached max uses
-      const invitation = invitations.find(inv => inv.used_count < inv.max_uses)
-
-      if (inviteError || !invitation) {
-        throw new Error('Invalid or expired invitation code')
+      if (familyError || !familyData) {
+        throw new Error('Invalid family code')
       }
 
       // Check if user is already a member of this family
@@ -349,7 +292,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         .from('family_members')
         .select('id')
         .eq('user_id', user.id)
-        .eq('family_id', invitation.family_id)
+        .eq('family_id', familyData.id)
         .single()
 
       if (existingMember) {
@@ -360,21 +303,13 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
       const { error: memberError } = await supabase
         .from('family_members')
         .insert({
-          family_id: invitation.family_id,
+          family_id: familyData.id,
           user_id: user.id,
           nickname: 'Nytt medlem',
           role: 'member'
         })
 
       if (memberError) throw memberError
-
-      // Update invitation code usage
-      const { error: updateError } = await supabase
-        .from('family_invitation_codes')
-        .update({ used_count: invitation.used_count + 1 })
-        .eq('id', invitation.id)
-
-      if (updateError) throw updateError
 
       // Refresh family data
       await loadFamilyData()
@@ -567,12 +502,11 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     family,
     familyMembers,
     currentMember,
-    invitationCodes,
+    // invitationCodes removed - family code is now part of family object
     loading,
     setCurrentMember,
     loadFamilyData,
-    generateInvitationCode,
-    deactivateInvitationCode,
+    rotateFamilyCode,
     updateMemberNickname,
     updateMemberAvatarColor,
     removeFamilyMember,

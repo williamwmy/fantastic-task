@@ -15,6 +15,7 @@
 CREATE TABLE families (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
+  family_code TEXT UNIQUE NOT NULL DEFAULT '', -- 5-character permanent family invitation code
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_by UUID REFERENCES auth.users(id)
 );
@@ -87,23 +88,6 @@ CREATE TABLE points_transactions (
   transaction_type TEXT NOT NULL, -- 'earned', 'bonus'
   description TEXT,
   task_completion_id UUID REFERENCES task_completions(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- =============================================================================
--- FAMILY INVITATIONS
--- =============================================================================
-
--- Family invitation codes - for inviting new members to families
-CREATE TABLE family_invitation_codes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  family_id UUID REFERENCES families(id) ON DELETE CASCADE,
-  code TEXT UNIQUE NOT NULL,
-  created_by UUID REFERENCES family_members(id),
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  max_uses INTEGER DEFAULT 1,
-  used_count INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

@@ -16,6 +16,7 @@ export const mockUser = {
 export const mockFamily = {
   id: 'mock-family-id',
   name: 'Test Familie',
+  family_code: 'FAM15', // Simple 5-character family code
   created_by: mockUser.id,
   created_at: now
 };
@@ -57,31 +58,7 @@ export const mockFamilyMembers = [
 // Get current member (admin)
 export const mockCurrentMember = mockFamilyMembers[0];
 
-// Invitation codes
-export const mockInvitationCodes = [
-  {
-    id: 'mock-code-1',
-    family_id: mockFamily.id,
-    code: 'TEST1234',
-    created_by: mockCurrentMember.id,
-    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    max_uses: 5,
-    used_count: 0,
-    is_active: true,
-    created_at: now
-  },
-  {
-    id: 'mock-code-2',
-    family_id: mockFamily.id,
-    code: 'FAMILY99',
-    created_by: mockCurrentMember.id,
-    expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    max_uses: 10,
-    used_count: 2,
-    is_active: true,
-    created_at: now
-  }
-];
+// Family code is now part of the family object itself (family.family_code)
 
 // Tasks
 export const mockTasks = [
@@ -235,19 +212,8 @@ export const mockPointsTransactions = [
 ];
 
 // Helper functions to generate new mock data
-export const generateMockInvitationCode = (maxUses = 1, expiresInDays = 7) => {
-  const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-  return {
-    id: 'mock-code-' + Date.now(),
-    family_id: mockFamily.id,
-    code,
-    created_by: mockCurrentMember.id,
-    expires_at: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString(),
-    max_uses: maxUses,
-    used_count: 0,
-    is_active: true,
-    created_at: new Date().toISOString()
-  };
+export const generateMockFamilyCode = () => {
+  return Math.random().toString(36).substring(2, 7).toUpperCase(); // 5 characters
 };
 
 export const generateMockTask = (taskData) => {
@@ -302,7 +268,6 @@ export const mockData = {
   family: mockFamily,
   familyMembers: mockFamilyMembers,
   currentMember: mockCurrentMember,
-  invitationCodes: mockInvitationCodes,
   tasks: mockTasks,
   taskAssignments: mockTaskAssignments,
   taskCompletions: mockTaskCompletions,
