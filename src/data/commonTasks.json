@@ -1,0 +1,140 @@
+[
+  {
+    "task": "Tømme oppvaskmaskin",
+    "estimated_minutes": 5,
+    "description": "Ta ut ren oppvask og sett på plass",
+    "category": "Kjøkken"
+  },
+  {
+    "task": "Fylle oppvaskmaskin",
+    "estimated_minutes": 5,
+    "description": "Samle skitten oppvask og sett i oppvaskmaskin",
+    "category": "Kjøkken"
+  },
+  {
+    "task": "Vaske kjøkkenbenk og bord",
+    "estimated_minutes": 10,
+    "description": "Tørke av alle flater i kjøkkenet",
+    "category": "Kjøkken"
+  },
+  {
+    "task": "Støvsuge hele huset/leiligheten",
+    "estimated_minutes": 30,
+    "description": "Støvsuge alle rom og ganger",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Vaske gulv",
+    "estimated_minutes": 30,
+    "description": "Moppe gulv i alle rom",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Rydde barnerom",
+    "estimated_minutes": 10,
+    "description": "Plukke opp leker og rydde på plass",
+    "category": "Rydding"
+  },
+  {
+    "task": "Vaske klær (sette på maskin)",
+    "estimated_minutes": 5,
+    "description": "Sortere og starte vaskemaskin",
+    "category": "Klesvask"
+  },
+  {
+    "task": "Henge opp eller tørketrommel",
+    "estimated_minutes": 10,
+    "description": "Hengt klær til tørk eller bruke tørketrommel",
+    "category": "Klesvask"
+  },
+  {
+    "task": "Brette og legge sammen klær",
+    "estimated_minutes": 15,
+    "description": "Brette tørre klær og legge i skap",
+    "category": "Klesvask"
+  },
+  {
+    "task": "Handle matvarer",
+    "estimated_minutes": 30,
+    "description": "Handle ukens matvarer",
+    "category": "Innkjøp"
+  },
+  {
+    "task": "Tømme søppel (inkl. sortering)",
+    "estimated_minutes": 5,
+    "description": "Tømme søppel og rydde kildesortering",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Rydde stue",
+    "estimated_minutes": 10,
+    "description": "Plukke opp og rydde på plass i stua",
+    "category": "Rydding"
+  },
+  {
+    "task": "Vaske bad/toalett",
+    "estimated_minutes": 15,
+    "description": "Rengjøre bad og toalett grundig",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Skifte sengetøy",
+    "estimated_minutes": 15,
+    "description": "Skifte sengetøy på alle senger",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Lufte hund / kattekasse",
+    "estimated_minutes": 10,
+    "description": "Ta hund ut eller rense kattekasse",
+    "category": "Husdyr"
+  },
+  {
+    "task": "Lage middag",
+    "estimated_minutes": 30,
+    "description": "Tilberede og lage middag til familien",
+    "category": "Matlaging"
+  },
+  {
+    "task": "Lage matpakker / frokost",
+    "estimated_minutes": 10,
+    "description": "Forberede matpakker og frokost",
+    "category": "Matlaging"
+  },
+  {
+    "task": "Rydde stue",
+    "estimated_minutes": 10,
+    "description": "Plukke opp og rydde på plass i stua",
+    "category": "Rydding"
+  },
+  {
+    "task": "Organisere skap / skuffer",
+    "estimated_minutes": 20,
+    "description": "Rydde og organisere skap og skuffer i huset",
+    "category": "Rydding"
+  },
+  {
+    "task": "Vaske bil",
+    "estimated_minutes": 30,
+    "description": "Vaske bilen innvendig og utvendig",
+    "category": "Bilpleie"
+  },
+  {
+    "task": "Betale regninger",
+    "estimated_minutes": 10,
+    "description": "Sjekke og betale månedlige regninger",
+    "category": "Økonomi"
+  },
+  {
+    "task": "Vaske vinduer",
+    "estimated_minutes": 60,
+    "description": "Vaske vinduer innvendig og utvendig",
+    "category": "Rengjøring"
+  },
+  {
+    "task": "Klippe plen / snørydding",
+    "estimated_minutes": 10,
+    "description": "Vedlikeholde uteområdet etter årstid",
+    "category": "Hage"
+  }
+]

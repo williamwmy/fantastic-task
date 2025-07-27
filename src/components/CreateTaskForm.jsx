@@ -10,8 +10,11 @@ import {
   FaCalendarAlt,
   FaEdit,
   FaFileAlt,
-  FaUsers
+  FaUsers,
+  FaLightbulb,
+  FaTags
 } from 'react-icons/fa'
+import commonTasks from '../data/commonTasks.json'
 
 const CreateTaskForm = ({ open, onClose }) => {
   const { createTask } = useTasks()
@@ -32,6 +35,7 @@ const CreateTaskForm = ({ open, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showQuickStart, setShowQuickStart] = useState(true)
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -108,6 +112,43 @@ const CreateTaskForm = ({ open, onClose }) => {
     }))
   }
 
+  const handleQuickStartSelect = (task) => {
+    setFormData(prev => ({
+      ...prev,
+      title: task.task,
+      description: task.description,
+      estimatedMinutes: task.estimated_minutes.toString(),
+      points: Math.max(1, Math.round(task.estimated_minutes / 5)).toString() // Rough estimate: 1 point per 5 minutes
+    }))
+    setShowQuickStart(false)
+    setError('')
+    setSuccess('')
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      points: '',
+      estimatedMinutes: '',
+      recurringType: 'daily',
+      recurringDays: [],
+      flexibleInterval: 7,
+      assignedTo: ''
+    })
+    setError('')
+    setShowQuickStart(true)
+  }
+
+  // Group tasks by category
+  const tasksByCategory = commonTasks.reduce((acc, task) => {
+    if (!acc[task.category]) {
+      acc[task.category] = []
+    }
+    acc[task.category].push(task)
+    return acc
+  }, {})
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -171,19 +212,6 @@ const CreateTaskForm = ({ open, onClose }) => {
     setLoading(false)
   }
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      points: '',
-      estimatedMinutes: '',
-      recurringType: 'daily',
-      recurringDays: [],
-      flexibleInterval: 7,
-      assignedTo: ''
-    })
-    setError('')
-  }
 
   const submitButton = (
     <button
@@ -260,6 +288,184 @@ const CreateTaskForm = ({ open, onClose }) => {
             gap: '0.5rem'
           }}>
             ✅ {success}
+          </div>
+        )}
+
+        {/* Quick Start Section */}
+        {showQuickStart && (
+          <div style={{
+            marginBottom: '2rem',
+            padding: '1.5rem',
+            backgroundColor: '#f8f9ff',
+            border: '2px solid #e3f2fd',
+            borderRadius: '0.75rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem'
+            }}>
+              <h3 style={{
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: '#1565c0',
+                fontSize: '1.1rem'
+              }}>
+                <FaLightbulb />
+                Vanlige oppgaver
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowQuickStart(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  color: '#6c757d',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Opprett egen oppgave
+              </button>
+            </div>
+            <p style={{
+              margin: '0 0 1rem 0',
+              fontSize: '0.9rem',
+              color: '#666'
+            }}>
+              Velg en vanlig husholdningsoppgave. Du kan justere alle detaljer etter at du har valgt.
+            </p>
+            
+            {Object.entries(tasksByCategory).map(([category, tasks]) => (
+              <div key={category} style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{
+                  margin: '0 0 0.75rem 0',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: '#495057',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <FaTags size={12} />
+                  {category}
+                </h4>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: '0.5rem'
+                }}>
+                  {tasks.map((task, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleQuickStartSelect(task)}
+                      style={{
+                        padding: '0.75rem',
+                        textAlign: 'left',
+                        backgroundColor: '#fff',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontSize: '0.85rem'
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = '#e7f1ff'
+                        e.target.style.borderColor = '#82bcf4'
+                        e.target.style.transform = 'translateY(-1px)'
+                        e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.backgroundColor = '#fff'
+                        e.target.style.borderColor = '#dee2e6'
+                        e.target.style.transform = 'translateY(0)'
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    >
+                      <div style={{ 
+                        fontWeight: 600, 
+                        marginBottom: '0.25rem',
+                        color: '#212529'
+                      }}>
+                        {task.task}
+                      </div>
+                      <div style={{
+                        fontSize: '0.75rem',
+                        color: '#6c757d',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <FaClock size={10} />
+                          {task.estimated_minutes} min
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <FaCoins size={10} />
+                          {Math.max(1, Math.round(task.estimated_minutes / 5))} poeng
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            
+            <div style={{
+              textAlign: 'center',
+              marginTop: '1.5rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid #dee2e6'
+            }}>
+              <button
+                type="button"
+                onClick={() => setShowQuickStart(false)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 500
+                }}
+              >
+                Opprett egen oppgave i stedet
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!showQuickStart && (
+          <div style={{
+            marginBottom: '1rem',
+            textAlign: 'center'
+          }}>
+            <button
+              type="button"
+              onClick={() => setShowQuickStart(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#0056b3',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                textDecoration: 'underline',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: '0 auto'
+              }}
+            >
+              <FaLightbulb size={12} />
+              Vis vanlige oppgaver i stedet
+            </button>
           </div>
         )}
 
