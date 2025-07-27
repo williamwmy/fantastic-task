@@ -131,7 +131,7 @@ const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
   const buttonStyle = {
     width: '100%',
     padding: '0.75rem',
-    backgroundColor: '#82bcf4',
+    backgroundColor: '#0056b3',
     color: 'white',
     border: 'none',
     borderRadius: '0.5rem',

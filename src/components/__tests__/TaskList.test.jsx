@@ -126,13 +126,13 @@ describe('TaskList', () => {
     }
   })
 
-  it('should open detailed completion modal when clicking "Fullfør med detaljer"', async () => {
+  it('should open detailed completion modal when clicking "Fullfør..."', async () => {
     const user = userEvent.setup()
     
     render(<TaskList selectedDate={selectedDate} />)
     
     // Find and click the detailed complete button for the first task
-    const detailedCompleteButtons = screen.getAllByText('Fullfør med detaljer')
+    const detailedCompleteButtons = screen.getAllByText('Fullfør...')
     expect(detailedCompleteButtons.length).toBeGreaterThan(0)
     
     await user.click(detailedCompleteButtons[0])

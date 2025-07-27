@@ -508,8 +508,6 @@ export const TasksProvider = ({ children }) => {
         return { data: mockCompletion, error: null };
       }
 
-      // Debug: Log the data being sent to Supabase
-      console.log('Sending completion data to Supabase:', cleanedData)
 
       const { data: completion, error: completionError } = await supabase
         .from('task_completions')
@@ -523,8 +521,6 @@ export const TasksProvider = ({ children }) => {
 
       if (completionError) throw completionError
 
-      // Debug: Log the completion data returned from Supabase
-      console.log('Completion data from Supabase:', completion)
 
       // Handle points transaction
       const task = completion.tasks
@@ -549,8 +545,6 @@ export const TasksProvider = ({ children }) => {
       loadTaskCompletions()
       loadTasks()
 
-      // Debug: Log completion data
-      console.log('Task completion created:', completion)
 
       return { data: completion, error: null }
     } catch (error) {
@@ -717,21 +711,6 @@ export const TasksProvider = ({ children }) => {
       completions = completions.filter(c => 
         c.completed_at && c.completed_at.startsWith(dateStr)
       )
-      
-      // Debug logging
-      console.log('getCompletionsForMember debug:', {
-        memberId,
-        date,
-        dateStr,
-        allCompletions: safeCompletions.length,
-        memberCompletions: safeCompletions.filter(c => c.completed_by === memberId).length,
-        filteredCompletions: completions.length,
-        completionDates: safeCompletions.filter(c => c.completed_by === memberId).map(c => ({
-          id: c.id,
-          completed_at: c.completed_at,
-          matches: c.completed_at && c.completed_at.startsWith(dateStr)
-        }))
-      })
     }
     
     return completions

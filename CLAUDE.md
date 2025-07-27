@@ -60,7 +60,7 @@ See `database/schema.sql` and `database/rls-policies.sql` for complete schema.
 **Key Tables:**
 - `families` - Family groups with admin roles
 - `family_members` - Users within families with nicknames, avatar colors, points
-- `tasks` - Family tasks with recurring day patterns and point values
+- `tasks` - Family tasks with support for once-only, daily, weekly flexible, and monthly flexible recurring patterns
 - `task_assignments` - Daily task assignments to specific members
 - `task_completions` - Completed tasks with time spent and comments
 - `points_transactions` - Point earning/spending history

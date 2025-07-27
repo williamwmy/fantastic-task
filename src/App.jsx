@@ -322,7 +322,7 @@ export default function App() {
             setSelectedDate(d.toISOString().slice(0, 10));
           }}
           style={{
-            background: "#82bcf4",
+            background: "#0056b3",
             color: "white",
             border: "none",
             borderRadius: "50%",
@@ -361,7 +361,7 @@ export default function App() {
             setSelectedDate(d.toISOString().slice(0, 10));
           }}
           style={{
-            background: "#82bcf4",
+            background: "#0056b3",
             color: "white",
             border: "none",
             borderRadius: "50%",
@@ -384,7 +384,7 @@ export default function App() {
           onClick={() => setShowAddModal(true)}
           aria-label="Legg til oppgave"
           style={{
-            background: "#82bcf4",
+            background: "#0056b3",
             color: "white",
             border: "none",
             borderRadius: "50%",

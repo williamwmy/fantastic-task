@@ -48,9 +48,13 @@ describe('CreateTaskForm', () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Switch to daily type first to enable day selection
+    await user.click(screen.getByText(/Spesifikke dager/i))
+    
     // Click on Monday (using the short form from the component)
     await user.click(screen.getByText('Man'))
     
+    expect(screen.getByText(/Engangsoppgave/i)).toBeInTheDocument()
     expect(screen.getByText(/Spesifikke dager/i)).toBeInTheDocument()
     expect(screen.getByText(/Ukentlig.*fleksibel/i)).toBeInTheDocument()
     expect(screen.getByText(/Månedlig.*fleksibel/i)).toBeInTheDocument()
@@ -59,6 +63,9 @@ describe('CreateTaskForm', () => {
   it('should provide quick select options for days', async () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateTaskForm {...mockProps} />)
+    
+    // Switch to daily type to see day selection
+    await user.click(screen.getByText(/Spesifikke dager/i))
     
     expect(screen.getByText('Ukedager')).toBeInTheDocument()
     expect(screen.getByText('Man')).toBeInTheDocument()
@@ -76,6 +83,9 @@ describe('CreateTaskForm', () => {
     const pointsInput = screen.getByPlaceholderText('F.eks. 10')
     await user.clear(pointsInput)
     await user.type(pointsInput, '15')
+    
+    // Switch to daily type to enable day selection
+    await user.click(screen.getByText(/Spesifikke dager/i))
     
     // Select some days (using short forms)
     await user.click(screen.getByText('Man'))
@@ -148,6 +158,35 @@ describe('CreateTaskForm', () => {
       recurring_type: 'monthly_flexible',
       recurring_days: null,
       flexible_interval: 7, // Default interval is 7
+      created_by: 'test-member-id'
+    })
+  })
+
+  it('should handle form submission with once type', async () => {
+    const user = userEvent.setup()
+    mockTasksHook.createTask.mockResolvedValue({ success: true })
+    renderWithProviders(<CreateTaskForm {...mockProps} />)
+    
+    // Once is the default type, so no need to switch
+    
+    // Fill in form
+    await user.type(screen.getByPlaceholderText("F.eks. 'Rydde rommet', 'Gjøre lekser', 'Støvsuge stua'"), 'Selge sofa')
+    
+    const pointsInput = screen.getByPlaceholderText('F.eks. 10')
+    await user.clear(pointsInput)
+    await user.type(pointsInput, '20')
+    
+    // Submit form
+    await user.click(screen.getByRole('button', { name: /legg til oppgave/i }))
+    
+    expect(mockTasksHook.createTask).toHaveBeenCalledWith({
+      title: 'Selge sofa',
+      description: null,
+      points: 20,
+      estimated_minutes: null,
+      recurring_type: 'once',
+      recurring_days: null,
+      flexible_interval: null,
       created_by: 'test-member-id'
     })
   })

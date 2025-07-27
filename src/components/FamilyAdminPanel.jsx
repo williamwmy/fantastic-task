@@ -79,7 +79,7 @@ const FamilyAdminPanel = () => {
 
   const tabStyle = (isActive) => ({
     padding: '0.75rem 1rem',
-    backgroundColor: isActive ? '#82bcf4' : '#f8f9fa',
+    backgroundColor: isActive ? '#0056b3' : '#f8f9fa',
     color: isActive ? 'white' : '#666',
     border: 'none',
     cursor: 'pointer',
@@ -173,7 +173,7 @@ const FamilyAdminPanel = () => {
                 onClick={() => setEditingFamilyName(true)}
                 style={{
                   ...buttonStyle,
-                  backgroundColor: '#82bcf4',
+                  backgroundColor: '#0056b3',
                   color: 'white',
                   fontSize: '0.9rem'
                 }}

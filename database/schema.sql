@@ -43,7 +43,7 @@ CREATE TABLE tasks (
   description TEXT,
   points INTEGER DEFAULT 0,
   estimated_minutes INTEGER,
-  recurring_type TEXT DEFAULT 'daily', -- 'daily', 'weekly_flexible', 'monthly_flexible'
+  recurring_type TEXT DEFAULT 'once', -- 'once', 'daily', 'weekly_flexible', 'monthly_flexible'
   recurring_days INTEGER[], -- 0=Sunday, 1=Monday, ..., 6=Saturday (for daily tasks)
   flexible_interval INTEGER, -- Number of days for flexible recurring (for flexible tasks)
   is_active BOOLEAN DEFAULT true,

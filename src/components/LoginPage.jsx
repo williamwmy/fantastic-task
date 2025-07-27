@@ -565,7 +565,7 @@ const LoginPage = ({ initialMode = 'signin' }) => {
             style={{
               width: '100%',
               padding: '0.875rem',
-              backgroundColor: loading ? '#6c757d' : '#82bcf4',
+              backgroundColor: loading ? '#6c757d' : '#0056b3',
               color: 'white',
               border: 'none',
               borderRadius: '0.5rem',

@@ -16,8 +16,8 @@ const TaskAssignment = ({ task, open, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!selectedMember || !dueDate) {
-      alert('Vennligst fyll ut alle feltene')
+    if (!selectedMember) {
+      alert('Vennligst velg et familiemedlem')
       return
     }
 
@@ -163,16 +163,15 @@ const TaskAssignment = ({ task, open, onClose }) => {
               marginBottom: '0.5rem'
             }}>
               <FaCalendarAlt />
-              Forfallsdato:
+              Forfallsdato (valgfritt):
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               min={getTodayDate()}
-              required
               style={{
-                width: '100%',
+                width: '200px',
                 padding: '0.75rem',
                 border: '1px solid #ddd',
                 borderRadius: '0.5rem',
@@ -229,11 +228,11 @@ const TaskAssignment = ({ task, open, onClose }) => {
               disabled={loading}
               style={{
                 padding: '0.75rem 1rem',
-                backgroundColor: '#82bcf4',
+                backgroundColor: loading ? '#6c757d' : '#0056b3',
                 color: 'white',
                 border: 'none',
                 borderRadius: '0.5rem',
-                cursor: 'pointer',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',

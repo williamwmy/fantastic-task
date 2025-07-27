@@ -433,7 +433,7 @@ const TaskList = ({ selectedDate }) => {
                         aria-label="quick complete"
                       >
                         <FaCheck />
-                        {quickCompletingTask === task.id ? 'Fullføres...' : 'Fullfør raskt'}
+                        {quickCompletingTask === task.id ? 'Fullføres...' : 'Fullfør'}
                       </button>
                       
                       <button
@@ -455,7 +455,7 @@ const TaskList = ({ selectedDate }) => {
                         aria-label="complete"
                       >
                         <FaEdit />
-                        Fullfør med detaljer
+                        Fullfør...
                       </button>
                     </>
                   )}

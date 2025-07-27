@@ -160,7 +160,7 @@ const FamilyMemberCard = ({ member, onClose }) => {
               onClick={() => setEditing(!editing)}
               style={{
                 ...buttonStyle,
-                backgroundColor: editing ? '#6c757d' : '#82bcf4',
+                backgroundColor: editing ? '#6c757d' : '#0056b3',
                 color: 'white',
                 marginLeft: 'auto'
               }}

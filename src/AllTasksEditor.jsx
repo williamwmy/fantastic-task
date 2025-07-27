@@ -207,7 +207,7 @@ const AllTasksEditor = ({
               style={{
                 marginLeft: 'auto',
                 padding: '0.5rem 1rem',
-                background: '#82bcf4',
+                background: '#0056b3',
                 color: 'white',
                 border: 'none',
                 borderRadius: '0.5rem',

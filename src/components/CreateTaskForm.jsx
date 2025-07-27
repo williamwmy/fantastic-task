@@ -23,7 +23,7 @@ const CreateTaskForm = ({ open, onClose }) => {
     description: '',
     points: '',
     estimatedMinutes: '',
-    recurringType: 'daily',
+    recurringType: 'once',
     recurringDays: [],
     flexibleInterval: 7, // days for flexible recurring
     assignedTo: ''
@@ -53,6 +53,11 @@ const CreateTaskForm = ({ open, onClose }) => {
   ]
 
   const recurringTypeOptions = [
+    { 
+      value: 'once', 
+      label: 'Engangsoppgave', 
+      description: 'Oppgaven gjøres kun én gang og forsvinner etter fullføring'
+    },
     { 
       value: 'daily', 
       label: 'Spesifikke dager', 
@@ -134,7 +139,7 @@ const CreateTaskForm = ({ open, onClose }) => {
       estimated_minutes: formData.estimatedMinutes ? parseInt(formData.estimatedMinutes) : null,
       recurring_type: formData.recurringType,
       recurring_days: formData.recurringType === 'daily' && formData.recurringDays.length > 0 ? formData.recurringDays : null,
-      flexible_interval: formData.recurringType !== 'daily' ? formData.flexibleInterval : null,
+      flexible_interval: formData.recurringType !== 'daily' && formData.recurringType !== 'once' ? formData.flexibleInterval : null,
       created_by: currentMember.id
     }
 
@@ -431,7 +436,7 @@ const CreateTaskForm = ({ open, onClose }) => {
                 style={{
                   marginBottom: '0.75rem',
                   padding: '0.75rem',
-                  border: `2px solid ${formData.recurringType === option.value ? '#82bcf4' : '#e9ecef'}`,
+                  border: `2px solid ${formData.recurringType === option.value ? '#0056b3' : '#e9ecef'}`,
                   borderRadius: '0.5rem',
                   backgroundColor: formData.recurringType === option.value ? '#f8f9ff' : '#fff',
                   cursor: 'pointer',
@@ -534,9 +539,9 @@ const CreateTaskForm = ({ open, onClose }) => {
                   onClick={() => handleDayToggle(day.value)}
                   style={{
                     padding: window.innerWidth < 480 ? '0.5rem 0.25rem' : '0.75rem 0.5rem',
-                    backgroundColor: formData.recurringDays.includes(day.value) ? '#82bcf4' : '#f8f9fa',
+                    backgroundColor: formData.recurringDays.includes(day.value) ? '#0056b3' : '#f8f9fa',
                     color: formData.recurringDays.includes(day.value) ? 'white' : '#6c757d',
-                    border: `2px solid ${formData.recurringDays.includes(day.value) ? '#82bcf4' : '#e9ecef'}`,
+                    border: `2px solid ${formData.recurringDays.includes(day.value) ? '#0056b3' : '#e9ecef'}`,
                     borderRadius: '0.5rem',
                     cursor: 'pointer',
                     fontSize: '0.8rem',

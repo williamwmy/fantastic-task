@@ -572,7 +572,7 @@ const StatsView = ({ open = true, onClose }) => {
                 onClick={() => setTimeframe(option.value)}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: timeframe === option.value ? '#82bcf4' : '#f8f9fa',
+                  backgroundColor: timeframe === option.value ? '#0056b3' : '#f8f9fa',
                   color: timeframe === option.value ? 'white' : '#6c757d',
                   border: 'none',
                   borderRadius: '0.5rem',
@@ -599,7 +599,7 @@ const StatsView = ({ open = true, onClose }) => {
                   onClick={() => setActiveTab(tab.value)}
                   style={{
                     padding: '0.75rem 1rem',
-                    backgroundColor: activeTab === tab.value ? '#82bcf4' : 'transparent',
+                    backgroundColor: activeTab === tab.value ? '#0056b3' : 'transparent',
                     color: activeTab === tab.value ? 'white' : '#6c757d',
                     border: activeTab === tab.value ? 'none' : '2px solid #e9ecef',
                     borderRadius: '0.5rem',

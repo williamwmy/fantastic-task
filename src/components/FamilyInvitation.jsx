@@ -89,7 +89,7 @@ const FamilyInvitation = () => {
 
   const buttonStyle = {
     padding: '0.75rem 1rem',
-    backgroundColor: '#82bcf4',
+    backgroundColor: '#0056b3',
     color: 'white',
     border: 'none',
     borderRadius: '0.5rem',
