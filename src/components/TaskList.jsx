@@ -46,6 +46,19 @@ const TaskList = ({ selectedDate }) => {
   const [quickCompletingTask, setQuickCompletingTask] = useState(null)
   const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(currentMember?.role === 'child')
 
+  // Get assignments for current member for selected date
+  const myAssignments = getTasksForMember(currentMember?.id, selectedDate)
+  
+  // Get completions for current member for selected date
+  const myCompletions = getCompletionsForMember(currentMember?.id, selectedDate)
+  
+  // Get ALL completions for current member (not filtered by date) to show completion status
+  const allMyCompletions = getCompletionsForMember(currentMember?.id)
+
+  const getTaskAssignment = (taskId) => {
+    return myAssignments.find(assignment => assignment.task_id === taskId)
+  }
+
   // Get tasks available for today
   const allTodayTasks = getTasksForDate(selectedDate) || []
   
@@ -56,20 +69,6 @@ const TaskList = ({ selectedDate }) => {
         return assignment && assignment.assigned_to === currentMember?.id
       })
     : allTodayTasks
-
-  // Get assignments for current member for selected date
-  const myAssignments = getTasksForMember(currentMember?.id, selectedDate)
-  
-  // Get completions for current member for selected date
-  const myCompletions = getCompletionsForMember(currentMember?.id, selectedDate)
-  
-  // Get ALL completions for current member (not filtered by date) to show completion status
-  const allMyCompletions = getCompletionsForMember(currentMember?.id)
-
-
-  const getTaskAssignment = (taskId) => {
-    return myAssignments.find(assignment => assignment.task_id === taskId)
-  }
 
   const getTaskCompletion = (taskId) => {
     // First check if there's a completion for this specific date

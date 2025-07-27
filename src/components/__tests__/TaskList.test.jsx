@@ -270,4 +270,164 @@ describe('TaskList', () => {
     const hasFamilyMemberAvatar = avatarElements.some(el => el.textContent === 'F')
     expect(hasTestUserAvatar || hasFamilyMemberAvatar).toBe(true)
   })
+
+  describe('Mine oppgaver filter', () => {
+    const mockTasksWithAssignments = [
+      {
+        id: 'task-1',
+        title: 'Test Oppgave 1',
+        description: 'Beskrivelse for oppgave 1',
+        points: 10,
+        assignment: {
+          id: 'assignment-1',
+          assigned_to: 'member-1',
+          is_completed: false
+        }
+      },
+      {
+        id: 'task-2',
+        title: 'Test Oppgave 2',
+        description: 'Beskrivelse for oppgave 2',
+        points: 15,
+        assignment: {
+          id: 'assignment-2',
+          assigned_to: 'member-2',
+          is_completed: false
+        }
+      },
+      {
+        id: 'task-3',
+        title: 'Test Oppgave 3',
+        description: 'Beskrivelse for oppgave 3',
+        points: 5,
+        assignment: {
+          id: 'assignment-3',
+          assigned_to: 'member-1',
+          is_completed: false
+        }
+      }
+    ]
+
+    beforeEach(() => {
+      mockTasksHook.getTasksForDate.mockReturnValue(mockTasksWithAssignments)
+      mockTasksHook.getTasksForMember.mockReturnValue([
+        { id: 'assignment-1', task_id: 'task-1', assigned_to: 'member-1' }, // Assigned to current user
+        { id: 'assignment-3', task_id: 'task-3', assigned_to: 'member-1' } // Assigned to current user
+      ])
+    })
+
+    it('should not show filter toggle for child users', () => {
+      // Set current member to a child
+      mockFamilyHook.currentMember = { id: 'member-3', nickname: 'Child User', role: 'child' }
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      // Filter toggle should not be visible for child users
+      expect(screen.queryByText(/vis kun mine oppgaver/i)).not.toBeInTheDocument()
+    })
+
+    it('should show filter toggle for admin and member users', () => {
+      // Set current member to admin (default)
+      mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      // Filter toggle should be visible for admin/member users
+      expect(screen.getByText(/vis kun mine oppgaver/i)).toBeInTheDocument()
+      expect(screen.getByRole('checkbox')).toBeInTheDocument()
+    })
+
+    it('should filter tasks to show only assigned tasks when toggle is checked', async () => {
+      const user = userEvent.setup()
+      mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      // Initially all tasks should be visible
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
+      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
+      
+      // Click the filter toggle
+      const filterCheckbox = screen.getByRole('checkbox')
+      await user.click(filterCheckbox)
+      
+      // Now only assigned tasks should be visible (task-1 and task-3 are assigned to member-1)
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
+      expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
+      expect(screen.getByText(/2 oppgaver tildelt meg/i)).toBeInTheDocument()
+    })
+
+    it('should show contextual empty state when no tasks are assigned to user', async () => {
+      const user = userEvent.setup()
+      mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
+      
+      // Mock tasks but no assignments for current user
+      const mockTasksNoAssignments = [
+        {
+          id: 'task-1',
+          title: 'Test Oppgave 1',
+          description: 'Beskrivelse for oppgave 1',
+          points: 10,
+          assignment: {
+            id: 'assignment-1',
+            assigned_to: 'member-2', // Assigned to different user
+            is_completed: false
+          }
+        }
+      ]
+      mockTasksHook.getTasksForDate.mockReturnValue(mockTasksNoAssignments)
+      mockTasksHook.getTasksForMember.mockReturnValue([]) // No assignments for current user
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      // Click the filter toggle
+      const filterCheckbox = screen.getByRole('checkbox')
+      await user.click(filterCheckbox)
+      
+      // Should show contextual empty state for filtered view
+      expect(screen.getByText(/ingen oppgaver tildelt deg/i)).toBeInTheDocument()
+      expect(screen.getByText(/du har ingen oppgaver tildelt for denne dagen/i)).toBeInTheDocument()
+    })
+
+    it('should have child users automatically show only their tasks', () => {
+      // Set current member to a child
+      mockFamilyHook.currentMember = { id: 'member-3', nickname: 'Child User', role: 'child' }
+      
+      // Mock assignments for child (only task-1)
+      mockTasksHook.getTasksForMember.mockReturnValue([
+        { id: 'assignment-1', task_id: 'task-1', assigned_to: 'member-3' }
+      ])
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      // Child should only see their assigned task (task-1)
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
+      expect(screen.queryByText('Test Oppgave 3')).not.toBeInTheDocument()
+      expect(screen.getByText(/1 oppgaver tildelt meg/i)).toBeInTheDocument()
+    })
+
+    it('should toggle between all tasks and assigned tasks correctly', async () => {
+      const user = userEvent.setup()
+      mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
+      
+      render(<TaskList selectedDate={selectedDate} />)
+      
+      const filterCheckbox = screen.getByRole('checkbox')
+      
+      // Initially should show all tasks
+      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
+      
+      // Toggle to show only assigned tasks
+      await user.click(filterCheckbox)
+      expect(screen.getByText(/2 oppgaver tildelt meg/i)).toBeInTheDocument()
+      
+      // Toggle back to show all tasks
+      await user.click(filterCheckbox)
+      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
+    })
+  })
 })
