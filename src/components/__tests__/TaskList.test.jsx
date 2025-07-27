@@ -110,8 +110,8 @@ describe('TaskList', () => {
     render(<TaskList selectedDate={selectedDate} />)
     
     // Completed task should show completion details
-    expect(screen.getByText('Ferdig!')).toBeInTheDocument()
-    expect(screen.getByText('30 min')).toBeInTheDocument()
+    expect(screen.getByText(/Ferdig!/)).toBeInTheDocument() // Now in comment with emoji
+    expect(screen.getByText(/30.*min/)).toBeInTheDocument() // Now with emoji
   })
 
 
@@ -180,7 +180,7 @@ describe('TaskList', () => {
   it('should display verification status for completed tasks', () => {
     render(<TaskList selectedDate={selectedDate} />)
     
-    // Should show approval status
+    // Should show approval status in the status badge (not in button area anymore)
     const approvedElements = screen.queryAllByText(/godkjent/i)
     expect(approvedElements.length).toBeGreaterThan(0)
   })

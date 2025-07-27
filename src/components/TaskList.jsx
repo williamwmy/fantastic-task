@@ -344,7 +344,7 @@ const TaskList = ({ selectedDate }) => {
                         fontWeight: 600,
                         fontSize: '0.8rem'
                       }}>
-                        {status === 'pending_verification' ? 'Pending' : getStatusText(status)}
+                        {getStatusText(status)}
                       </div>
                     </div>
                   </div>
@@ -462,37 +462,31 @@ const TaskList = ({ selectedDate }) => {
                   
                   {completion && (
                     <>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        backgroundColor: status === 'completed' ? '#28a745' : '#ffc107',
-                        color: status === 'completed' ? 'white' : '#212529',
-                        borderRadius: '2rem',
-                        fontWeight: 600,
-                        fontSize: '0.85rem'
-                      }}>
-                        <FaCheckCircle />
-                        Status: {getStatusText(status)}
-                      </div>
-                      
                       {completion.comment && (
                         <div style={{
                           fontSize: '0.85rem',
                           color: '#6c757d',
-                          fontStyle: 'italic'
+                          fontStyle: 'italic',
+                          padding: '0.5rem',
+                          backgroundColor: '#f8f9fa',
+                          borderRadius: '0.25rem',
+                          border: '1px solid #e9ecef'
                         }}>
-                          {completion.comment}
+                          💬 {completion.comment}
                         </div>
                       )}
                       
                       {completion.time_spent_minutes && (
                         <div style={{
                           fontSize: '0.85rem',
-                          color: '#6c757d'
+                          color: '#6c757d',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#f8f9fa',
+                          borderRadius: '0.25rem',
+                          border: '1px solid #e9ecef',
+                          display: 'inline-block'
                         }}>
-                          {completion.time_spent_minutes} min
+                          ⏱️ {completion.time_spent_minutes} min
                         </div>
                       )}
                       

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaCoins, FaArrowUp, FaArrowDown, FaStar, FaGift, FaShoppingCart } from 'react-icons/fa'
+import { FaCoins, FaArrowUp, FaArrowDown, FaStar, FaGift } from 'react-icons/fa'
 import Modal from './Modal'
 
 const PointsHistory = ({ memberId, open, onClose }) => {
@@ -21,12 +21,8 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     switch (type) {
       case 'earned':
         return <FaStar style={{ color: '#28a745' }} />
-      case 'spent':
-        return <FaShoppingCart style={{ color: '#dc3545' }} />
       case 'bonus':
         return <FaGift style={{ color: '#17a2b8' }} />
-      case 'penalty':
-        return <FaArrowDown style={{ color: '#dc3545' }} />
       default:
         return <FaCoins />
     }
@@ -35,11 +31,9 @@ const PointsHistory = ({ memberId, open, onClose }) => {
   const getTransactionColor = (type) => {
     switch (type) {
       case 'earned':
-      case 'bonus':
         return '#28a745'
-      case 'spent':
-      case 'penalty':
-        return '#dc3545'
+      case 'bonus':
+        return '#17a2b8'
       default:
         return '#6c757d'
     }
@@ -49,12 +43,8 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     switch (type) {
       case 'earned':
         return 'Opptjent'
-      case 'spent':
-        return 'Brukt'
       case 'bonus':
         return 'Bonus'
-      case 'penalty':
-        return 'Straff'
       default:
         return type
     }
@@ -98,7 +88,7 @@ const PointsHistory = ({ memberId, open, onClose }) => {
       open={open} 
       onClose={onClose}
       title={`${member?.nickname}s poenghistorikk`}
-      subtitle="Oversikt over poeng tjent og brukt"
+      subtitle="Oversikt over alle opptjente poeng"
       icon={memberAvatar}
     >
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
@@ -133,25 +123,25 @@ const PointsHistory = ({ memberId, open, onClose }) => {
             border: '1px solid #bee5eb'
           }}>
             <div style={{ color: '#0c5460', fontSize: '1.5rem', fontWeight: 700 }}>
-              +{getTotalPoints('earned') + getTotalPoints('bonus')}
+              +{getTotalPoints('earned')}
             </div>
             <div style={{ color: '#0c5460', fontSize: '0.9rem' }}>
-              Totalt opptjent
+              Fra oppgaver
             </div>
           </div>
           
           <div style={{
-            backgroundColor: '#f8d7da',
+            backgroundColor: '#e2e3e5',
             padding: '1rem',
             borderRadius: '0.5rem',
             textAlign: 'center',
-            border: '1px solid #f5c6cb'
+            border: '1px solid #d6d8db'
           }}>
-            <div style={{ color: '#721c24', fontSize: '1.5rem', fontWeight: 700 }}>
-              {Math.abs(getTotalPoints('spent') + getTotalPoints('penalty'))}
+            <div style={{ color: '#383d41', fontSize: '1.5rem', fontWeight: 700 }}>
+              +{getTotalPoints('bonus')}
             </div>
-            <div style={{ color: '#721c24', fontSize: '0.9rem' }}>
-              Totalt brukt
+            <div style={{ color: '#383d41', fontSize: '0.9rem' }}>
+              Bonus poeng
             </div>
           </div>
         </div>
@@ -173,9 +163,7 @@ const PointsHistory = ({ memberId, open, onClose }) => {
           >
             <option value="all">Alle transaksjoner</option>
             <option value="earned">Opptjent</option>
-            <option value="spent">Brukt</option>
             <option value="bonus">Bonus</option>
-            <option value="penalty">Straff</option>
           </select>
         </div>
 

@@ -84,7 +84,7 @@ CREATE TABLE points_transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   family_member_id UUID REFERENCES family_members(id),
   points INTEGER NOT NULL,
-  transaction_type TEXT NOT NULL, -- 'earned', 'spent', 'bonus', 'penalty'
+  transaction_type TEXT NOT NULL, -- 'earned', 'bonus'
   description TEXT,
   task_completion_id UUID REFERENCES task_completions(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

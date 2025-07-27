@@ -225,9 +225,9 @@ export const mockPointsTransactions = [
   {
     id: 'mock-transaction-3',
     family_member_id: mockFamilyMembers[1].id,
-    points: -10,
-    transaction_type: 'spent',
-    description: 'Kjøpte ekstra TV-tid',
+    points: 5,
+    transaction_type: 'bonus',
+    description: 'Ekstra innsats denne uken!',
     task_completion_id: null,
     created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 timer siden
     family_members: mockFamilyMembers[1]

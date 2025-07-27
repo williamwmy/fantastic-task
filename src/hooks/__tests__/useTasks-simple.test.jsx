@@ -50,7 +50,6 @@ describe('useTasks - Simple Tests', () => {
         'completeTask',
         'verifyTaskCompletion',
         'awardPoints',
-        'spendPoints',
         'getTasksForMember',
         'getCompletionsForMember',
         'getPendingVerifications',

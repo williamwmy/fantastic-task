@@ -642,53 +642,6 @@ export const TasksProvider = ({ children }) => {
     }
   }
 
-  const spendPoints = async (memberId, points, description) => {
-    try {
-      // Check if member has enough points
-      const member = familyMembers.find(m => m.id === memberId)
-      if (!member || member.points_balance < points) {
-        throw new Error('Insufficient points')
-      }
-
-      // Create negative points transaction
-      const { data: transaction, error: transactionError } = await supabase
-        .from('points_transactions')
-        .insert({
-          family_member_id: memberId,
-          points: -points,
-          transaction_type: 'spent',
-          description
-        })
-        .select()
-        .single()
-
-      if (transactionError) throw transactionError
-
-      // Update member's points balance by reading current balance first
-      const { data: currentMember, error: memberError } = await supabase
-        .from('family_members')
-        .select('points_balance')
-        .eq('id', memberId)
-        .single()
-
-      if (memberError) throw memberError
-
-      const newBalance = (currentMember.points_balance || 0) - points
-      const { error: balanceError } = await supabase
-        .from('family_members')
-        .update({
-          points_balance: Math.max(0, newBalance) // Prevent negative balance
-        })
-        .eq('id', memberId)
-
-      if (balanceError) throw balanceError
-
-      return { data: transaction, error: null }
-    } catch (error) {
-      console.error('Error spending points:', error)
-      return { data: null, error }
-    }
-  }
 
   // Helper functions
   const getTasksForMember = (memberId, date = null) => {
@@ -915,7 +868,6 @@ export const TasksProvider = ({ children }) => {
     rejectCompletion,
     verifyTaskCompletion,
     awardPoints,
-    spendPoints,
     // Helper functions
     getTasksForMember,
     getTasksForDate,
