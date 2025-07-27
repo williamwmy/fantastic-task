@@ -745,22 +745,102 @@ export const TasksProvider = ({ children }) => {
     )
   }
 
-  const undoCompletion = async (assignmentId) => {
+  const undoCompletion = async (completionIdOrAssignmentId) => {
     try {
-      // For tests/mock mode, update tasks in memory
-      setTasks(prev => prev.map(task => {
-        if (task.assignment?.id === assignmentId) {
-          return {
-            ...task,
-            assignment: {
-              ...task.assignment,
-              is_completed: false,
-              completion: undefined
-            }
+      if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
+        // For tests/mock mode, handle both completion ID and assignment ID
+        let completionToRemove
+        let isAssignmentId = false
+        
+        // First try to find by completion ID
+        completionToRemove = taskCompletions.find(c => c.id === completionIdOrAssignmentId)
+        
+        // If not found, try to find by assignment ID (for backward compatibility with tests)
+        if (!completionToRemove) {
+          completionToRemove = taskCompletions.find(c => c.assignment_id === completionIdOrAssignmentId)
+          isAssignmentId = true
+        }
+        
+        if (completionToRemove) {
+          setTaskCompletions(prev => prev.filter(c => c.id !== completionToRemove.id))
+          
+          // Remove related points transactions if any
+          if (completionToRemove.points_awarded > 0) {
+            setPointsTransactions(prev => prev.filter(pt => pt.task_completion_id !== completionToRemove.id))
           }
         }
-        return task
-      }))
+        
+        // Update tasks with assignments - handle both ID types
+        setTasks(prev => prev.map(task => {
+          const shouldUpdate = isAssignmentId 
+            ? task.assignment?.id === completionIdOrAssignmentId
+            : task.assignment?.completion?.id === completionIdOrAssignmentId
+            
+          if (shouldUpdate) {
+            return {
+              ...task,
+              assignment: {
+                ...task.assignment,
+                is_completed: false,
+                completion: undefined
+              }
+            }
+          }
+          return task
+        }))
+        
+        return { data: {}, error: null }
+      }
+
+      // Get the completion data first to check for points
+      const { data: completionData, error: fetchError } = await supabase
+        .from('task_completions')
+        .select(`
+          *,
+          completed_by_member:family_members!completed_by(*),
+          tasks(*)
+        `)
+        .eq('id', completionIdOrAssignmentId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Delete any points transactions related to this completion
+      if (completionData.points_awarded > 0) {
+        const { error: pointsError } = await supabase
+          .from('points_transactions')
+          .delete()
+          .eq('task_completion_id', completionIdOrAssignmentId)
+
+        if (pointsError) throw pointsError
+
+        // Update member's points balance by subtracting the awarded points
+        const currentBalance = completionData.completed_by_member.points_balance || 0
+        const newBalance = Math.max(0, currentBalance - completionData.points_awarded)
+        
+        const { error: balanceError } = await supabase
+          .from('family_members')
+          .update({ points_balance: newBalance })
+          .eq('id', completionData.completed_by)
+
+        if (balanceError) throw balanceError
+      }
+
+      // Delete the completion from Supabase
+      const { error } = await supabase
+        .from('task_completions')
+        .delete()
+        .eq('id', completionIdOrAssignmentId)
+
+      if (error) throw error
+
+      // Remove completion from local state immediately
+      setTaskCompletions(prev => prev.filter(c => c.id !== completionIdOrAssignmentId))
+      
+      // Reload data to ensure consistency
+      await loadTaskCompletions()
+      await loadTasks()
+      await loadPointsTransactions()
       
       return { data: {}, error: null }
     } catch (error) {

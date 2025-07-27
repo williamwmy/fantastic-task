@@ -465,7 +465,7 @@ const TaskList = ({ selectedDate }) => {
                       )}
                       
                       <button
-                        onClick={() => undoCompletion(assignment?.id)}
+                        onClick={() => undoCompletion(completion.id)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
