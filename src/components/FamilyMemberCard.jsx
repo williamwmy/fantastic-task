@@ -28,7 +28,7 @@ const FamilyMemberCard = ({ member, onClose }) => {
   ]
 
   const canEditProfile = hasPermission('edit_member_profile', member.id) || 
-                        hasPermission('edit_own_profile') && member.id === currentMember.id
+                        (member.id === currentMember.id)
   const canChangeRole = hasPermission('change_roles') && member.id !== currentMember.id
 
   const handleInputChange = (e) => {
