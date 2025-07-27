@@ -1,12 +1,46 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Fantastic Task
 
-Currently, two official plugins are available:
+En moderne oppgave- og familieliste-app bygget med React og Vite.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Teknologi
 
-## Expanding the ESLint configuration
+- **React** – UI-komponenter
+- **Vite** – Rask utviklingsserver og byggverktøy
+- **Playwright** – E2E-testing
+- **Vitest** – Enhetstesting
+- **ESLint** – Kvalitetskontroll av kode
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Komme i gang
+
+1. Installer avhengigheter:
+   ```bash
+   npm install
+   ```
+2. Start utviklingsserver:
+   ```bash
+   npm run dev
+   ```
+3. Kjør enhetstester:
+   ```bash
+   npm run test
+   ```
+4. Kjør E2E-tester:
+   ```bash
+   npm run test:e2e
+   ```
+
+## Mapper
+
+- `src/` – Kildekode for appen
+- `public/` – Statisk innhold
+- `database/` – SQL-skjema og migreringer
+- `tests/` – E2E-tester
+- `coverage/` – Testdekning (genereres automatisk, ikke sjekkes inn)
+- `playwright-report/` – Playwright testrapporter (genereres automatisk, ikke sjekkes inn)
+- `test-results/` – Testresultater (genereres automatisk, ikke sjekkes inn)
+
+## Kvalitetssikring
+
+- Kjør `npm run lint` for å sjekke kodekvalitet.
+- Testdekning og rapporter genereres automatisk ved testkjøring.
