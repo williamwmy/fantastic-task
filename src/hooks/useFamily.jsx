@@ -482,6 +482,41 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     return updateMemberProfile(memberId, { role: 'child' })
   }
 
+  const resetAllPoints = async () => {
+    try {
+      if (!currentMember || currentMember.role !== 'admin') {
+        throw new Error('Only admins can reset all points')
+      }
+
+      if (LOCAL_TEST_USER) {
+        // In test mode, just update local state
+        setFamilyMembers(prev => 
+          prev.map(member => ({ ...member, points_balance: 0 }))
+        )
+        if (currentMember) {
+          setCurrentMember(prev => ({ ...prev, points_balance: 0 }))
+        }
+        return { error: null }
+      }
+
+      // Reset all family members' points to 0
+      const { error } = await supabase
+        .from('family_members')
+        .update({ points_balance: 0 })
+        .eq('family_id', family.id)
+
+      if (error) throw error
+
+      // Refresh family data to update local state
+      await loadFamilyData()
+
+      return { error: null }
+    } catch (error) {
+      console.error('Error resetting all points:', error)
+      return { error }
+    }
+  }
+
   // Role-based access control helpers
   const hasPermission = (action, targetMemberId = null) => {
     if (!currentMember) return false
@@ -551,6 +586,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     promoteToAdmin,
     demoteFromAdmin,
     setChildRole,
+    resetAllPoints,
     hasPermission
   }
 

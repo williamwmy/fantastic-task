@@ -12,7 +12,8 @@ import {
   FaChartBar,
   FaShieldAlt,
   FaSave,
-  FaTimes
+  FaTimes,
+  FaCoins
 } from 'react-icons/fa'
 
 const FamilyAdminPanel = () => {
@@ -22,7 +23,8 @@ const FamilyAdminPanel = () => {
     currentMember, 
     hasPermission,
     updateFamilyName,
-    removeFamilyMember
+    removeFamilyMember,
+    resetAllPoints
   } = useFamily()
   
   const { signOut } = useAuth()
@@ -74,6 +76,21 @@ const FamilyAdminPanel = () => {
   const handleSignOut = async () => {
     if (confirm('Er du sikker på at du vil logge ut?')) {
       await signOut()
+    }
+  }
+
+  const handleResetAllPoints = async () => {
+    if (confirm('Er du sikker på at du vil nullstille alle familiemedlemmers poeng? Dette kan ikke angres.')) {
+      setLoading(true)
+      const { error } = await resetAllPoints()
+      
+      if (error) {
+        alert('Feil ved nullstilling av poeng: ' + error.message)
+      } else {
+        alert('Alle poeng har blitt nullstilt!')
+      }
+      
+      setLoading(false)
     }
   }
 
@@ -291,16 +308,30 @@ const FamilyAdminPanel = () => {
         <p style={{ fontSize: '0.9rem', color: '#721c24', marginBottom: '1rem' }}>
           Vær forsiktig med disse handlingene - de kan ikke angres.
         </p>
-        <button
-          onClick={handleSignOut}
-          style={{
-            ...buttonStyle,
-            backgroundColor: '#dc3545',
-            color: 'white'
-          }}
-        >
-          Logg ut
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleResetAllPoints}
+            disabled={loading}
+            style={{
+              ...buttonStyle,
+              backgroundColor: '#fd7e14',
+              color: 'white'
+            }}
+          >
+            <FaCoins />
+            {loading ? 'Nullstiller...' : 'Nullstill alle poeng'}
+          </button>
+          <button
+            onClick={handleSignOut}
+            style={{
+              ...buttonStyle,
+              backgroundColor: '#dc3545',
+              color: 'white'
+            }}
+          >
+            Logg ut
+          </button>
+        </div>
       </div>
     </div>
   )
