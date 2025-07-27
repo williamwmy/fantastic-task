@@ -111,22 +111,37 @@ export default function App() {
           minWidth: "0", // Allow flex item to shrink
           flex: "1 1 auto"
         }}>
-          {/* Profile circle */}
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            background: currentMember.avatar_color || "#82bcf4",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontWeight: 700,
-            fontSize: 18,
-            flexShrink: 0
-          }}>
+          {/* Profile circle - clickable to open profile selector */}
+          <button
+            onClick={() => setShowProfileModal(true)}
+            title="Åpne profil og innstillinger"
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: currentMember.avatar_color || "#82bcf4",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: 700,
+              fontSize: 18,
+              flexShrink: 0,
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onMouseOver={(e) => {
+              e.target.style.transform = "scale(1.05)"
+              e.target.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)"
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = "scale(1)"
+              e.target.style.boxShadow = "none"
+            }}
+          >
             {currentMember.nickname[0].toUpperCase()}
-          </div>
+          </button>
           {/* Points display */}
           <div style={{ 
             padding: "0.25rem 0.5rem", 
@@ -146,27 +161,6 @@ export default function App() {
           flexWrap: "wrap",
           justifyContent: "flex-end"
         }}>
-          <button
-            onClick={() => setShowProfileModal(true)}
-            title="Bytt profil"
-            style={{ 
-              width: 36, 
-              height: 36, 
-              borderRadius: "50%", 
-              padding: 0, 
-              fontSize: 16, 
-              background: "#6c757d", 
-              color: "white", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center",
-              border: "none",
-              cursor: "pointer",
-              flexShrink: 0
-            }}
-          >
-            <FaUser />
-          </button>
           <button
             onClick={() => setShowStats(true)}
             title="Statistikk"

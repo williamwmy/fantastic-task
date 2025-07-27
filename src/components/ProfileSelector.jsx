@@ -187,7 +187,8 @@ const ProfileSelector = () => {
             </div>
 
             {/* Action buttons */}
-            {canManageMembers && member.id !== currentMember.id && (
+            {/* Show edit button for own profile OR admin can edit others */}
+            {(member.id === currentMember.id || (canManageMembers && member.id !== currentMember.id)) && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
                   onClick={(e) => {
@@ -204,12 +205,13 @@ const ProfileSelector = () => {
                     display: 'flex',
                     alignItems: 'center'
                   }}
-                  title="Rediger medlem"
+                  title={member.id === currentMember.id ? "Rediger din profil" : "Rediger medlem"}
                 >
                   <FaEdit />
                 </button>
                 
-                {member.is_local_user && (
+                {/* Password change only for local users and only admins can change others' passwords */}
+                {member.is_local_user && (canManageMembers || member.id === currentMember.id) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -231,25 +233,28 @@ const ProfileSelector = () => {
                   </button>
                 )}
                 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleRemoveMember(member.id, member.nickname)
-                  }}
-                  style={{
-                    padding: '0.5rem',
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                  title="Fjern medlem"
-                >
-                  <FaTrash />
-                </button>
+                {/* Remove button only for admins and not for themselves */}
+                {canManageMembers && member.id !== currentMember.id && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRemoveMember(member.id, member.nickname)
+                    }}
+                    style={{
+                      padding: '0.5rem',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.25rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="Fjern medlem"
+                  >
+                    <FaTrash />
+                  </button>
+                )}
               </div>
             )}
           </div>

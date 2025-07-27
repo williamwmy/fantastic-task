@@ -148,7 +148,7 @@ describe('Core Functionality Regression Tests', () => {
 
     it('should show action buttons for appropriate roles', () => {
       renderMainApp()
-      expect(screen.getByRole('button', { name: /bytt profil/i })).toBeInTheDocument()
+      expect(screen.getByTitle('Åpne profil og innstillinger')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /statistikk/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /poenghistorikk/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /admin/i })).toBeInTheDocument()
@@ -204,7 +204,7 @@ describe('Core Functionality Regression Tests', () => {
       renderMainApp()
       expect(screen.getByRole('button', { name: /forrige dag/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /neste dag/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /bytt profil/i })).toBeInTheDocument()
+      expect(screen.getByTitle('Åpne profil og innstillinger')).toBeInTheDocument()
     })
   })
 
@@ -300,7 +300,7 @@ describe('Core Functionality Regression Tests', () => {
       renderMainApp()
       expect(screen.getByRole('button', { name: /forrige dag/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /neste dag/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /bytt profil/i })).toBeInTheDocument()
+      expect(screen.getByTitle('Åpne profil og innstillinger')).toBeInTheDocument()
     })
 
     it('should support keyboard navigation', async () => {

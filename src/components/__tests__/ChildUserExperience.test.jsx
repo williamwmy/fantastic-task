@@ -142,7 +142,7 @@ describe('Child User Experience', () => {
     expect(screen.getByText('50 poeng')).toBeInTheDocument()
     
     // Should see profile and stats buttons (these are allowed)
-    expect(screen.getByTitle('Bytt profil')).toBeInTheDocument()
+    expect(screen.getByTitle('Åpne profil og innstillinger')).toBeInTheDocument()
     expect(screen.getByTitle('Statistikk')).toBeInTheDocument()
     expect(screen.getByTitle('Poenghistorikk')).toBeInTheDocument()
     
@@ -157,7 +157,7 @@ describe('Child User Experience', () => {
     render(<App />)
     
     // Click on profile button - should work fine
-    const profileButton = screen.getByTitle('Bytt profil')
+    const profileButton = screen.getByTitle('Åpne profil og innstillinger')
     await user.click(profileButton)
     
     // Should open profile modal, not show error

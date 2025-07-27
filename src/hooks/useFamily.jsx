@@ -434,13 +434,57 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         return { error: null }
       }
 
-      // Reset all family members' points to 0
-      const { error } = await supabase
+      // Delete all task completions for this family
+      const { error: completionsError } = await supabase
+        .from('task_completions')
+        .delete()
+        .eq('task_id', 'IN', `(SELECT id FROM tasks WHERE family_id = '${family.id}')`)
+
+      if (completionsError) {
+        // Alternative approach using a subquery
+        const { data: familyTasks, error: tasksError } = await supabase
+          .from('tasks')
+          .select('id')
+          .eq('family_id', family.id)
+
+        if (tasksError) throw tasksError
+
+        if (familyTasks && familyTasks.length > 0) {
+          const taskIds = familyTasks.map(task => task.id)
+          const { error: deleteCompletionsError } = await supabase
+            .from('task_completions')
+            .delete()
+            .in('task_id', taskIds)
+
+          if (deleteCompletionsError) throw deleteCompletionsError
+        }
+      }
+
+      // Delete all points transactions for family members
+      const { data: familyMemberIds, error: membersError } = await supabase
+        .from('family_members')
+        .select('id')
+        .eq('family_id', family.id)
+
+      if (membersError) throw membersError
+
+      if (familyMemberIds && familyMemberIds.length > 0) {
+        const memberIds = familyMemberIds.map(member => member.id)
+        const { error: transactionsError } = await supabase
+          .from('points_transactions')
+          .delete()
+          .in('family_member_id', memberIds)
+
+        if (transactionsError) throw transactionsError
+      }
+
+      // Reset all family members' points balance to 0
+      const { error: pointsError } = await supabase
         .from('family_members')
         .update({ points_balance: 0 })
         .eq('family_id', family.id)
 
-      if (error) throw error
+      if (pointsError) throw pointsError
 
       // Refresh family data to update local state
       await loadFamilyData()
