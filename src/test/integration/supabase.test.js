@@ -447,7 +447,7 @@ describe('Supabase Integration Tests', () => {
           schema: 'public',
           table: 'tasks'
         }, (payload) => {
-          console.log('Task change:', payload)
+          // Handle task change
         })
         .subscribe()
 

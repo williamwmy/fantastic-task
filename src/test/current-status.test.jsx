@@ -31,10 +31,6 @@ describe('Current Test Status Analysis', () => {
     const passRate = Math.round((testProgress.currentStatus.passing / testProgress.currentStatus.total) * 100)
     expect(passRate).toBe(60) // 124/208 = 59.6% ≈ 60%
     
-    console.log('Test Progress Summary:')
-    console.log(`Previous: ${testProgress.previousStatus.passing}/${testProgress.previousStatus.total} passing (${Math.round((testProgress.previousStatus.passing/testProgress.previousStatus.total)*100)}%)`)
-    console.log(`Current: ${testProgress.currentStatus.passing}/${testProgress.currentStatus.total} passing (${passRate}%)`)
-    console.log(`New tests added: ${testProgress.improvement.newTotalTests} (all passing)`)
   })
 
   it('should verify our stable test foundation', () => {
@@ -53,7 +49,6 @@ describe('Current Test Status Analysis', () => {
     const stableFoundationPercentage = Math.round((totalStable / 124) * 100)
     expect(stableFoundationPercentage).toBeGreaterThanOrEqual(60)
     
-    console.log(`Stable foundation: ${totalStable} tests (${stableFoundationPercentage}% of passing tests)`)
   })
 
   it('should estimate coverage improvement', () => {
@@ -70,7 +65,5 @@ describe('Current Test Status Analysis', () => {
     
     expect(progressTowardsPhase2).toBeGreaterThan(50) // More than halfway to Phase 2
     
-    console.log(`Estimated coverage: ${coverage.estimatedWithAllPassing}%`)
-    console.log(`Progress towards Phase 2 (40%): ${Math.round(progressTowardsPhase2)}%`)
   })
 })

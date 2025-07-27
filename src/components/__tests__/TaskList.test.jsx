@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TaskList from '../TaskList.jsx'
-import { renderWithProviders } from '../../test/utils.jsx'
 
 // Mock the tasks hook
 const mockTasksHook = {
@@ -127,20 +126,24 @@ describe('TaskList', () => {
     }
   })
 
-  it('should handle task completion with details', async () => {
+  it('should open detailed completion modal when clicking "Fullfør med detaljer"', async () => {
     const user = userEvent.setup()
-    mockTasksHook.completeTask.mockResolvedValue({ data: {}, error: null })
     
     render(<TaskList selectedDate={selectedDate} />)
     
-    // Find and click the complete button for the first task
-    const completeButtons = screen.getAllByLabelText('complete')
-    if (completeButtons.length > 0) {
-      await user.click(completeButtons[0])
-      
-      // Should trigger task completion modal or form
-      expect(mockTasksHook.completeTask).toHaveBeenCalled()
-    }
+    // Find and click the detailed complete button for the first task
+    const detailedCompleteButtons = screen.getAllByText('Fullfør med detaljer')
+    expect(detailedCompleteButtons.length).toBeGreaterThan(0)
+    
+    await user.click(detailedCompleteButtons[0])
+    
+    // Should open the TaskCompletion modal
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Fullfør oppgave' })).toBeInTheDocument()
+    })
+    
+    // Should NOT directly call completeTask
+    expect(mockTasksHook.completeTask).not.toHaveBeenCalled()
   })
 
   it('should handle undo completion', async () => {

@@ -175,18 +175,7 @@ const TaskList = ({ selectedDate }) => {
   }
 
   const handleDetailedCompleteTask = async (task, assignment) => {
-    // For tests, always call completeTask if available (to trigger spy)
-    if (typeof completeTask === 'function') {
-      const completionData = {
-        task_id: task.id,
-        assignment_id: assignment?.id || null,
-        completed_by: currentMember.id,
-        points_awarded: task.points || 0
-      }
-      await completeTask(completionData)
-      return
-    }
-    // In real app, open modal
+    // In normal app behavior, open the detailed completion modal
     setCompletingTask({ task, assignment })
   }
 
