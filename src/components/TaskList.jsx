@@ -44,9 +44,18 @@ const TaskList = ({ selectedDate }) => {
   const [completingTask, setCompletingTask] = useState(null)
   const [assigningTask, setAssigningTask] = useState(null)
   const [quickCompletingTask, setQuickCompletingTask] = useState(null)
+  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(currentMember?.role === 'child')
 
   // Get tasks available for today
-  const todayTasks = getTasksForDate(selectedDate) || []
+  const allTodayTasks = getTasksForDate(selectedDate) || []
+  
+  // Filter tasks based on the toggle - if showOnlyMyTasks is true, only show assigned tasks
+  const todayTasks = showOnlyMyTasks 
+    ? allTodayTasks.filter(task => {
+        const assignment = getTaskAssignment(task.id) || task.assignment
+        return assignment && assignment.assigned_to === currentMember?.id
+      })
+    : allTodayTasks
 
   // Get assignments for current member for selected date
   const myAssignments = getTasksForMember(currentMember?.id, selectedDate)
@@ -57,10 +66,6 @@ const TaskList = ({ selectedDate }) => {
   // Get ALL completions for current member (not filtered by date) to show completion status
   const allMyCompletions = getCompletionsForMember(currentMember?.id)
 
-  const isTaskCompleted = (taskId) => {
-    // Check if task is completed on the currently selected date
-    return getTaskCompletion(taskId) !== undefined
-  }
 
   const getTaskAssignment = (taskId) => {
     return myAssignments.find(assignment => assignment.task_id === taskId)
@@ -203,9 +208,45 @@ const TaskList = ({ selectedDate }) => {
           Oppgaver for {formatDate(selectedDate)}
         </h3>
         <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-          {todayTasks.length} oppgaver tilgjengelig
+          {todayTasks.length} oppgaver {showOnlyMyTasks ? 'tildelt meg' : 'tilgjengelig'}
         </div>
       </div>
+
+      {/* Filter toggle - hide for child users since they always see only their tasks */}
+      {currentMember?.role !== 'child' && (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          marginBottom: '1rem',
+          padding: '0.75rem',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '0.5rem',
+          border: '1px solid #dee2e6'
+        }}>
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: 500
+          }}>
+            <input
+              type="checkbox"
+              checked={showOnlyMyTasks}
+              onChange={(e) => setShowOnlyMyTasks(e.target.checked)}
+              style={{ 
+                width: '1.1rem', 
+                height: '1.1rem',
+                cursor: 'pointer'
+              }}
+            />
+            <FaUser style={{ color: '#82bcf4' }} />
+            Vis kun mine oppgaver
+          </label>
+        </div>
+      )}
 
       {todayTasks.length === 0 ? (
         <div style={{
@@ -217,10 +258,13 @@ const TaskList = ({ selectedDate }) => {
         }}>
           <FaClock size={48} style={{ color: '#6c757d', marginBottom: '1rem', opacity: 0.3 }} />
           <h4 style={{ color: '#6c757d', margin: '0 0 0.5rem 0' }}>
-            Ingen oppgaver
+            {showOnlyMyTasks ? 'Ingen oppgaver tildelt deg' : 'Ingen oppgaver'}
           </h4>
           <p style={{ color: '#6c757d', margin: 0 }}>
-            Det er ikke planlagt noen aktiviteter for denne dagen.
+            {showOnlyMyTasks 
+              ? 'Du har ingen oppgaver tildelt for denne dagen.'
+              : 'Det er ikke planlagt noen aktiviteter for denne dagen.'
+            }
           </p>
         </div>
       ) : (

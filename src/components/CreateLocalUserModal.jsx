@@ -101,10 +101,12 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
       <div style={{
         backgroundColor: 'white',
         borderRadius: '0.5rem',
-        padding: '1.5rem',
+        padding: '1rem',
         maxWidth: '500px',
-        width: '100%',
-        position: 'relative'
+        width: 'calc(100vw - 2rem)',
+        position: 'relative',
+        margin: '0 auto',
+        boxSizing: 'border-box'
       }}>
         {/* Header */}
         <div style={{
@@ -154,7 +156,8 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
                 border: '2px solid #ddd',
                 borderRadius: '0.25rem',
                 fontSize: '1rem',
-                fontFamily: 'monospace'
+                fontFamily: 'monospace',
+                boxSizing: 'border-box'
               }}
               disabled={loading}
             />
@@ -184,7 +187,8 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
                 padding: '0.75rem',
                 border: '2px solid #ddd',
                 borderRadius: '0.25rem',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                boxSizing: 'border-box'
               }}
               disabled={loading}
             />
@@ -209,7 +213,8 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
                 padding: '0.75rem',
                 border: '2px solid #ddd',
                 borderRadius: '0.25rem',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                boxSizing: 'border-box'
               }}
               disabled={loading}
             >
@@ -242,7 +247,8 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
                   paddingRight: '3rem',
                   border: '2px solid #ddd',
                   borderRadius: '0.25rem',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  boxSizing: 'border-box'
                 }}
                 disabled={loading}
               />
@@ -288,7 +294,8 @@ const CreateLocalUserModal = ({ onClose, onSuccess }) => {
                   paddingRight: '3rem',
                   border: '2px solid #ddd',
                   borderRadius: '0.25rem',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  boxSizing: 'border-box'
                 }}
                 disabled={loading}
               />

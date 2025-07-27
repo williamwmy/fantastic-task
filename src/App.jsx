@@ -188,7 +188,7 @@ export default function App() {
           >
             <FaChartBar />
           </button>
-          <PermissionGate permission="edit_tasks">
+          <PermissionGate permission="edit_tasks" fallback={null}>
             <button
               onClick={() => setShowAllTasks(true)}
               title="Alle oppgaver"
@@ -212,7 +212,7 @@ export default function App() {
             </button>
           </PermissionGate>
           
-          <PermissionGate permission="view_all_stats">
+          <PermissionGate permission="view_all_stats" fallback={null}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 onClick={() => setShowTaskVerification(true)}
@@ -404,7 +404,7 @@ export default function App() {
       </div>
 
       {/* Add Modal */}
-      <PermissionGate permission="edit_tasks">
+      <PermissionGate permission="edit_tasks" fallback={null}>
         <CreateTaskForm 
           open={showAddModal} 
           onClose={() => setShowAddModal(false)}
@@ -429,7 +429,7 @@ export default function App() {
       />
 
       {/* All Tasks Modal */}
-      <PermissionGate permission="edit_tasks">
+      <PermissionGate permission="edit_tasks" fallback={null}>
         <Modal 
           open={showAllTasks} 
           onClose={() => setShowAllTasks(false)}
