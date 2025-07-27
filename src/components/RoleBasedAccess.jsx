@@ -46,6 +46,10 @@ export const PermissionGate = ({
   const hasAccess = hasPermission(permission, targetMemberId)
   
   if (!hasAccess) {
+    if (fallback === null) {
+      return null
+    }
+    
     return fallback || (
       <div style={{
         padding: '1rem',

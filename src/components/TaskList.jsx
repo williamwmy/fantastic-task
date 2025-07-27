@@ -520,26 +520,28 @@ const TaskList = ({ selectedDate }) => {
                     </>
                   )}
                   
-                  <button
-                    onClick={() => handleAssignTask(task)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.5rem 1rem',
-                      backgroundColor: '#6c757d',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '2rem',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <FaUser />
-                    Tildel
-                  </button>
+                  <PermissionGate permission="assign_tasks" fallback={null}>
+                    <button
+                      onClick={() => handleAssignTask(task)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '2rem',
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <FaUser />
+                      Tildel
+                    </button>
+                  </PermissionGate>
                 </div>
               </div>
             )
