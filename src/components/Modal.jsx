@@ -32,7 +32,7 @@ const Modal = ({ open, onClose, children, hideCloseButton = false, title, subtit
           backgroundColor: 'white',
           borderRadius: '0.5rem',
           width: '100%',
-          maxWidth: 'min(95vw, 800px)',
+          maxWidth: window.innerWidth < 768 ? '95vw' : 'min(95vw, 600px)',
           maxHeight: '95vh',
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
           position: 'relative',

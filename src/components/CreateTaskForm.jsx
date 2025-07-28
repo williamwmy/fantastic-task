@@ -131,7 +131,7 @@ const CreateTaskForm = ({ open, onClose }) => {
       description: '',
       points: '',
       estimatedMinutes: '',
-      recurringType: 'daily',
+      recurringType: 'once',
       recurringDays: [],
       flexibleInterval: 7,
       assignedTo: ''
@@ -199,7 +199,7 @@ const CreateTaskForm = ({ open, onClose }) => {
           description: '',
           points: '',
           estimatedMinutes: '',
-          recurringType: 'daily',
+          recurringType: 'once',
           recurringDays: [],
           flexibleInterval: 7,
           assignedTo: ''
@@ -321,12 +321,25 @@ const CreateTaskForm = ({ open, onClose }) => {
                 type="button"
                 onClick={() => setShowQuickStart(false)}
                 style={{
-                  background: 'none',
-                  border: 'none',
+                  padding: '0.4rem 0.8rem',
+                  backgroundColor: 'white',
+                  border: '1px solid #6c757d',
+                  borderRadius: '0.25rem',
                   fontSize: '0.8rem',
                   color: '#6c757d',
                   cursor: 'pointer',
-                  textDecoration: 'underline'
+                  transition: 'all 0.2s ease',
+                  fontWeight: 500
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#f8f9fa'
+                  e.target.style.borderColor = '#495057'
+                  e.target.style.color = '#495057'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = 'white'
+                  e.target.style.borderColor = '#6c757d'
+                  e.target.style.color = '#6c757d'
                 }}
               >
                 Opprett egen oppgave
@@ -356,8 +369,8 @@ const CreateTaskForm = ({ open, onClose }) => {
                 </h4>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                  gap: '0.5rem'
+                  gridTemplateColumns: window.innerWidth < 480 ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))',
+                  gap: window.innerWidth < 480 ? '0.4rem' : '0.5rem'
                 }}>
                   {tasks.map((task, index) => (
                     <button
@@ -365,14 +378,14 @@ const CreateTaskForm = ({ open, onClose }) => {
                       type="button"
                       onClick={() => handleQuickStartSelect(task)}
                       style={{
-                        padding: '0.75rem',
+                        padding: window.innerWidth < 480 ? '0.6rem' : '0.75rem',
                         textAlign: 'left',
                         backgroundColor: '#fff',
                         border: '1px solid #dee2e6',
                         borderRadius: '0.5rem',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
-                        fontSize: '0.85rem'
+                        fontSize: window.innerWidth < 480 ? '0.8rem' : '0.85rem'
                       }}
                       onMouseOver={(e) => {
                         e.target.style.backgroundColor = '#e7f1ff'
@@ -433,7 +446,14 @@ const CreateTaskForm = ({ open, onClose }) => {
                   borderRadius: '0.5rem',
                   cursor: 'pointer',
                   fontSize: '0.9rem',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  transition: 'background-color 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.backgroundColor = '#5a6268'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.backgroundColor = '#6c757d'
                 }}
               >
                 Opprett egen oppgave i stedet
@@ -451,16 +471,27 @@ const CreateTaskForm = ({ open, onClose }) => {
               type="button"
               onClick={() => setShowQuickStart(true)}
               style={{
-                background: 'none',
-                border: 'none',
+                padding: '0.4rem 0.8rem',
+                backgroundColor: '#e7f1ff',
+                border: '1px solid #82bcf4',
+                borderRadius: '0.25rem',
                 color: '#0056b3',
                 cursor: 'pointer',
                 fontSize: '0.85rem',
-                textDecoration: 'underline',
+                fontWeight: 500,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                margin: '0 auto'
+                margin: '0 auto',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#82bcf4'
+                e.target.style.color = 'white'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#e7f1ff'
+                e.target.style.color = '#0056b3'
               }}
             >
               <FaLightbulb size={12} />
@@ -544,7 +575,7 @@ const CreateTaskForm = ({ open, onClose }) => {
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr', 
-            gap: '1rem',
+            gap: window.innerWidth < 480 ? '0.75rem' : '1rem',
             marginBottom: '1.5rem'
           }}>
             {/* Points */}
@@ -629,43 +660,54 @@ const CreateTaskForm = ({ open, onClose }) => {
               alignItems: 'center',
               gap: '0.5rem',
               fontWeight: 600, 
-              marginBottom: '0.75rem',
+              marginBottom: '0.5rem',
               color: '#333'
             }}>
               <FaCalendarAlt />
               Gjentakelsesmønster
             </label>
             
-            {recurringTypeOptions.map((option) => (
-              <div 
-                key={option.value}
-                style={{
-                  marginBottom: '0.75rem',
-                  padding: '0.75rem',
-                  border: `2px solid ${formData.recurringType === option.value ? '#0056b3' : '#e9ecef'}`,
-                  borderRadius: '0.5rem',
-                  backgroundColor: formData.recurringType === option.value ? '#f8f9ff' : '#fff',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onClick={() => setFormData(prev => ({ ...prev, recurringType: option.value }))}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                  <input
-                    type="radio"
-                    name="recurringType"
-                    value={option.value}
-                    checked={formData.recurringType === option.value}
-                    readOnly
-                    style={{ margin: 0 }}
-                  />
-                  <strong style={{ color: '#333' }}>{option.label}</strong>
-                </div>
-                <small style={{ color: '#6c757d', marginLeft: '1.25rem' }}>
-                  {option.description}
-                </small>
-              </div>
-            ))}
+            <select
+              name="recurringType"
+              value={formData.recurringType}
+              onChange={(e) => setFormData(prev => ({ ...prev, recurringType: e.target.value }))}
+              aria-label="Gjentakelsesmønster"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: '2px solid #e9ecef',
+                borderRadius: '0.5rem',
+                fontSize: '1rem',
+                backgroundColor: 'white',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#82bcf4'}
+              onBlur={(e) => e.target.style.borderColor = '#e9ecef'}
+            >
+              {recurringTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            
+            {/* Show description for selected option */}
+            <div style={{
+              marginTop: '0.5rem',
+              padding: '0.75rem',
+              backgroundColor: '#f8f9fa',
+              border: '1px solid #e9ecef',
+              borderRadius: '0.5rem',
+              fontSize: '0.85rem',
+              color: '#6c757d',
+              lineHeight: '1.4'
+            }}>
+              <strong style={{ color: '#495057', display: 'block', marginBottom: '0.25rem' }}>
+                Forklaring:
+              </strong>
+              {recurringTypeOptions.find(opt => opt.value === formData.recurringType)?.description}
+            </div>
           </div>
 
           {/* Days selection - only show for daily recurring */}

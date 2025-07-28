@@ -48,24 +48,30 @@ describe('CreateTaskForm', () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Hide quick-start to access regular form
+    await user.click(screen.getByText('Opprett egen oppgave'))
+    
     // Switch to daily type first to enable day selection
-    await user.click(screen.getByText(/Spesifikke dager/i))
+    const recurringSelect = screen.getByRole('combobox', { name: /gjentakelsesmønster/i })
+    await user.selectOptions(recurringSelect, 'daily')
     
     // Click on Monday (using the short form from the component)
     await user.click(screen.getByText('Man'))
     
-    expect(screen.getByText(/Engangsoppgave/i)).toBeInTheDocument()
-    expect(screen.getByText(/Spesifikke dager/i)).toBeInTheDocument()
-    expect(screen.getByText(/Ukentlig.*fleksibel/i)).toBeInTheDocument()
-    expect(screen.getByText(/Månedlig.*fleksibel/i)).toBeInTheDocument()
+    // Verify the description shows for daily type
+    expect(screen.getByText(/Oppgaven vises på valgte dager hver uke/i)).toBeInTheDocument()
   })
 
   it('should provide quick select options for days', async () => {
     const user = userEvent.setup()
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Hide quick-start to access regular form
+    await user.click(screen.getByText('Opprett egen oppgave'))
+    
     // Switch to daily type to see day selection
-    await user.click(screen.getByText(/Spesifikke dager/i))
+    const recurringSelect = screen.getByRole('combobox', { name: /gjentakelsesmønster/i })
+    await user.selectOptions(recurringSelect, 'daily')
     
     expect(screen.getByText('Ukedager')).toBeInTheDocument()
     expect(screen.getByText('Man')).toBeInTheDocument()
@@ -77,6 +83,9 @@ describe('CreateTaskForm', () => {
     mockTasksHook.createTask.mockResolvedValue({ success: true })
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Hide quick-start to access regular form
+    await user.click(screen.getByText('Opprett egen oppgave'))
+    
     // Fill in form
     await user.type(screen.getByPlaceholderText("F.eks. 'Rydde rommet', 'Gjøre lekser', 'Støvsuge stua'"), 'Test Oppgave')
     
@@ -85,7 +94,8 @@ describe('CreateTaskForm', () => {
     await user.type(pointsInput, '15')
     
     // Switch to daily type to enable day selection
-    await user.click(screen.getByText(/Spesifikke dager/i))
+    const recurringSelect = screen.getByRole('combobox', { name: /gjentakelsesmønster/i })
+    await user.selectOptions(recurringSelect, 'daily')
     
     // Select some days (using short forms)
     await user.click(screen.getByText('Man'))
@@ -111,11 +121,15 @@ describe('CreateTaskForm', () => {
     mockTasksHook.createTask.mockResolvedValue({ data: {}, error: null })
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Hide quick-start to access regular form
+    await user.click(screen.getByText('Opprett egen oppgave'))
+    
     // Fill in form first
     await user.type(screen.getByPlaceholderText("F.eks. 'Rydde rommet', 'Gjøre lekser', 'Støvsuge stua'"), 'Fleksibel Oppgave')
     
     // Switch to weekly flexible
-    await user.click(screen.getByText(/Ukentlig.*fleksibel/i))
+    const recurringSelect = screen.getByRole('combobox', { name: /gjentakelsesmønster/i })
+    await user.selectOptions(recurringSelect, 'weekly_flexible')
     
     // Submit form without changing interval (use default)
     await user.click(screen.getByRole('button', { name: /legg til oppgave/i }))
@@ -141,8 +155,12 @@ describe('CreateTaskForm', () => {
     mockTasksHook.createTask.mockResolvedValue({ success: true })
     renderWithProviders(<CreateTaskForm {...mockProps} />)
     
+    // Hide quick-start to access regular form
+    await user.click(screen.getByText('Opprett egen oppgave'))
+    
     // Switch to monthly flexible
-    await user.click(screen.getByText(/Månedlig.*fleksibel/i))
+    const recurringSelect = screen.getByRole('combobox', { name: /gjentakelsesmønster/i })
+    await user.selectOptions(recurringSelect, 'monthly_flexible')
     
     // Fill in form
     await user.type(screen.getByPlaceholderText("F.eks. 'Rydde rommet', 'Gjøre lekser', 'Støvsuge stua'"), 'Månedlig Oppgave')
@@ -157,7 +175,7 @@ describe('CreateTaskForm', () => {
       estimated_minutes: null,
       recurring_type: 'monthly_flexible',
       recurring_days: null,
-      flexible_interval: 7, // Default interval is 7
+      flexible_interval: 7, // Default interval is 7 for all flexible types
       created_by: 'test-member-id'
     })
   })
