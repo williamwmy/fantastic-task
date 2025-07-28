@@ -121,33 +121,33 @@ const LoginPage = ({ initialMode = 'signin' }) => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem'
+      justifyContent: window.innerWidth < 768 ? 'flex-start' : 'center',
+      padding: window.innerWidth < 768 ? '1rem' : '2rem'
     }}>
       {/* Header Section */}
       <div style={{
         textAlign: 'center',
-        marginBottom: '3rem',
+        marginBottom: window.innerWidth < 768 ? '1.5rem' : '3rem',
         maxWidth: '600px'
       }}>
         {/* App Logo/Icon */}
         <div style={{
-          width: '120px',
-          height: '120px',
+          width: window.innerWidth < 768 ? '80px' : '120px',
+          height: window.innerWidth < 768 ? '80px' : '120px',
           backgroundColor: '#82bcf4',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          margin: '0 auto 2rem auto',
+          margin: window.innerWidth < 768 ? '0 auto 1rem auto' : '0 auto 2rem auto',
           boxShadow: '0 8px 32px rgba(130, 188, 244, 0.3)'
         }}>
-          <FaTasks size={60} color="white" />
+          <FaTasks size={window.innerWidth < 768 ? 40 : 60} color="white" />
         </div>
 
         {/* App Name */}
         <h1 style={{
-          fontSize: '3rem',
+          fontSize: window.innerWidth < 768 ? '2rem' : '3rem',
           fontWeight: 700,
           color: '#2c3e50',
           margin: '0 0 0.5rem 0',
@@ -168,53 +168,55 @@ const LoginPage = ({ initialMode = 'signin' }) => {
 
         {/* Tagline */}
         <p style={{
-          fontSize: '1.25rem',
+          fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem',
           color: '#495057',
           lineHeight: 1.6,
-          margin: '0 0 2rem 0'
+          margin: window.innerWidth < 768 ? '0 0 1rem 0' : '0 0 2rem 0'
         }}>
           En familie-oppgaveapp som gjør hverdagen enklere med poeng og belønninger
         </p>
 
-        {/* Feature highlights */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '2rem',
-          flexWrap: 'wrap',
-          marginBottom: '3rem'
-        }}>
+        {/* Feature highlights - hide on mobile */}
+        {window.innerWidth >= 768 && (
           <div style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#495057',
-            fontSize: '1rem'
+            justifyContent: 'center',
+            gap: '2rem',
+            flexWrap: 'wrap',
+            marginBottom: '3rem'
           }}>
-            <FaUsers style={{ color: '#82bcf4' }} />
-            <span>Hele familien</span>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#495057',
+              fontSize: '1rem'
+            }}>
+              <FaUsers style={{ color: '#82bcf4' }} />
+              <span>Hele familien</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#495057',
+              fontSize: '1rem'
+            }}>
+              <FaStar style={{ color: '#ffc107' }} />
+              <span>Poeng & belønninger</span>
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#495057',
+              fontSize: '1rem'
+            }}>
+              <FaTasks style={{ color: '#28a745' }} />
+              <span>Fleksible oppgaver</span>
+            </div>
           </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#495057',
-            fontSize: '1rem'
-          }}>
-            <FaStar style={{ color: '#ffc107' }} />
-            <span>Poeng & belønninger</span>
-          </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#495057',
-            fontSize: '1rem'
-          }}>
-            <FaTasks style={{ color: '#28a745' }} />
-            <span>Fleksible oppgaver</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Login Form */}
@@ -255,16 +257,63 @@ const LoginPage = ({ initialMode = 'signin' }) => {
           </div>
         )}
 
-        {/* Mode tabs */}
+        {/* Mode tabs - responsive design */}
         <div style={{
           display: 'flex',
           marginBottom: '2rem',
           borderBottom: '2px solid #f8f9fa',
-          flexWrap: 'wrap'
+          flexWrap: 'wrap',
+          gap: window.innerWidth < 768 ? '0.25rem' : '0'
         }}>
+          {/* Primary actions */}
+          <button
+            onClick={() => {
+              setMode('signin')
+              setError('')
+              setMessage('')
+            }}
+            style={{
+              flex: window.innerWidth < 768 ? '1 1 48%' : '1',
+              padding: window.innerWidth < 768 ? '0.875rem 0.5rem' : '0.75rem',
+              backgroundColor: mode === 'signin' ? '#0056b3' : 'transparent',
+              color: mode === 'signin' ? 'white' : '#6c757d',
+              border: mode === 'signin' ? '2px solid #0056b3' : '2px solid transparent',
+              borderRadius: '0.5rem',
+              fontWeight: mode === 'signin' ? 600 : 400,
+              cursor: 'pointer',
+              fontSize: window.innerWidth < 768 ? '0.9rem' : '0.9rem',
+              transition: 'all 0.2s ease',
+              marginBottom: window.innerWidth < 768 ? '0.5rem' : '0'
+            }}
+          >
+            Logg inn
+          </button>
+          
+          <button
+            onClick={() => {
+              setMode('signup')
+              setError('')
+              setMessage('')
+            }}
+            style={{
+              flex: window.innerWidth < 768 ? '1 1 48%' : '1',
+              padding: window.innerWidth < 768 ? '0.875rem 0.5rem' : '0.75rem',
+              backgroundColor: mode === 'signup' ? '#28a745' : 'transparent',
+              color: mode === 'signup' ? 'white' : '#6c757d',
+              border: mode === 'signup' ? '2px solid #28a745' : '2px solid transparent',
+              borderRadius: '0.5rem',
+              fontWeight: mode === 'signup' ? 600 : 400,
+              cursor: 'pointer',
+              fontSize: window.innerWidth < 768 ? '0.9rem' : '0.9rem',
+              transition: 'all 0.2s ease',
+              marginBottom: window.innerWidth < 768 ? '0.5rem' : '0'
+            }}
+          >
+            Registrer
+          </button>
+
+          {/* Secondary actions - smaller on mobile */}
           {[
-            { key: 'signin', label: 'Logg inn' },
-            { key: 'signup', label: 'Registrer' },
             { key: 'reset', label: 'Glemt passord?' },
             { key: 'create-family', label: 'Opprett familie' },
             { key: 'join-family', label: 'Bli med i familie' }
@@ -277,15 +326,15 @@ const LoginPage = ({ initialMode = 'signin' }) => {
                 setMessage('')
               }}
               style={{
-                flex: 1,
-                padding: '0.75rem',
+                flex: window.innerWidth < 768 ? '1 1 32%' : '1',
+                padding: window.innerWidth < 768 ? '0.5rem 0.25rem' : '0.75rem',
                 backgroundColor: 'transparent',
                 border: 'none',
                 borderBottom: `3px solid ${mode === tab.key ? '#82bcf4' : 'transparent'}`,
                 color: mode === tab.key ? '#82bcf4' : '#6c757d',
                 fontWeight: mode === tab.key ? 600 : 400,
                 cursor: 'pointer',
-                fontSize: '0.9rem',
+                fontSize: window.innerWidth < 768 ? '0.75rem' : '0.9rem',
                 transition: 'all 0.2s ease'
               }}
             >

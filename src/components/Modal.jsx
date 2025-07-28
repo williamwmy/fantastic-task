@@ -20,10 +20,10 @@ const Modal = ({ open, onClose, children, hideCloseButton = false, title, subtit
         bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: '0.5rem'
+        padding: window.innerWidth < 768 ? '1rem 0.5rem' : '0.5rem'
       }}
       onClick={handleBackdropClick}
     >

@@ -149,117 +149,175 @@ const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
   }
 
   const renderSignInForm = () => (
-    <form onSubmit={handleSignIn}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Logg inn</h2>
+    <div>
+      <h2 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.8rem', color: '#333' }}>Logg inn</h2>
       
-      <input
-        type="text"
-        name="email"
-        placeholder="E-post eller brukernavn"
-        value={formData.email}
-        onChange={handleInputChange}
-        required
-        style={inputStyle}
-      />
+      <form onSubmit={handleSignIn}>
+        <input
+          type="text"
+          name="email"
+          placeholder="E-post eller brukernavn"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+          style={inputStyle}
+        />
+        
+        <div style={{ 
+          fontSize: '0.8rem', 
+          color: '#666', 
+          marginBottom: '1rem',
+          marginTop: '-0.5rem'
+        }}>
+          Skriv inn e-post adresse eller brukernavn (uten @)
+        </div>
+        
+        <input
+          type="password"
+          name="password"
+          placeholder="Passord"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+          style={inputStyle}
+        />
+        
+        <button type="submit" disabled={loading} style={{
+          ...buttonStyle,
+          backgroundColor: '#0056b3',
+          fontSize: '1.1rem',
+          fontWeight: 'bold',
+          padding: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          {loading ? 'Logger inn...' : 'Logg inn'}
+        </button>
+      </form>
       
       <div style={{ 
-        fontSize: '0.8rem', 
-        color: '#666', 
-        marginBottom: '1rem',
-        marginTop: '-0.5rem'
+        backgroundColor: '#f8f9fa', 
+        padding: '1.5rem', 
+        borderRadius: '0.5rem',
+        marginTop: '1rem',
+        textAlign: 'center'
       }}>
-        Skriv inn e-post adresse eller brukernavn (uten @)
-      </div>
-      
-      <input
-        type="password"
-        name="password"
-        placeholder="Passord"
-        value={formData.password}
-        onChange={handleInputChange}
-        required
-        style={inputStyle}
-      />
-      
-      <button type="submit" disabled={loading} style={buttonStyle}>
-        {loading ? 'Logger inn...' : 'Logg inn'}
-      </button>
-      
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-        <span style={linkStyle} onClick={() => setMode('reset')}>
-          Glemt passord?
-        </span>
-      </div>
-      
-      <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-        Har du ikke konto? {' '}
-        <span style={linkStyle} onClick={() => setMode('signup')}>
+        <div style={{ marginBottom: '1rem' }}>
+          <span style={linkStyle} onClick={() => setMode('reset')}>
+            Glemt passord?
+          </span>
+        </div>
+        
+        <div style={{ fontSize: '0.95rem', color: '#333', marginBottom: '0.75rem' }}>
+          Har du ikke konto?
+        </div>
+        
+        <button 
+          onClick={() => setMode('signup')}
+          style={{
+            ...buttonStyle,
+            backgroundColor: '#28a745',
+            marginBottom: '0.75rem',
+            padding: '0.875rem'
+          }}
+        >
           Registrer deg
-        </span>
+        </button>
+        
+        <div style={{ fontSize: '0.9rem' }}>
+          <span style={linkStyle} onClick={() => setMode('join-family')}>
+            Har du en familiekode?
+          </span>
+        </div>
       </div>
-    </form>
+    </div>
   )
 
   const renderSignUpForm = () => (
-    <form onSubmit={handleSignUp}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Registrer deg</h2>
+    <div>
+      <h2 style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.8rem', color: '#333' }}>Registrer deg</h2>
       
-      <input
-        type="email"
-        name="email"
-        placeholder="E-post"
-        value={formData.email}
-        onChange={handleInputChange}
-        required
-        style={inputStyle}
-      />
+      <form onSubmit={handleSignUp}>
+        <input
+          type="email"
+          name="email"
+          placeholder="E-post"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+          style={inputStyle}
+        />
+        
+        <input
+          type="password"
+          name="password"
+          placeholder="Passord"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+          style={inputStyle}
+        />
+        
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Bekreft passord"
+          value={formData.confirmPassword}
+          onChange={handleInputChange}
+          required
+          style={inputStyle}
+        />
+        
+        <input
+          type="text"
+          name="familyCode"
+          placeholder="Familiekode (valgfritt)"
+          value={formData.familyCode}
+          onChange={handleInputChange}
+          style={inputStyle}
+        />
+        
+        <button type="submit" disabled={loading} style={{
+          ...buttonStyle,
+          backgroundColor: '#28a745',
+          fontSize: '1.1rem',
+          fontWeight: 'bold',
+          padding: '1rem',
+          marginBottom: '1.5rem'
+        }}>
+          {loading ? 'Registrerer...' : 'Registrer deg'}
+        </button>
+      </form>
       
-      <input
-        type="password"
-        name="password"
-        placeholder="Passord"
-        value={formData.password}
-        onChange={handleInputChange}
-        required
-        style={inputStyle}
-      />
-      
-      <input
-        type="password"
-        name="confirmPassword"
-        placeholder="Bekreft passord"
-        value={formData.confirmPassword}
-        onChange={handleInputChange}
-        required
-        style={inputStyle}
-      />
-      
-      <input
-        type="text"
-        name="familyCode"
-        placeholder="Familiekode (valgfritt)"
-        value={formData.familyCode}
-        onChange={handleInputChange}
-        style={inputStyle}
-      />
-      
-      <button type="submit" disabled={loading} style={buttonStyle}>
-        {loading ? 'Registrerer...' : 'Registrer deg'}
-      </button>
-      
-      <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-        Har du allerede konto? {' '}
-        <span style={linkStyle} onClick={() => setMode('signin')}>
+      <div style={{ 
+        backgroundColor: '#f8f9fa', 
+        padding: '1.5rem', 
+        borderRadius: '0.5rem',
+        marginTop: '1rem',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '0.95rem', color: '#333', marginBottom: '0.75rem' }}>
+          Har du allerede konto?
+        </div>
+        
+        <button 
+          onClick={() => setMode('signin')}
+          style={{
+            ...buttonStyle,
+            backgroundColor: '#0056b3',
+            marginBottom: '1rem',
+            padding: '0.875rem'
+          }}
+        >
           Logg inn
-        </span>
+        </button>
+        
+        <div style={{ fontSize: '0.9rem' }}>
+          <span style={linkStyle} onClick={() => setMode('create-family')}>
+            Opprett ny familie
+          </span>
+        </div>
       </div>
-      
-      <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-        <span style={linkStyle} onClick={() => setMode('create-family')}>
-          Opprett ny familie
-        </span>
-      </div>
-    </form>
+    </div>
   )
 
   const renderResetForm = () => (
@@ -385,13 +443,6 @@ const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
         {mode === 'create-family' && renderCreateFamilyForm()}
         {mode === 'join-family' && renderJoinFamilyForm()}
         
-        {!showFamilySetup && mode === 'signin' && (
-          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-            <span style={linkStyle} onClick={() => setMode('join-family')}>
-              Har du en familiekode?
-            </span>
-          </div>
-        )}
         
         {showFamilySetup && mode === 'create-family' && (
           <div style={{ textAlign: 'center', marginTop: '1rem' }}>
