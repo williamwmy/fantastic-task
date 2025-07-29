@@ -1,40 +1,23 @@
 import { test, expect } from '@playwright/test'
 
-// Mock login state by setting local test user environment
-test.use({
-  storageState: {
-    cookies: [],
-    origins: [
-      {
-        origin: 'http://localhost:5173',
-        localStorage: [
-          { name: 'VITE_LOCAL_TEST_USER', value: 'true' }
-        ]
-      }
-    ]
-  }
-})
-
 test.describe('Task Management Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Set environment variable for local testing
-    await page.addInitScript(() => {
-      window.localStorage.setItem('VITE_LOCAL_TEST_USER', 'true')
-    })
-    
     await page.goto('/')
     
-    // Wait for the app to fully load - wait for any button to appear (less specific)
-    await expect(page.locator('button').first()).toBeVisible()
-    await page.waitForTimeout(1500) // Allow mock data to load
+    // Wait for the mock user to be loaded - the app should automatically load with test user
+    // When VITE_LOCAL_TEST_USER=true, the app bypasses login and shows the main interface
+    await page.waitForTimeout(2000) // Give time for the app to initialize with mock data
+    
+    // Verify we're in the main app (not on login page) by looking for the profile button specifically
+    await expect(page.locator('button[title="Åpne profil og innstillinger"]')).toBeVisible({ timeout: 10000 })
   })
 
   test('should display main task interface when logged in', async ({ page }) => {
-    // Should show profile circle with user initial
-    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
+    // Should show profile circle with user initial - use specific title selector
+    await expect(page.locator('button[title="Åpne profil og innstillinger"]')).toBeVisible()
     
-    // Should show points balance
-    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
+    // Should show points balance - use the exact text selector
+    await expect(page.getByText('100 poeng')).toBeVisible()
     
     // Should show current date in Norwegian format
     await expect(page.locator('span').filter({ hasText: /\w+dag \d{2}\.\d{2}/ })).toBeVisible()
@@ -81,13 +64,13 @@ test.describe('Task Management Flow', () => {
     }
     
     // Points balance should be visible and numeric
-    const pointsText = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    const pointsText = await page.getByText('100 poeng').textContent()
     expect(pointsText).toMatch(/\d+\s+poeng/)
   })
 
   test('should show profile and action buttons', async ({ page }) => {
     // Should show profile button with user initial and can be clicked
-    const profileButton = page.locator('button').filter({ hasText: /^[A-Z]$/ })
+    const profileButton = page.locator('button[title="Åpne profil og innstillinger"]')
     await expect(profileButton).toBeVisible()
     
     // Should show statistics button
@@ -201,8 +184,8 @@ test.describe('Task Management Flow', () => {
     await page.waitForTimeout(500)
     
     // Core elements should still be visible on mobile
-    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
-    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
+    await expect(page.locator('button[title="Åpne profil og innstillinger"]')).toBeVisible()
+    await expect(page.getByText('100 poeng')).toBeVisible()
     await expect(page.locator('button[aria-label="Forrige dag"]')).toBeVisible()
     
     // Test tablet view
@@ -210,8 +193,8 @@ test.describe('Task Management Flow', () => {
     await page.waitForTimeout(500)
     
     // Same elements should be visible
-    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
-    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
+    await expect(page.locator('button[title="Åpne profil og innstillinger"]')).toBeVisible()
+    await expect(page.getByText('100 poeng')).toBeVisible()
     
     // Test desktop view  
     await page.setViewportSize({ width: 1920, height: 1080 })
@@ -247,18 +230,18 @@ test.describe('Task Management Flow', () => {
 
   test('should maintain profile state during date navigation', async ({ page }) => {
     // Get initial points value
-    const initialPoints = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    const initialPoints = await page.getByText('100 poeng').textContent()
     
     // Get initial profile letter
-    const initialProfile = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
+    const initialProfile = await page.locator('button[title="Åpne profil og innstillinger"]').textContent()
     
     // Navigate to different dates
     await page.locator('button[aria-label="Forrige dag"]').click()
     await page.waitForTimeout(500)
     
     // Profile and points should remain the same
-    const profileAfterNav = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
-    const pointsAfterNav = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    const profileAfterNav = await page.locator('button[title="Åpne profil og innstillinger"]').textContent()
+    const pointsAfterNav = await page.getByText('100 poeng').textContent()
     
     expect(profileAfterNav).toBe(initialProfile)
     expect(pointsAfterNav).toBe(initialPoints)
@@ -268,8 +251,8 @@ test.describe('Task Management Flow', () => {
     await page.waitForTimeout(500)
     
     // State should still be maintained
-    const finalProfile = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
-    const finalPoints = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    const finalProfile = await page.locator('button[title="Åpne profil og innstillinger"]').textContent()
+    const finalPoints = await page.getByText('100 poeng').textContent()
     
     expect(finalProfile).toBe(initialProfile)
     expect(finalPoints).toBe(initialPoints)
