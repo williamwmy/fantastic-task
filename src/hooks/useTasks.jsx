@@ -3,6 +3,7 @@ import { useAuth } from './useAuth.jsx'
 import { useFamily } from './useFamily.jsx'
 import { supabase } from '../lib/supabase'
 import { mockData, generateMockTask, generateMockTaskCompletion, generateMockPointsTransaction } from '../lib/mockData'
+import { calculateBonusPoints, calculateTotalPoints } from '../utils/bonusPointsUtils'
 
 const TasksContext = createContext({})
 
@@ -453,22 +454,34 @@ export const TasksProvider = ({ children }) => {
         throw new Error('completed_by is required in completion data')
       }
 
+      // Find the task to get base points and estimated time
+      const task = tasks.find(t => t.id === finalCompletionData.task_id);
+      const basePoints = task?.points || 0;
+      const estimatedMinutes = task?.estimated_minutes || 0;
+      const timeSpentMinutes = finalCompletionData.time_spent_minutes && 
+                              !isNaN(Number(finalCompletionData.time_spent_minutes)) 
+                              ? Number(finalCompletionData.time_spent_minutes) 
+                              : 0;
+
+      // Calculate bonus points if time was spent and estimated time exists
+      const { bonusPoints, explanation } = calculateBonusPoints(timeSpentMinutes, estimatedMinutes);
+      const totalPointsAwarded = finalCompletionData.points_awarded && 
+                                !isNaN(Number(finalCompletionData.points_awarded))
+                                ? Number(finalCompletionData.points_awarded)
+                                : basePoints + bonusPoints;
+
       // Validate and clean the completion data before sending to Supabase
       const cleanedData = {
         task_id: finalCompletionData.task_id,
         assignment_id: finalCompletionData.assignment_id || null,
         completed_by: finalCompletionData.completed_by,
-        time_spent_minutes: finalCompletionData.time_spent_minutes && 
-                           !isNaN(Number(finalCompletionData.time_spent_minutes)) 
-                           ? Number(finalCompletionData.time_spent_minutes) 
-                           : null,
+        time_spent_minutes: timeSpentMinutes || null,
         comment: finalCompletionData.comment && typeof finalCompletionData.comment === 'string' 
                 ? finalCompletionData.comment.trim() || null 
                 : null,
-        points_awarded: finalCompletionData.points_awarded && 
-                       !isNaN(Number(finalCompletionData.points_awarded))
-                       ? Number(finalCompletionData.points_awarded)
-                       : 0
+        points_awarded: totalPointsAwarded,
+        bonus_points: bonusPoints,
+        bonus_explanation: explanation
       }
 
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
@@ -492,15 +505,17 @@ export const TasksProvider = ({ children }) => {
               }
             : task
         ));
-        // Mock points transaction
-        const task = tasks.find(t => t.id === cleanedData.task_id || t.assignment?.id === cleanedData.assignment_id);
-        const pointsAwarded = cleanedData.points_awarded || task?.points || 0;
+        // Mock points transaction  
+        const pointsAwarded = cleanedData.points_awarded;
         if (pointsAwarded > 0) {
+          const transactionDescription = cleanedData.bonus_points > 0 
+            ? `Task completion (${basePoints} + ${cleanedData.bonus_points} bonus)`
+            : 'Task completion';
           const mockTransaction = generateMockPointsTransaction(
             cleanedData.completed_by,
             pointsAwarded,
             'earned',
-            'Task completion',
+            transactionDescription,
             mockCompletion.id
           );
           setPointsTransactions(prev => [mockTransaction, ...prev]);
@@ -523,9 +538,9 @@ export const TasksProvider = ({ children }) => {
 
 
       // Handle points transaction
-      const task = completion.tasks
+      const completedTask = completion.tasks
       const member = completion.completed_by_member
-      const pointsAwarded = cleanedData.points_awarded || task.points || 0
+      const pointsAwarded = cleanedData.points_awarded
 
       if (pointsAwarded > 0) {
         // For child members, points are pending until verified
@@ -533,7 +548,10 @@ export const TasksProvider = ({ children }) => {
         
         if (!needsVerification) {
           // Award points immediately for adults
-          await awardPoints(member.id, pointsAwarded, 'earned', 'Task completion', completion.id)
+          const transactionDescription = cleanedData.bonus_points > 0 
+            ? `Task completion (${basePoints} + ${cleanedData.bonus_points} bonus)`
+            : 'Task completion';
+          await awardPoints(member.id, pointsAwarded, 'earned', transactionDescription, completion.id)
         }
         // If verification is needed, points will be awarded when verified
       }
@@ -577,11 +595,14 @@ export const TasksProvider = ({ children }) => {
 
       if (verified && completion.points_awarded > 0) {
         // Award points now that task is verified
+        const transactionDescription = completion.bonus_points > 0 
+          ? `Task completion (verified, ${completion.points_awarded - completion.bonus_points} + ${completion.bonus_points} bonus)`
+          : 'Task completion (verified)';
         await awardPoints(
           completion.completed_by,
           completion.points_awarded,
           'earned',
-          'Task completion (verified)',
+          transactionDescription,
           completionId
         )
       }

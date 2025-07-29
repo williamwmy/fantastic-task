@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaCheck, FaClock, FaCoins, FaComment, FaCamera, FaTimes } from 'react-icons/fa'
+import { FaCheck, FaClock, FaCoins, FaComment, FaCamera, FaTimes, FaStar } from 'react-icons/fa'
 import Modal from './Modal'
 import CompletionAnimation from './CompletionAnimation'
+import { calculateBonusPoints, calculateTotalPoints } from '../utils/bonusPointsUtils'
 
 const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }) => {
   const { completeTask } = useTasks()
@@ -115,6 +116,16 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
   const pointsMessage = isChildUser 
     ? 'Poeng tildeles etter godkjenning'
     : 'Poeng tildeles umiddelbart'
+
+  // Calculate bonus points based on time spent
+  const timeSpentNumber = timeSpent && timeSpent.trim() ? parseInt(timeSpent.trim()) : 0
+  const basePoints = task?.points || 0
+  const estimatedMinutes = task?.estimated_minutes || 0
+  
+  const { bonusPoints, explanation } = calculateBonusPoints(timeSpentNumber, estimatedMinutes)
+  const { totalPoints } = calculateTotalPoints(basePoints, timeSpentNumber, estimatedMinutes)
+  
+  const showBonusPreview = timeSpentNumber > 0 && estimatedMinutes > 0
 
   return (
     <>
@@ -233,6 +244,40 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
             <small style={{ color: '#6c757d', fontSize: '0.8rem' }}>
               Valgfritt - hjelper med å forbedre estimater
             </small>
+            
+            {/* Bonus points preview */}
+            {showBonusPreview && (
+              <div style={{
+                marginTop: '0.5rem',
+                padding: '0.5rem',
+                backgroundColor: bonusPoints > 0 ? '#fff3cd' : '#f8f9fa',
+                border: `1px solid ${bonusPoints > 0 ? '#ffeaa7' : '#dee2e6'}`,
+                borderRadius: '0.25rem',
+                fontSize: '0.85rem'
+              }}>
+                {bonusPoints > 0 ? (
+                  <div style={{ color: '#856404' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                      <FaStar style={{ color: '#ffc107' }} />
+                      <strong>Bonus opptjent!</strong>
+                    </div>
+                    <div>
+                      {explanation}
+                    </div>
+                    <div style={{ marginTop: '0.25rem', fontWeight: 600 }}>
+                      Totalt: {basePoints} + {bonusPoints} = {totalPoints} poeng
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#6c757d' }}>
+                    {timeSpentNumber <= estimatedMinutes 
+                      ? `Du ligger ${estimatedMinutes - timeSpentNumber} min under estimatet - bra jobbet! 🎯`
+                      : `Kun ${estimatedMinutes + 5 - timeSpentNumber} min til bonus (hvert 5. minutt over estimatet gir 1 bonuspoeng)`
+                    }
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Comment */}
@@ -390,13 +435,26 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <FaCoins />
-              <strong>Poeng: {task?.points || 0}</strong>
+              <strong>
+                Poeng: {basePoints}
+                {bonusPoints > 0 && showBonusPreview && (
+                  <span style={{ color: '#ffc107' }}>
+                    {' '}+ {bonusPoints} bonus = {totalPoints}
+                  </span>
+                )}
+              </strong>
             </div>
             <div style={{ color: isChildUser ? '#856404' : '#0c5460' }}>
               {pointsMessage}
               {isChildUser && (
                 <div style={{ marginTop: '0.25rem', fontSize: '0.8rem' }}>
                   En voksen må godkjenne oppgaven før du får poengene.
+                </div>
+              )}
+              {bonusPoints > 0 && showBonusPreview && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', fontStyle: 'italic', color: '#ffc107' }}>
+                  <FaStar style={{ marginRight: '0.25rem' }} />
+                  Bonus for overtid opptjent!
                 </div>
               )}
             </div>
@@ -452,7 +510,7 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
     {showAnimation && (
       <CompletionAnimation
         show={showAnimation}
-        points={Number(task.points) || 0}
+        points={totalPoints || Number(task.points) || 0}
         position={taskPosition}
         onComplete={handleAnimationComplete}
       />
