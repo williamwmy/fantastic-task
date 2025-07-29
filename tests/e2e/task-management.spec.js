@@ -24,229 +24,254 @@ test.describe('Task Management Flow', () => {
     
     await page.goto('/')
     
-    // Wait for the app to load with mock data
-    await expect(page.locator('h1, h2, div').first()).toBeVisible()
+    // Wait for the app to fully load - wait for any button to appear (less specific)
+    await expect(page.locator('button').first()).toBeVisible()
+    await page.waitForTimeout(1500) // Allow mock data to load
   })
 
   test('should display main task interface when logged in', async ({ page }) => {
-    // Wait for loading to complete
-    await page.waitForTimeout(2000)
+    // Should show profile circle with user initial
+    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
     
-    // Should show the main task interface
-    await expect(page.locator('[data-testid="task-list"], .task-list, div[style*="minHeight"]')).toBeVisible()
+    // Should show points balance
+    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
     
-    // Should show navigation buttons
-    await expect(page.locator('button').first()).toBeVisible()
+    // Should show current date in Norwegian format
+    await expect(page.locator('span').filter({ hasText: /\w+dag \d{2}\.\d{2}/ })).toBeVisible()
     
-    // Should show date navigation
-    const dateElements = page.locator('span, div').filter({ hasText: /\d{2}\./ })
-    if (await dateElements.count() > 0) {
-      await expect(dateElements.first()).toBeVisible()
-    }
+    // Should show date navigation arrows
+    await expect(page.locator('button[aria-label="Forrige dag"]')).toBeVisible()
+    await expect(page.locator('button[aria-label="Neste dag"]')).toBeVisible()
   })
 
-  test('should navigate between dates', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+  test('should navigate between dates and update display', async ({ page }) => {
+    // Get current date text
+    const currentDateText = await page.locator('span').filter({ hasText: /\w+dag \d{2}\.\d{2}/ }).textContent()
     
-    // Look for navigation buttons (left/right arrows)
-    const leftArrow = page.locator('button[aria-label*="Forrige"], button').filter({ hasText: /←|‹|</ }).first()
-    const rightArrow = page.locator('button[aria-label*="Neste"], button').filter({ hasText: /→|›|>/ }).first()
+    // Click previous day
+    await page.locator('button[aria-label="Forrige dag"]').click()
+    await page.waitForTimeout(500)
     
-    if (await leftArrow.count() > 0) {
-      await leftArrow.click()
-      await page.waitForTimeout(500)
-    }
+    // Date should have changed
+    const previousDateText = await page.locator('span').filter({ hasText: /\w+dag \d{2}\.\d{2}/ }).textContent()
+    expect(previousDateText).not.toBe(currentDateText)
     
-    if (await rightArrow.count() > 0) {
-      await rightArrow.click()
-      await page.waitForTimeout(500)
-    }
+    // Click next day twice to go one day forward from original
+    await page.locator('button[aria-label="Neste dag"]').click()
+    await page.waitForTimeout(500)
+    await page.locator('button[aria-label="Neste dag"]').click()
+    await page.waitForTimeout(500)
+    
+    // Date should be different from both previous states
+    const nextDateText = await page.locator('span').filter({ hasText: /\w+dag \d{2}\.\d{2}/ }).textContent()
+    expect(nextDateText).not.toBe(currentDateText)
+    expect(nextDateText).not.toBe(previousDateText)
   })
 
-  test('should display task list with mock data', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+  test('should display task interface elements', async ({ page }) => {
+    // Should show task list area (might be empty but container should exist)
+    await expect(page.locator('div').filter({ hasText: /Ingen oppgaver|oppgaver for/ }).or(
+      page.locator('div[style*="padding"]').filter({ hasText: /Fullført|Ikke startet/ })
+    )).toBeVisible()
     
-    // Should show some tasks (in mock mode)
-    const taskElements = page.locator('div, li').filter({ hasText: /oppgave|task/i })
-    
-    if (await taskElements.count() > 0) {
-      await expect(taskElements.first()).toBeVisible()
+    // Should have add task button (for users with edit permissions)
+    const addButton = page.locator('button[aria-label="Legg til oppgave"]')
+    if (await addButton.count() > 0) {
+      await expect(addButton).toBeVisible()
     }
     
-    // Should show points information
-    const pointsElements = page.locator('div, span').filter({ hasText: /poeng|points/i })
-    
-    if (await pointsElements.count() > 0) {
-      await expect(pointsElements.first()).toBeVisible()
-    }
+    // Points balance should be visible and numeric
+    const pointsText = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    expect(pointsText).toMatch(/\d+\s+poeng/)
   })
 
   test('should show profile and action buttons', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+    // Should show profile button with user initial and can be clicked
+    const profileButton = page.locator('button').filter({ hasText: /^[A-Z]$/ })
+    await expect(profileButton).toBeVisible()
     
-    // Should show profile circle or button
-    const profileElements = page.locator('div[style*="borderRadius"][style*="50%"], button[title*="profil"], div[style*="circle"]')
+    // Should show statistics button
+    await expect(page.locator('button[title="Statistikk"]')).toBeVisible()
     
-    if (await profileElements.count() > 0) {
-      await expect(profileElements.first()).toBeVisible()
+    // Should show points history button
+    await expect(page.locator('button[title="Poenghistorikk"]')).toBeVisible()
+    
+    // May show admin button (role-dependent)
+    const adminButton = page.locator('button[title="Admin-panel"]')
+    if (await adminButton.count() > 0) {
+      await expect(adminButton).toBeVisible()
     }
     
-    // Should show action buttons (stats, admin, etc.)
-    const actionButtons = page.locator('button[title], button[aria-label]')
-    
-    if (await actionButtons.count() > 0) {
-      await expect(actionButtons.first()).toBeVisible()
+    // May show verification button for parents
+    const verifyButton = page.locator('button[title*="Verifiser"]')
+    if (await verifyButton.count() > 0) {
+      await expect(verifyButton).toBeVisible()
     }
   })
 
   test('should handle task completion interactions', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
-    
-    // Look for complete buttons
-    const completeButtons = page.locator('button').filter({ hasText: /fullf|complete|ferdig/i })
+    // Look for task completion buttons
+    const completeButtons = page.locator('button').filter({ hasText: /Fullf\u00f8r oppgave|Fullf\u00f8r/ })
     
     if (await completeButtons.count() > 0) {
+      // Click first complete button
       await completeButtons.first().click()
       await page.waitForTimeout(500)
       
-      // Should show some kind of completion interface or feedback
-      const completionElements = page.locator('div, modal, form').filter({ hasText: /tid|time|kommentar|comment/i })
+      // Should show completion modal with time and comment fields
+      await expect(page.locator('div').filter({ hasText: /Hvor lenge tok/ })).toBeVisible()
+      await expect(page.locator('textarea, input').filter({ hasAttribute: 'placeholder' })).toBeVisible()
       
-      if (await completionElements.count() > 0) {
-        await expect(completionElements.first()).toBeVisible()
-      }
+      // Should have save and cancel buttons
+      await expect(page.locator('button').filter({ hasText: /Lagre|Ferdig/ })).toBeVisible()
+      await expect(page.locator('button').filter({ hasText: /Avbryt|Lukk/ })).toBeVisible()
+      
+      // Close the modal
+      await page.locator('button').filter({ hasText: /Avbryt|Lukk/ }).first().click()
+    } else {
+      // If no tasks to complete, verify we see appropriate message
+      await expect(page.locator('div').filter({ hasText: /Ingen oppgaver|oppgaver for/ })).toBeVisible()
     }
   })
 
-  test('should open and close modals', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+  test('should open and close statistics modal', async ({ page }) => {
+    // Click statistics button
+    await page.locator('button[title="Statistikk"]').click()
+    await page.waitForTimeout(500)
     
-    // Try to open various modals by clicking buttons
-    const modalTriggers = page.locator('button[title*="statistikk"], button[title*="admin"], button[title*="profil"]')
+    // Should show statistics modal with proper title
+    await expect(page.locator('h2').filter({ hasText: /Statistikk/ })).toBeVisible()
     
-    if (await modalTriggers.count() > 0) {
-      await modalTriggers.first().click()
-      await page.waitForTimeout(500)
-      
-      // Should show modal content
-      const modalContent = page.locator('[role="dialog"], .modal, div[style*="fixed"]')
-      
-      if (await modalContent.count() > 0) {
-        await expect(modalContent.first()).toBeVisible()
-        
-        // Try to close modal
-        const closeButtons = page.locator('button').filter({ hasText: /lukk|close|×/i })
-        
-        if (await closeButtons.count() > 0) {
-          await closeButtons.first().click()
-          await page.waitForTimeout(500)
-        }
-      }
+    // Should show chart or statistics content
+    await expect(page.locator('div').filter({
+      hasText: /Oppgaver fullf\u00f8rt|Poeng tjent|Denne uke/
+    }).or(page.locator('canvas'))).toBeVisible()
+    
+    // Close modal by clicking outside or close button
+    const closeButton = page.locator('button').filter({ hasText: /\u00d7|Lukk/ })
+    if (await closeButton.count() > 0) {
+      await closeButton.first().click()
+    } else {
+      // Click outside modal
+      await page.mouse.click(50, 50)
     }
+    await page.waitForTimeout(300)
+    
+    // Modal should be closed
+    await expect(page.locator('h2').filter({ hasText: /Statistikk/ })).not.toBeVisible()
   })
 
-  test('should handle add task flow', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+  test('should handle add task flow (if permissions allow)', async ({ page }) => {
+    // Look for add task button
+    const addButton = page.locator('button[aria-label="Legg til oppgave"]')
     
-    // Look for add task button (plus icon)
-    const addButtons = page.locator('button[aria-label*="Legg til"], button').filter({ hasText: /\+/ })
-    
-    if (await addButtons.count() > 0) {
-      await addButtons.first().click()
+    if (await addButton.count() > 0) {
+      // User has edit permissions
+      await addButton.click()
       await page.waitForTimeout(500)
       
-      // Should show task creation form
-      const formElements = page.locator('form, div').filter({ hasText: /tittel|title|beskrivelse|description/i })
+      // Should show create task form with proper fields
+      await expect(page.locator('h2').filter({ hasText: /Ny oppgave|Legg til/ })).toBeVisible()
       
-      if (await formElements.count() > 0) {
-        await expect(formElements.first()).toBeVisible()
-        
-        // Try to fill in some form fields
-        const titleInput = page.locator('input[placeholder*="tittel"], input[name*="title"]').first()
-        
-        if (await titleInput.count() > 0) {
-          await titleInput.fill('E2E Test Oppgave')
-        }
-        
-        // Look for close button
-        const closeButtons = page.locator('button').filter({ hasText: /avbryt|cancel|lukk/i })
-        
-        if (await closeButtons.count() > 0) {
-          await closeButtons.first().click()
-        }
-      }
+      // Should have title input
+      const titleInput = page.locator('input[placeholder*="tittel"], input[name="title"]')
+      await expect(titleInput).toBeVisible()
+      
+      // Test form interaction
+      await titleInput.fill('E2E Test Oppgave')
+      
+      // Should have assignment options
+      await expect(page.locator('select, div').filter({ hasText: /Tildel til|Hvem skal/ })).toBeVisible()
+      
+      // Close form
+      await page.locator('button').filter({ hasText: /Avbryt|Lukk/ }).first().click()
+      await page.waitForTimeout(300)
+      
+      // Form should be closed
+      await expect(page.locator('h2').filter({ hasText: /Ny oppgave|Legg til/ })).not.toBeVisible()
+    } else {
+      // User doesn't have edit permissions - this is also valid
+      console.log('User does not have task creation permissions')
     }
   })
 
   test('should be responsive on different screen sizes', async ({ page }) => {
-    // Test tablet view
-    await page.setViewportSize({ width: 768, height: 1024 })
-    await page.waitForTimeout(1000)
-    
-    // Should still show main interface
-    await expect(page.locator('body')).toBeVisible()
-    
     // Test mobile view
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(500)
     
-    // Should still be functional
-    await expect(page.locator('body')).toBeVisible()
+    // Core elements should still be visible on mobile
+    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
+    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
+    await expect(page.locator('button[aria-label="Forrige dag"]')).toBeVisible()
     
-    // Test desktop view
+    // Test tablet view
+    await page.setViewportSize({ width: 768, height: 1024 })
+    await page.waitForTimeout(500)
+    
+    // Same elements should be visible
+    await expect(page.locator('button').filter({ hasText: /^[A-Z]$/ })).toBeVisible()
+    await expect(page.locator('div').filter({ hasText: /\d+ poeng/ })).toBeVisible()
+    
+    // Test desktop view  
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(500)
     
-    await expect(page.locator('body')).toBeVisible()
+    // All buttons should be visible and properly spaced
+    await expect(page.locator('button[title="Statistikk"]')).toBeVisible()
+    await expect(page.locator('button[title="Poenghistorikk"]')).toBeVisible()
   })
 
   test('should handle keyboard navigation', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
-    
-    // Test tab navigation
+    // Test tab navigation through interactive elements
     await page.keyboard.press('Tab')
     await page.waitForTimeout(200)
     
-    // Should focus on interactive elements
+    // Should focus on the profile button first
     const focusedElement = page.locator(':focus')
+    await expect(focusedElement).toBeVisible()
     
-    if (await focusedElement.count() > 0) {
-      await expect(focusedElement).toBeVisible()
-    }
+    // Continue tabbing to reach other buttons
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Tab')
     
-    // Test escape key (should close modals if any are open)
+    // Should be able to activate buttons with Enter
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(300)
+    
+    // Test escape key to close any opened modal
     await page.keyboard.press('Escape')
-    await page.waitForTimeout(200)
+    await page.waitForTimeout(300)
   })
 
-  test('should maintain state during navigation', async ({ page }) => {
-    // Wait for app to load
-    await page.waitForTimeout(2000)
+  test('should maintain profile state during date navigation', async ({ page }) => {
+    // Get initial points value
+    const initialPoints = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
     
-    // Navigate to different dates and check that state is maintained
-    const leftArrow = page.locator('button').filter({ hasText: /←|‹|</ }).first()
+    // Get initial profile letter
+    const initialProfile = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
     
-    if (await leftArrow.count() > 0) {
-      await leftArrow.click()
-      await page.waitForTimeout(500)
-      
-      // Navigate back
-      const rightArrow = page.locator('button').filter({ hasText: /→|›|>/ }).first()
-      
-      if (await rightArrow.count() > 0) {
-        await rightArrow.click()
-        await page.waitForTimeout(500)
-      }
-    }
+    // Navigate to different dates
+    await page.locator('button[aria-label="Forrige dag"]').click()
+    await page.waitForTimeout(500)
     
-    // App should still be functional
-    await expect(page.locator('body')).toBeVisible()
+    // Profile and points should remain the same
+    const profileAfterNav = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
+    const pointsAfterNav = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    
+    expect(profileAfterNav).toBe(initialProfile)
+    expect(pointsAfterNav).toBe(initialPoints)
+    
+    // Navigate back to original date
+    await page.locator('button[aria-label="Neste dag"]').click()
+    await page.waitForTimeout(500)
+    
+    // State should still be maintained
+    const finalProfile = await page.locator('button').filter({ hasText: /^[A-Z]$/ }).textContent()
+    const finalPoints = await page.locator('div').filter({ hasText: /\d+ poeng/ }).textContent()
+    
+    expect(finalProfile).toBe(initialProfile)
+    expect(finalPoints).toBe(initialPoints)
   })
 })
