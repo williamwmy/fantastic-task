@@ -95,17 +95,24 @@ export default function App() {
   return (
     <div style={{ 
       minHeight: "100vh", 
-      padding: "0.5rem",
       maxWidth: "100vw",
       overflowX: "hidden",
       ...backgroundStyle
     }}>
       {/* Top bar */}
       <div style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        backdropFilter: "blur(10px)",
+        padding: "0.5rem",
+        borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: "1rem",
         flexWrap: "wrap",
         gap: "0.5rem"
       }}>
@@ -304,18 +311,20 @@ export default function App() {
         </div>
       </div>
 
-      {/* Task List */}
-      <TaskList selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      {/* Content wrapper */}
+      <div style={{ padding: "80px 0.5rem 0 0.5rem" }}>
+        {/* Task List */}
+        <TaskList selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
-      {/* Action buttons */}
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "0.5rem", 
-        margin: "1rem 0",
-        justifyContent: "center",
-        flexWrap: "wrap"
-      }}>
+        {/* Action buttons */}
+        <div style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "0.5rem", 
+          margin: "1rem 0",
+          justifyContent: "center",
+          flexWrap: "wrap"
+        }}>
         <RoleButton
           permission="edit_tasks"
           onClick={() => setShowAddModal(true)}
@@ -408,19 +417,20 @@ export default function App() {
         onClose={() => setShowPointsHistory(false)}
       />
 
-      {/* Version footer */}
-      <div style={{
-        position: 'fixed',
-        bottom: '10px',
-        right: '10px',
-        fontSize: '0.8rem',
-        color: '#6c757d',
-        backgroundColor: '#f8f9fa',
-        padding: '0.25rem 0.5rem',
-        borderRadius: '0.25rem',
-        border: '1px solid #dee2e6'
-      }}>
-        v{packageJson.version}
+        {/* Version footer */}
+        <div style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          fontSize: '0.8rem',
+          color: '#6c757d',
+          backgroundColor: '#f8f9fa',
+          padding: '0.25rem 0.5rem',
+          borderRadius: '0.25rem',
+          border: '1px solid #dee2e6'
+        }}>
+          v{packageJson.version}
+        </div>
       </div>
     </div>
   );
