@@ -145,7 +145,7 @@ export default function App() {
           {/* Points display */}
           <div style={{ 
             padding: "0.25rem 0.5rem", 
-            background: "#28a745", 
+            background: currentMember.avatar_color || "#82bcf4", 
             color: "white",
             borderRadius: "1rem",
             fontWeight: 600,
