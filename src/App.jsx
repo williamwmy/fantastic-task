@@ -14,7 +14,7 @@ import AllTasksEditor from "./AllTasksEditor";
 import LoginPage from "./components/LoginPage";
 import FamilySetupPage from "./components/FamilySetupPage";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
-import { FaUser, FaChartBar, FaList, FaPlus, FaChevronLeft, FaChevronRight, FaCog, FaChild, FaHistory } from "react-icons/fa";
+import { FaUser, FaChartBar, FaList, FaPlus, FaCog, FaChild, FaHistory } from "react-icons/fa";
 import packageJson from "../package.json";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -298,9 +298,9 @@ export default function App() {
       </div>
 
       {/* Task List */}
-      <TaskList selectedDate={selectedDate} />
+      <TaskList selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
-      {/* Date navigation */}
+      {/* Action buttons */}
       <div style={{ 
         display: "flex", 
         alignItems: "center", 
@@ -309,70 +309,6 @@ export default function App() {
         justifyContent: "center",
         flexWrap: "wrap"
       }}>
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() - 1);
-            setSelectedDate(d.toISOString().slice(0, 10));
-          }}
-          style={{
-            background: "#0056b3",
-            color: "white",
-            border: "none",
-            borderRadius: "50%",
-            width: 48,
-            height: 48,
-            fontSize: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 2px 8px #0001",
-            cursor: "pointer",
-            flexShrink: 0
-          }}
-          aria-label="Forrige dag"
-        >
-          <FaChevronLeft />
-        </button>
-        <span style={{ 
-          minWidth: "120px", 
-          textAlign: "center", 
-          fontSize: "1rem", 
-          fontWeight: 700,
-          padding: "0.5rem",
-          whiteSpace: "nowrap"
-        }}>
-          {new Date(selectedDate).toLocaleDateString("no-NO", { 
-            weekday: "long", 
-            day: "2-digit", 
-            month: "2-digit" 
-          })}
-        </span>
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate);
-            d.setDate(d.getDate() + 1);
-            setSelectedDate(d.toISOString().slice(0, 10));
-          }}
-          style={{
-            background: "#0056b3",
-            color: "white",
-            border: "none",
-            borderRadius: "50%",
-            width: 48,
-            height: 48,
-            fontSize: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 2px 8px #0001",
-            cursor: "pointer",
-            flexShrink: 0
-          }}
-          aria-label="Neste dag"
-        >
-          <FaChevronRight />
-        </button>
         <RoleButton
           permission="edit_tasks"
           onClick={() => setShowAddModal(true)}

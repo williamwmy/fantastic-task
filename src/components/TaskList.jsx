@@ -11,7 +11,9 @@ import {
   FaCheckCircle,
   FaHourglassHalf,
   FaEdit,
-  FaUndo
+  FaUndo,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa'
 import TaskCompletion from './TaskCompletion'
 import TaskAssignment from './TaskAssignment'
@@ -31,7 +33,7 @@ export const filterTasksForDay = (tasks, date) => {
   })
 }
 
-const TaskList = ({ selectedDate }) => {
+const TaskList = ({ selectedDate, onDateChange }) => {
   const { 
     getTasksForDate, 
     getTasksForMember, 
@@ -243,49 +245,142 @@ const TaskList = ({ selectedDate }) => {
         alignItems: 'center',
         marginBottom: '1rem'
       }}>
-        <h3 style={{ margin: 0 }}>
-          Oppgaver for {formatDate(selectedDate)}
-        </h3>
-        <div style={{ fontSize: '0.9rem', color: '#6c757d' }}>
-          {todayTasks.length} oppgaver {showOnlyMyTasks ? 'tildelt meg' : 'tilgjengelig'}
-        </div>
-      </div>
-
-      {/* Filter toggle - hide for child users since they always see only their tasks */}
-      {currentMember?.role !== 'child' && (
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: '0.5rem',
-          marginBottom: '1rem',
-          padding: '0.75rem',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '0.5rem',
-          border: '1px solid #dee2e6'
+          justifyContent: 'flex-start',
+          flex: 1
         }}>
-          <label style={{ 
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '0.5rem',
+            padding: '0.5rem 0.25rem',
+            border: '1px solid #dee2e6',
+            height: '2.5rem',
+            boxSizing: 'border-box'
+          }}>
+            <button
+              onClick={() => {
+                if (onDateChange) {
+                  const d = new Date(selectedDate)
+                  d.setDate(d.getDate() - 1)
+                  onDateChange(d.toISOString().slice(0, 10))
+                }
+              }}
+              style={{
+                background: 'transparent',
+                color: '#6c757d',
+                border: 'none',
+                padding: '0.5rem',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                borderRadius: '0.25rem',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#e9ecef'
+                e.target.style.color = '#495057'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.color = '#6c757d'
+              }}
+              aria-label="Forrige dag"
+            >
+              <FaChevronLeft />
+            </button>
+            
+            <h3 style={{ 
+              margin: 0, 
+              fontSize: '1.2rem',
+              fontWeight: 600,
+              color: '#495057',
+              padding: '0 0.5rem',
+              whiteSpace: 'nowrap'
+            }}>
+              {formatDate(selectedDate)}
+            </h3>
+            
+            <button
+              onClick={() => {
+                if (onDateChange) {
+                  const d = new Date(selectedDate)
+                  d.setDate(d.getDate() + 1)
+                  onDateChange(d.toISOString().slice(0, 10))
+                }
+              }}
+              style={{
+                background: 'transparent',
+                color: '#6c757d',
+                border: 'none',
+                padding: '0.5rem',
+                fontSize: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                borderRadius: '0.25rem',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#e9ecef'
+                e.target.style.color = '#495057'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.color = '#6c757d'
+              }}
+              aria-label="Neste dag"
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        </div>
+        
+        {/* Filter toggle - hide for child users since they always see only their tasks */}
+        {currentMember?.role !== 'child' && (
+          <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: '0.5rem',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: 500
+            padding: '0.5rem 0.75rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '0.5rem',
+            border: '1px solid #dee2e6',
+            height: '2.5rem',
+            boxSizing: 'border-box'
           }}>
-            <input
-              type="checkbox"
-              checked={showOnlyMyTasks}
-              onChange={(e) => setShowOnlyMyTasks(e.target.checked)}
-              style={{ 
-                width: '1.1rem', 
-                height: '1.1rem',
-                cursor: 'pointer'
-              }}
-            />
-            <FaUser style={{ color: '#82bcf4' }} />
-            Vis kun mine oppgaver
-          </label>
-        </div>
-      )}
+            <label style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+              margin: 0
+            }}>
+              <input
+                type="checkbox"
+                checked={showOnlyMyTasks}
+                onChange={(e) => setShowOnlyMyTasks(e.target.checked)}
+                style={{ 
+                  width: '1rem', 
+                  height: '1rem',
+                  cursor: 'pointer'
+                }}
+              />
+              <FaUser style={{ color: '#82bcf4', fontSize: '0.8rem' }} />
+              Mine oppgaver
+            </label>
+          </div>
+        )}
+      </div>
 
       {todayTasks.length === 0 ? (
         <div style={{
