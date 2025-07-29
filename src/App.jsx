@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "./hooks/useAuth.jsx";
 import { useFamily } from "./hooks/useFamily.jsx";
 import { useTasks } from "./hooks/useTasks.jsx";
@@ -15,6 +15,7 @@ import LoginPage from "./components/LoginPage";
 import FamilySetupPage from "./components/FamilySetupPage";
 import { RoleButton, PermissionGate } from "./components/RoleBasedAccess";
 import { FaUser, FaChartBar, FaList, FaPlus, FaCog, FaChild, FaHistory } from "react-icons/fa";
+import { getBackgroundStyle } from "./utils/backgroundUtils";
 import packageJson from "../package.json";
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -88,12 +89,16 @@ export default function App() {
   const pendingVerifications = getPendingVerifications();
   const pendingCount = pendingVerifications.length;
 
+  // Get the background style for the current member
+  const backgroundStyle = getBackgroundStyle(currentMember?.background_preference);
+
   return (
     <div style={{ 
       minHeight: "100vh", 
       padding: "0.5rem",
       maxWidth: "100vw",
-      overflowX: "hidden"
+      overflowX: "hidden",
+      ...backgroundStyle
     }}>
       {/* Top bar */}
       <div style={{

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
 import Modal from './Modal'
+import BackgroundSelector from './BackgroundSelector'
 import { FaUser, FaUserShield, FaChild, FaEdit, FaSave, FaTimes } from 'react-icons/fa'
 
 const FamilyMemberCard = ({ member, onClose }) => {
@@ -18,6 +19,7 @@ const FamilyMemberCard = ({ member, onClose }) => {
   const [formData, setFormData] = useState({
     nickname: member.nickname,
     avatar_color: member.avatar_color || '#82bcf4',
+    background_preference: member.background_preference || 'gradient_blue_purple',
     role: member.role
   })
 
@@ -42,6 +44,13 @@ const FamilyMemberCard = ({ member, onClose }) => {
     setFormData(prev => ({
       ...prev,
       avatar_color: color
+    }))
+  }
+
+  const handleBackgroundChange = (backgroundPreference) => {
+    setFormData(prev => ({
+      ...prev,
+      background_preference: backgroundPreference
     }))
   }
 
@@ -213,6 +222,13 @@ const FamilyMemberCard = ({ member, onClose }) => {
                   />
                 ))}
               </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <BackgroundSelector
+                currentSelection={formData.background_preference}
+                onSelect={handleBackgroundChange}
+              />
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>

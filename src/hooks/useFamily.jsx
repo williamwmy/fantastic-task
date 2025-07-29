@@ -335,7 +335,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
       }
 
       // Validate data
-      const allowedFields = ['nickname', 'avatar_color', 'role']
+      const allowedFields = ['nickname', 'avatar_color', 'background_preference', 'role']
       const updateData = {}
       
       for (const [key, value] of Object.entries(data)) {

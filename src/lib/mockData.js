@@ -30,6 +30,7 @@ export const mockFamilyMembers = [
     nickname: 'Test Admin',
     role: 'admin',
     avatar_color: '#82bcf4',
+    background_preference: 'gradient_blue_purple',
     points_balance: 100,
     created_at: now
   },
@@ -40,6 +41,7 @@ export const mockFamilyMembers = [
     nickname: 'Test Barn',
     role: 'child',
     avatar_color: '#ff6b6b',
+    background_preference: 'gradient_sunset',
     points_balance: 50,
     created_at: now
   },
@@ -50,6 +52,7 @@ export const mockFamilyMembers = [
     nickname: 'Test Forelder',
     role: 'member',
     avatar_color: '#4ecdc4',
+    background_preference: 'solid_mint',
     points_balance: 75,
     created_at: now
   }
