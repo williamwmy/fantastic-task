@@ -359,8 +359,8 @@ export const TasksProvider = ({ children }) => {
                   id: `assignment-${taskId}`,
                   assigned_to: memberId,
                   assigned_by: currentMember.id,
-                  due_date: dueDate,
-                  date: dueDate,
+                  due_date: dueDate || null,
+                  date: dueDate || null,
                   is_completed: false,
                   completion: undefined
                 }
@@ -380,7 +380,7 @@ export const TasksProvider = ({ children }) => {
           task_id: taskId,
           assigned_to: memberId,
           assigned_by: currentMember.id,
-          due_date: dueDate
+          due_date: dueDate || null
         })
         .select()
         .single()
