@@ -15,19 +15,19 @@ const PointsHistory = ({ memberId, open, onClose }) => {
   const filteredTransactions = transactions.filter(transaction => {
     if (filter === 'all') return true
     if (filter === 'bonus') {
-      // Show transactions that contain bonus points in description
-      return transaction.description && transaction.description.includes('bonus')
+      // Show transactions that have bonus_points > 0
+      return transaction.bonus_points && transaction.bonus_points > 0
     }
     return transaction.transaction_type === filter
   })
 
-  const getTransactionIcon = (type, description = '') => {
-    // Check if transaction contains bonus points
-    if (description && description.includes('bonus')) {
+  const getTransactionIcon = (transaction) => {
+    // Check if transaction has bonus points
+    if (transaction.bonus_points && transaction.bonus_points > 0) {
       return <FaGift style={{ color: '#17a2b8' }} />
     }
     
-    switch (type) {
+    switch (transaction.transaction_type) {
       case 'earned':
         return <FaStar style={{ color: '#28a745' }} />
       case 'bonus':
@@ -37,13 +37,13 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     }
   }
 
-  const getTransactionColor = (type, description = '') => {
-    // Check if transaction contains bonus points
-    if (description && description.includes('bonus')) {
+  const getTransactionColor = (transaction) => {
+    // Check if transaction has bonus points
+    if (transaction.bonus_points && transaction.bonus_points > 0) {
       return '#17a2b8'
     }
     
-    switch (type) {
+    switch (transaction.transaction_type) {
       case 'earned':
         return '#28a745'
       case 'bonus':
@@ -53,19 +53,19 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     }
   }
 
-  const getTransactionTypeText = (type, description = '') => {
-    // Check if transaction contains bonus points
-    if (description && description.includes('bonus')) {
-      return 'Bonus'
+  const getTransactionTypeText = (transaction) => {
+    // Check if transaction has bonus points
+    if (transaction.bonus_points && transaction.bonus_points > 0) {
+      return 'Med Bonus'
     }
     
-    switch (type) {
+    switch (transaction.transaction_type) {
       case 'earned':
         return 'Opptjent'
       case 'bonus':
         return 'Bonus'
       default:
-        return type
+        return transaction.transaction_type
     }
   }
 
@@ -81,14 +81,9 @@ const PointsHistory = ({ memberId, open, onClose }) => {
 
   const getTotalPoints = (type) => {
     if (type === 'bonus') {
-      // Calculate bonus points from transaction descriptions that contain "bonus"
+      // Calculate bonus points from the bonus_points field
       return filteredTransactions
-        .filter(t => t.description && t.description.includes('bonus'))
-        .reduce((sum, t) => {
-          // Extract bonus points from descriptions like "Task completion (10 + 3 bonus)"
-          const bonusMatch = t.description.match(/(\d+) bonus/);
-          return sum + (bonusMatch ? parseInt(bonusMatch[1]) : 0);
-        }, 0);
+        .reduce((sum, t) => sum + (t.bonus_points || 0), 0);
     }
     
     return filteredTransactions
@@ -230,13 +225,13 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
-                  backgroundColor: getTransactionColor(transaction.transaction_type, transaction.description) + '20',
+                  backgroundColor: getTransactionColor(transaction) + '20',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: '1rem'
                 }}>
-                  {getTransactionIcon(transaction.transaction_type, transaction.description)}
+                  {getTransactionIcon(transaction)}
                 </div>
 
                 {/* Content */}
@@ -248,16 +243,23 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                     alignItems: 'center',
                     gap: '0.5rem'
                   }}>
-                    <span>{transaction.description}</span>
+                    <span>
+                      {transaction.description}
+                      {transaction.bonus_points > 0 && (
+                        <span style={{ color: '#ffc107', marginLeft: '0.5rem' }}>
+                          (+{transaction.bonus_points} bonus)
+                        </span>
+                      )}
+                    </span>
                     <span style={{
-                      backgroundColor: getTransactionColor(transaction.transaction_type, transaction.description),
+                      backgroundColor: getTransactionColor(transaction),
                       color: 'white',
                       fontSize: '0.7rem',
                       padding: '0.25rem 0.5rem',
                       borderRadius: '1rem',
                       fontWeight: 600
                     }}>
-                      {getTransactionTypeText(transaction.transaction_type, transaction.description)}
+                      {getTransactionTypeText(transaction)}
                     </span>
                   </div>
                   
@@ -282,13 +284,13 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                 <div style={{
                   fontSize: '1.2rem',
                   fontWeight: 700,
-                  color: getTransactionColor(transaction.transaction_type, transaction.description),
+                  color: getTransactionColor(transaction),
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.25rem'
                 }}>
-                  {transaction.points > 0 ? <FaArrowUp size={16} /> : <FaArrowDown size={16} />}
-                  {Math.abs(transaction.points)}
+                  {(transaction.points + (transaction.bonus_points || 0)) > 0 ? <FaArrowUp size={16} /> : <FaArrowDown size={16} />}
+                  {Math.abs(transaction.points + (transaction.bonus_points || 0))}
                 </div>
               </div>
             ))

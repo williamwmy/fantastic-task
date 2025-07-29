@@ -509,14 +509,15 @@ export const TasksProvider = ({ children }) => {
         const pointsAwarded = cleanedData.points_awarded;
         if (pointsAwarded > 0) {
           const transactionDescription = bonusPoints > 0 
-            ? `Task completion (${basePoints} + ${bonusPoints} bonus)`
+            ? `Task completion with ${bonusPoints} bonus points`
             : 'Task completion';
           const mockTransaction = generateMockPointsTransaction(
             cleanedData.completed_by,
-            pointsAwarded,
+            basePoints, // Only base points in the main points field
             'earned',
             transactionDescription,
-            mockCompletion.id
+            mockCompletion.id,
+            bonusPoints // Store bonus points separately
           );
           setPointsTransactions(prev => [mockTransaction, ...prev]);
         }
@@ -549,9 +550,9 @@ export const TasksProvider = ({ children }) => {
         if (!needsVerification) {
           // Award points immediately for adults
           const transactionDescription = bonusPoints > 0 
-            ? `Task completion (${basePoints} + ${bonusPoints} bonus)`
+            ? `Task completion with ${bonusPoints} bonus points`
             : 'Task completion';
-          await awardPoints(member.id, pointsAwarded, 'earned', transactionDescription, completion.id)
+          await awardPoints(member.id, basePoints, bonusPoints, 'earned', transactionDescription, completion.id)
         }
         // If verification is needed, points will be awarded when verified
       }
@@ -596,10 +597,11 @@ export const TasksProvider = ({ children }) => {
       if (verified && completion.points_awarded > 0) {
         // Award points now that task is verified
         // We can't determine bonus points from the completion record since we don't store them
-        // So we'll use a generic verified message
+        // So we'll use a generic verified message and put all points in the main field
         await awardPoints(
           completion.completed_by,
           completion.points_awarded,
+          0, // No separate bonus tracking for verified completions
           'earned',
           'Task completion (verified)',
           completionId
@@ -616,10 +618,12 @@ export const TasksProvider = ({ children }) => {
     }
   }
 
-  const awardPoints = async (memberId, points, type, description, taskCompletionId = null) => {
+  const awardPoints = async (memberId, points, bonusPoints = 0, type, description, taskCompletionId = null) => {
     try {
-      // Ensure points is a valid number
+      // Ensure points are valid numbers
       const validPoints = Number(points) || 0
+      const validBonusPoints = Number(bonusPoints) || 0
+      const totalPoints = validPoints + validBonusPoints
       
       // Create points transaction
       const { data: transaction, error: transactionError } = await supabase
@@ -627,6 +631,7 @@ export const TasksProvider = ({ children }) => {
         .insert({
           family_member_id: memberId,
           points: validPoints,
+          bonus_points: validBonusPoints,
           transaction_type: type,
           description,
           task_completion_id: taskCompletionId
@@ -645,7 +650,7 @@ export const TasksProvider = ({ children }) => {
 
       if (memberError) throw memberError
 
-      const newBalance = (currentMember.points_balance || 0) + validPoints
+      const newBalance = (currentMember.points_balance || 0) + totalPoints
       const { error: balanceError } = await supabase
         .from('family_members')
         .update({

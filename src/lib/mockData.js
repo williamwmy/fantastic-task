@@ -342,6 +342,7 @@ export const mockPointsTransactions = [
     id: 'mock-transaction-1',
     family_member_id: mockFamilyMembers[1].id,
     points: 5,
+    bonus_points: 0,
     transaction_type: 'earned',
     description: 'Task completion - Ta ut søppel',
     task_completion_id: mockTaskCompletions[0].id,
@@ -353,6 +354,7 @@ export const mockPointsTransactions = [
     id: 'mock-transaction-2',
     family_member_id: mockFamilyMembers[2].id,
     points: 12,
+    bonus_points: 0,
     transaction_type: 'earned',
     description: 'Task completion (verified) - Støvsuge stue',
     task_completion_id: mockTaskCompletions[1].id,
@@ -363,9 +365,10 @@ export const mockPointsTransactions = [
   {
     id: 'mock-transaction-3',
     family_member_id: mockFamilyMembers[1].id,
-    points: 13,
+    points: 10,
+    bonus_points: 3,
     transaction_type: 'earned',
-    description: 'Task completion (10 + 3 bonus)',
+    description: 'Task completion with 3 bonus points',
     task_completion_id: null,
     created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 timer siden
     family_members: mockFamilyMembers[1]
@@ -373,9 +376,10 @@ export const mockPointsTransactions = [
   {
     id: 'mock-transaction-4',
     family_member_id: mockFamilyMembers[2].id,
-    points: 18,
+    points: 15,
+    bonus_points: 3,
     transaction_type: 'earned',
-    description: 'Task completion (15 + 3 bonus)',
+    description: 'Task completion with 3 bonus points',
     task_completion_id: null,
     created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 timer siden
     family_members: mockFamilyMembers[2]
@@ -418,13 +422,14 @@ export const generateMockTaskCompletion = (taskId, completedBy, completionData) 
   };
 };
 
-export const generateMockPointsTransaction = (memberId, points, type, description, taskCompletionId = null) => {
+export const generateMockPointsTransaction = (memberId, points, type, description, taskCompletionId = null, bonusPoints = 0) => {
   const member = mockFamilyMembers.find(m => m.id === memberId);
   
   return {
     id: 'mock-transaction-' + Date.now(),
     family_member_id: memberId,
     points,
+    bonus_points: bonusPoints,
     transaction_type: type,
     description,
     task_completion_id: taskCompletionId,

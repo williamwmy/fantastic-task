@@ -85,7 +85,8 @@ CREATE TABLE points_transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   family_member_id UUID REFERENCES family_members(id),
   points INTEGER NOT NULL,
-  transaction_type TEXT NOT NULL, -- 'earned', 'bonus'
+  bonus_points INTEGER DEFAULT 0, -- Bonus points for overtime work (1 per 5 min over estimate)
+  transaction_type TEXT NOT NULL, -- 'earned', 'bonus' (keeping for backward compatibility)
   description TEXT,
   task_completion_id UUID REFERENCES task_completions(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
