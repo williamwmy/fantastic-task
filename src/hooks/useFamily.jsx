@@ -346,22 +346,31 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
 
       // Role restrictions
       if (updateData.role) {
-        // Only admins can change roles
-        if (currentMember.role !== 'admin') {
-          throw new Error('Only admins can change member roles')
-        }
+        // Check if role is actually changing
+        const currentMemberData = familyMembers.find(m => m.id === memberId)
+        const isRoleChanging = currentMemberData && currentMemberData.role !== updateData.role
         
-        // Can't demote yourself if you're the only admin
-        if (memberId === currentMember.id && updateData.role !== 'admin') {
-          const adminCount = familyMembers.filter(m => m.role === 'admin').length
-          if (adminCount <= 1) {
-            throw new Error('Cannot demote the last admin')
+        if (isRoleChanging) {
+          // Only admins can change roles
+          if (currentMember.role !== 'admin') {
+            throw new Error('Only admins can change member roles')
           }
-        }
+          
+          // Can't demote yourself if you're the only admin
+          if (memberId === currentMember.id && updateData.role !== 'admin') {
+            const adminCount = familyMembers.filter(m => m.role === 'admin').length
+            if (adminCount <= 1) {
+              throw new Error('Cannot demote the last admin')
+            }
+          }
 
-        // Validate role values
-        if (!['admin', 'member', 'child'].includes(updateData.role)) {
-          throw new Error('Invalid role')
+          // Validate role values
+          if (!['admin', 'member', 'child'].includes(updateData.role)) {
+            throw new Error('Invalid role')
+          }
+        } else {
+          // Role is not changing, remove it from update to avoid unnecessary checks
+          delete updateData.role
         }
       }
 
