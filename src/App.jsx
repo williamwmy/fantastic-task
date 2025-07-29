@@ -145,11 +145,13 @@ export default function App() {
           {/* Points display */}
           <div style={{ 
             padding: "0.25rem 0.5rem", 
-            background: "#6c757d", 
+            background: "#28a745", 
+            color: "white",
             borderRadius: "1rem",
             fontWeight: 600,
             fontSize: "0.875rem",
-            whiteSpace: "nowrap"
+            whiteSpace: "nowrap",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
           }}>
             {currentMember.points_balance} poeng
           </div>
