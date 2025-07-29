@@ -24,10 +24,10 @@ export const getBackgroundStyle = (backgroundPreference) => {
       background: 'linear-gradient(135deg, #e0f2f1 0%, #e3f2fd 100%)' 
     },
     gradient_forest: { 
-      background: 'linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%)' 
+      background: 'linear-gradient(135deg, #c8e6c9 0%, #81c784 50%, #4caf50 100%)' 
     },
     gradient_warm: { 
-      background: 'linear-gradient(135deg, #fff3e0 0%, #fce4ec 50%, #f3e5f5 100%)' 
+      background: 'linear-gradient(135deg, #ffecb3 0%, #ffcc02 50%, #ff8f00 100%)' 
     }
   }
 

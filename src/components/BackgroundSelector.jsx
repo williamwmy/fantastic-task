@@ -78,7 +78,7 @@ const BackgroundSelector = ({ currentSelection, onSelect }) => {
       name: 'Skog', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%)' 
+        background: 'linear-gradient(135deg, #c8e6c9 0%, #81c784 50%, #4caf50 100%)' 
       }
     },
     { 
@@ -86,7 +86,7 @@ const BackgroundSelector = ({ currentSelection, onSelect }) => {
       name: 'Varm', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #fff3e0 0%, #fce4ec 50%, #f3e5f5 100%)' 
+        background: 'linear-gradient(135deg, #ffecb3 0%, #ffcc02 50%, #ff8f00 100%)' 
       }
     }
   ]
