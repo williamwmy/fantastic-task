@@ -19,7 +19,7 @@ const FamilyMemberCard = ({ member, onClose }) => {
   const [formData, setFormData] = useState({
     nickname: member.nickname,
     avatar_color: member.avatar_color || '#82bcf4',
-    background_preference: member.background_preference || 'gradient_blue_purple',
+    background_preference: member.background_preference || 'gradient_northern_lights',
     role: member.role
   })
 
@@ -47,18 +47,41 @@ const FamilyMemberCard = ({ member, onClose }) => {
     }))
   }
 
-  const handleBackgroundChange = (backgroundPreference) => {
+  const handleBackgroundChange = async (backgroundPreference) => {
+    // Update form data immediately
     setFormData(prev => ({
       ...prev,
       background_preference: backgroundPreference
     }))
+    
+    // Auto-save the background preference immediately
+    setLoading(true)
+    const { error } = await updateMemberProfile(member.id, { 
+      background_preference: backgroundPreference 
+    })
+    
+    if (error) {
+      alert('Feil ved lagring av bakgrunn: ' + error.message)
+      // Revert the change if it failed
+      setFormData(prev => ({
+        ...prev,
+        background_preference: member.background_preference || 'gradient_northern_lights'
+      }))
+    }
+    
+    setLoading(false)
   }
 
   const handleSave = async () => {
     if (!canEditProfile) return
 
     setLoading(true)
-    const { error } = await updateMemberProfile(member.id, formData)
+    // Only save nickname and avatar_color (background is auto-saved)
+    const { error } = await updateMemberProfile(member.id, {
+      nickname: formData.nickname,
+      avatar_color: formData.avatar_color,
+      role: formData.role
+    })
     
     if (error) {
       alert('Feil ved oppdatering: ' + error.message)
@@ -139,44 +162,78 @@ const FamilyMemberCard = ({ member, onClose }) => {
       icon={<FaEdit />}
     >
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{
-            width: 60,
-            height: 60,
-            borderRadius: '50%',
-            backgroundColor: formData.avatar_color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 700,
-            fontSize: 24
-          }}>
-            {formData.nickname[0]?.toUpperCase() || member.nickname[0]?.toUpperCase()}
-          </div>
-          
-          <div>
-            <h2 style={{ margin: 0 }}>{member.nickname}</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#666' }}>
-              {getRoleIcon(member.role)}
-              <span>{getRoleText(member.role)}</span>
-              <span>• {member.points_balance} poeng</span>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              backgroundColor: formData.avatar_color,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: 24,
+              flexShrink: 0
+            }}>
+              {formData.nickname[0]?.toUpperCase() || member.nickname[0]?.toUpperCase()}
+            </div>
+            
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{member.nickname}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#666', fontSize: '0.9rem' }}>
+                {getRoleIcon(member.role)}
+                <span>{getRoleText(member.role)}</span>
+                <span>• {member.points_balance} poeng</span>
+              </div>
             </div>
           </div>
 
           {canEditProfile && (
-            <button
-              onClick={() => setEditing(!editing)}
-              style={{
-                ...buttonStyle,
-                backgroundColor: editing ? '#6c757d' : '#0056b3',
-                color: 'white',
-                marginLeft: 'auto'
-              }}
-            >
-              {editing ? <FaTimes /> : <FaEdit />}
-              {editing ? 'Avbryt' : 'Rediger'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+              {!editing && (
+                <button
+                  onClick={() => setEditing(true)}
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: '#0056b3',
+                    color: 'white'
+                  }}
+                >
+                  <FaEdit />
+                  Rediger
+                </button>
+              )}
+              
+              {editing && (
+                <>
+                  <button
+                    onClick={() => setEditing(false)}
+                    style={{
+                      ...buttonStyle,
+                      backgroundColor: '#6c757d',
+                      color: 'white'
+                    }}
+                  >
+                    <FaTimes />
+                    Avbryt
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={loading}
+                    style={{
+                      ...buttonStyle,
+                      backgroundColor: '#28a745',
+                      color: 'white'
+                    }}
+                  >
+                    <FaSave />
+                    {loading ? 'Lagrer...' : 'Lagre'}
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
 
@@ -231,31 +288,6 @@ const FamilyMemberCard = ({ member, onClose }) => {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setEditing(false)}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: '#6c757d',
-                  color: 'white'
-                }}
-              >
-                <FaTimes />
-                Avbryt
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: '#28a745',
-                  color: 'white'
-                }}
-              >
-                <FaSave />
-                {loading ? 'Lagrer...' : 'Lagre'}
-              </button>
-            </div>
           </div>
         ) : (
           <div>

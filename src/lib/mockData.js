@@ -30,7 +30,7 @@ export const mockFamilyMembers = [
     nickname: 'Test Admin',
     role: 'admin',
     avatar_color: '#82bcf4',
-    background_preference: 'gradient_blue_purple',
+    background_preference: 'gradient_northern_lights',
     points_balance: 100,
     created_at: now
   },

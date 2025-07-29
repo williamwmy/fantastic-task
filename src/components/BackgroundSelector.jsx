@@ -42,16 +42,16 @@ const BackgroundSelector = ({ currentSelection, onSelect }) => {
     
     // Gradients
     { 
-      id: 'gradient_blue_purple', 
-      name: 'Blå til Lilla', 
+      id: 'gradient_northern_lights', 
+      name: 'Nordlys', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #d0e6fa 0%, #f8e8ee 100%)' 
+        background: 'linear-gradient(135deg, #f3e5f5 0%, #e8f5e8 100%)' 
       }
     },
     { 
-      id: 'gradient_green_blue', 
-      name: 'Grønn til Blå', 
+      id: 'gradient_forest', 
+      name: 'Skog', 
       type: 'gradient',
       style: { 
         background: 'linear-gradient(135deg, #e8f5e8 0%, #e3f2fd 100%)' 
@@ -62,7 +62,7 @@ const BackgroundSelector = ({ currentSelection, onSelect }) => {
       name: 'Solnedgang', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%)' 
+        background: 'linear-gradient(135deg, #fce4ec 0%, #fff3e0 100%)' 
       }
     },
     { 
@@ -70,23 +70,23 @@ const BackgroundSelector = ({ currentSelection, onSelect }) => {
       name: 'Hav', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #e0f2f1 0%, #e3f2fd 100%)' 
+        background: 'linear-gradient(135deg, #e0f7fa 0%, #e3f2fd 100%)' 
       }
     },
     { 
-      id: 'gradient_forest', 
-      name: 'Skog', 
+      id: 'gradient_lavender', 
+      name: 'Lavendel', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #c8e6c9 0%, #81c784 50%, #4caf50 100%)' 
+        background: 'linear-gradient(135deg, #f3e5f5 0%, #e8eaf6 100%)' 
       }
     },
     { 
-      id: 'gradient_warm', 
-      name: 'Varm', 
+      id: 'gradient_urban', 
+      name: 'Urbant', 
       type: 'gradient',
       style: { 
-        background: 'linear-gradient(135deg, #ffecb3 0%, #ffcc02 50%, #ff8f00 100%)' 
+        background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)' 
       }
     }
   ]
