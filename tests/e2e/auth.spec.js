@@ -18,46 +18,51 @@ test.describe('Authentication Flow', () => {
     
     // Check branding elements
     await expect(page.getByText('En familie-oppgaveapp som gjør hverdagen enklere')).toBeVisible()
-    await expect(page.getByText('Hele familien')).toBeVisible()
-    await expect(page.getByText('Poeng & belønninger')).toBeVisible()
-    await expect(page.getByText('Fleksible oppgaver')).toBeVisible()
+    
+    // Features are hidden on mobile viewports, so check viewport size first
+    const viewport = page.viewportSize()
+    if (viewport && viewport.width >= 768) {
+      await expect(page.getByText('Hele familien')).toBeVisible()
+      await expect(page.getByText('Poeng & belønninger')).toBeVisible()
+      await expect(page.getByText('Fleksible oppgaver')).toBeVisible()
+    }
   })
 
   test('should switch between authentication modes', async ({ page }) => {
-    // Start with signin mode
-    await expect(page.getByRole('button', { name: 'Logg inn' })).toBeVisible()
+    // Start with signin mode - check for submit button in form
+    await expect(page.locator('form button[type="submit"]')).toContainText('Logg inn')
     await expect(page.getByPlaceholder('din@email.com')).toBeVisible()
     await expect(page.getByPlaceholder('Ditt passord')).toBeVisible()
     
     // Switch to signup mode
     await page.getByText('Registrer').click()
-    await expect(page.getByRole('button', { name: 'Registrer deg' })).toBeVisible()
+    await expect(page.locator('form button[type="submit"]')).toContainText('Registrer deg')
     await expect(page.getByPlaceholder('Bekreft passord')).toBeVisible()
     await expect(page.getByPlaceholder('Skriv inn familiekode (valgfritt)')).toBeVisible()
     
     // Switch to reset password mode
     await page.getByText('Glemt passord?').click()
-    await expect(page.getByRole('button', { name: 'Send reset-link' })).toBeVisible()
+    await expect(page.locator('form button[type="submit"]')).toContainText('Send reset-link')
     await expect(page.getByPlaceholder('din@email.com')).toBeVisible()
     await expect(page.getByPlaceholder('Ditt passord')).not.toBeVisible()
     
     // Switch to create family mode
     await page.getByText('Opprett familie').click()
-    await expect(page.getByRole('button', { name: 'Opprett familie' })).toBeVisible()
+    await expect(page.locator('form button[type="submit"]')).toContainText('Opprett familie')
     await expect(page.getByPlaceholder('F.eks. Familie Hansen')).toBeVisible()
     await expect(page.getByPlaceholder('F.eks. Mamma, Pappa, Ole')).toBeVisible()
     await expect(page.getByPlaceholder('din@email.com')).not.toBeVisible()
     
     // Switch to join family mode
     await page.getByText('Bli med i familie').click()
-    await expect(page.getByRole('button', { name: 'Bli med i familie' })).toBeVisible()
+    await expect(page.locator('form button[type="submit"]')).toContainText('Bli med i familie')
     await expect(page.getByPlaceholder('Skriv inn familiekoden')).toBeVisible()
     await expect(page.getByPlaceholder('din@email.com')).not.toBeVisible()
   })
 
   test('should handle form validation', async ({ page }) => {
     // Test empty form submission
-    await page.getByRole('button', { name: 'Logg inn' }).click()
+    await page.locator('form button[type="submit"]').click()
     
     // Check for HTML5 validation or custom error messages
     const emailInput = page.getByPlaceholder('din@email.com')
@@ -75,7 +80,7 @@ test.describe('Authentication Flow', () => {
     await page.getByPlaceholder('Ditt passord').fill('password123')
     await page.getByPlaceholder('Bekreft passord').fill('password456')
     
-    await page.getByRole('button', { name: 'Registrer deg' }).click()
+    await page.locator('form button[type="submit"]').click()
     
     // Should show error message
     await expect(page.getByText('Passordene stemmer ikke overens')).toBeVisible()
@@ -149,7 +154,7 @@ test.describe('Authentication Flow', () => {
   test('should clear errors when switching modes', async ({ page }) => {
     // First, trigger an error in signin mode
     await page.getByPlaceholder('din@email.com').fill('invalid-email')
-    await page.getByRole('button', { name: 'Logg inn' }).click()
+    await page.locator('form button[type="submit"]').click()
     
     // Switch to another mode
     await page.getByText('Registrer').click()
