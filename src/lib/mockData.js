@@ -42,7 +42,7 @@ export const mockFamilyMembers = [
     role: 'child',
     avatar_color: '#ff6b6b',
     background_preference: 'gradient_sunset',
-    points_balance: 50,
+    points_balance: 68, // 50 + 5 + 13 (includes bonus)
     created_at: now
   },
   {
@@ -53,7 +53,7 @@ export const mockFamilyMembers = [
     role: 'member',
     avatar_color: '#4ecdc4',
     background_preference: 'solid_mint',
-    points_balance: 75,
+    points_balance: 105, // 75 + 12 + 18 (includes bonus)
     created_at: now
   }
 ];
@@ -363,12 +363,22 @@ export const mockPointsTransactions = [
   {
     id: 'mock-transaction-3',
     family_member_id: mockFamilyMembers[1].id,
-    points: 5,
-    transaction_type: 'bonus',
-    description: 'Ekstra innsats denne uken!',
+    points: 13,
+    transaction_type: 'earned',
+    description: 'Task completion (10 + 3 bonus)',
     task_completion_id: null,
     created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 timer siden
     family_members: mockFamilyMembers[1]
+  },
+  {
+    id: 'mock-transaction-4',
+    family_member_id: mockFamilyMembers[2].id,
+    points: 18,
+    transaction_type: 'earned',
+    description: 'Task completion (15 + 3 bonus)',
+    task_completion_id: null,
+    created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 timer siden
+    family_members: mockFamilyMembers[2]
   }
 ];
 

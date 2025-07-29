@@ -14,10 +14,19 @@ const PointsHistory = ({ memberId, open, onClose }) => {
 
   const filteredTransactions = transactions.filter(transaction => {
     if (filter === 'all') return true
+    if (filter === 'bonus') {
+      // Show transactions that contain bonus points in description
+      return transaction.description && transaction.description.includes('bonus')
+    }
     return transaction.transaction_type === filter
   })
 
-  const getTransactionIcon = (type) => {
+  const getTransactionIcon = (type, description = '') => {
+    // Check if transaction contains bonus points
+    if (description && description.includes('bonus')) {
+      return <FaGift style={{ color: '#17a2b8' }} />
+    }
+    
     switch (type) {
       case 'earned':
         return <FaStar style={{ color: '#28a745' }} />
@@ -28,7 +37,12 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     }
   }
 
-  const getTransactionColor = (type) => {
+  const getTransactionColor = (type, description = '') => {
+    // Check if transaction contains bonus points
+    if (description && description.includes('bonus')) {
+      return '#17a2b8'
+    }
+    
     switch (type) {
       case 'earned':
         return '#28a745'
@@ -39,7 +53,12 @@ const PointsHistory = ({ memberId, open, onClose }) => {
     }
   }
 
-  const getTransactionTypeText = (type) => {
+  const getTransactionTypeText = (type, description = '') => {
+    // Check if transaction contains bonus points
+    if (description && description.includes('bonus')) {
+      return 'Bonus'
+    }
+    
     switch (type) {
       case 'earned':
         return 'Opptjent'
@@ -61,6 +80,17 @@ const PointsHistory = ({ memberId, open, onClose }) => {
   }
 
   const getTotalPoints = (type) => {
+    if (type === 'bonus') {
+      // Calculate bonus points from transaction descriptions that contain "bonus"
+      return filteredTransactions
+        .filter(t => t.description && t.description.includes('bonus'))
+        .reduce((sum, t) => {
+          // Extract bonus points from descriptions like "Task completion (10 + 3 bonus)"
+          const bonusMatch = t.description.match(/(\d+) bonus/);
+          return sum + (bonusMatch ? parseInt(bonusMatch[1]) : 0);
+        }, 0);
+    }
+    
     return filteredTransactions
       .filter(t => !type || t.transaction_type === type)
       .reduce((sum, t) => sum + t.points, 0)
@@ -200,13 +230,13 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                   width: 40,
                   height: 40,
                   borderRadius: '50%',
-                  backgroundColor: getTransactionColor(transaction.transaction_type) + '20',
+                  backgroundColor: getTransactionColor(transaction.transaction_type, transaction.description) + '20',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: '1rem'
                 }}>
-                  {getTransactionIcon(transaction.transaction_type)}
+                  {getTransactionIcon(transaction.transaction_type, transaction.description)}
                 </div>
 
                 {/* Content */}
@@ -220,14 +250,14 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                   }}>
                     <span>{transaction.description}</span>
                     <span style={{
-                      backgroundColor: getTransactionColor(transaction.transaction_type),
+                      backgroundColor: getTransactionColor(transaction.transaction_type, transaction.description),
                       color: 'white',
                       fontSize: '0.7rem',
                       padding: '0.25rem 0.5rem',
                       borderRadius: '1rem',
                       fontWeight: 600
                     }}>
-                      {getTransactionTypeText(transaction.transaction_type)}
+                      {getTransactionTypeText(transaction.transaction_type, transaction.description)}
                     </span>
                   </div>
                   
@@ -252,7 +282,7 @@ const PointsHistory = ({ memberId, open, onClose }) => {
                 <div style={{
                   fontSize: '1.2rem',
                   fontWeight: 700,
-                  color: getTransactionColor(transaction.transaction_type),
+                  color: getTransactionColor(transaction.transaction_type, transaction.description),
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.25rem'
