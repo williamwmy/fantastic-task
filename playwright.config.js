@@ -49,5 +49,9 @@ export default defineConfig({
     command: 'npm run dev',
     port: 5173,
     reuseExistingServer: !process.env.CI,
+    env: {
+      // Disable local test user for e2e tests to ensure we see the actual auth flow
+      VITE_LOCAL_TEST_USER: 'false'
+    }
   },
 })

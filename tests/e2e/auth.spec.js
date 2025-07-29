@@ -87,8 +87,13 @@ test.describe('Authentication Flow', () => {
   })
 
   test('should toggle password visibility', async ({ page }) => {
+    // First make sure we're in signin mode and can see the password field
+    await expect(page.getByPlaceholder('din@email.com')).toBeVisible()
+    
     const passwordInput = page.getByPlaceholder('Ditt passord')
-    const toggleButton = page.locator('button[type="button"]').last() // Eye icon button
+    // Find the eye toggle button next to the password field
+    const passwordContainer = page.locator('div').filter({ has: passwordInput })
+    const toggleButton = passwordContainer.locator('button[type="button"]')
     
     // Password should be hidden initially
     await expect(passwordInput).toHaveAttribute('type', 'password')
