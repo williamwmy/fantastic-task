@@ -479,9 +479,9 @@ export const TasksProvider = ({ children }) => {
         comment: finalCompletionData.comment && typeof finalCompletionData.comment === 'string' 
                 ? finalCompletionData.comment.trim() || null 
                 : null,
-        points_awarded: totalPointsAwarded,
-        bonus_points: bonusPoints,
-        bonus_explanation: explanation
+        points_awarded: totalPointsAwarded
+        // Note: bonus_points and bonus_explanation are calculated in frontend only
+        // The bonus is included in points_awarded and described in transaction description
       }
 
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
@@ -508,8 +508,8 @@ export const TasksProvider = ({ children }) => {
         // Mock points transaction  
         const pointsAwarded = cleanedData.points_awarded;
         if (pointsAwarded > 0) {
-          const transactionDescription = cleanedData.bonus_points > 0 
-            ? `Task completion (${basePoints} + ${cleanedData.bonus_points} bonus)`
+          const transactionDescription = bonusPoints > 0 
+            ? `Task completion (${basePoints} + ${bonusPoints} bonus)`
             : 'Task completion';
           const mockTransaction = generateMockPointsTransaction(
             cleanedData.completed_by,
@@ -548,8 +548,8 @@ export const TasksProvider = ({ children }) => {
         
         if (!needsVerification) {
           // Award points immediately for adults
-          const transactionDescription = cleanedData.bonus_points > 0 
-            ? `Task completion (${basePoints} + ${cleanedData.bonus_points} bonus)`
+          const transactionDescription = bonusPoints > 0 
+            ? `Task completion (${basePoints} + ${bonusPoints} bonus)`
             : 'Task completion';
           await awardPoints(member.id, pointsAwarded, 'earned', transactionDescription, completion.id)
         }
@@ -595,14 +595,13 @@ export const TasksProvider = ({ children }) => {
 
       if (verified && completion.points_awarded > 0) {
         // Award points now that task is verified
-        const transactionDescription = completion.bonus_points > 0 
-          ? `Task completion (verified, ${completion.points_awarded - completion.bonus_points} + ${completion.bonus_points} bonus)`
-          : 'Task completion (verified)';
+        // We can't determine bonus points from the completion record since we don't store them
+        // So we'll use a generic verified message
         await awardPoints(
           completion.completed_by,
           completion.points_awarded,
           'earned',
-          transactionDescription,
+          'Task completion (verified)',
           completionId
         )
       }
