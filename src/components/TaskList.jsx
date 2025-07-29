@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
 import { 
@@ -10,11 +10,13 @@ import {
   FaExclamationTriangle,
   FaCheckCircle,
   FaHourglassHalf,
-  FaEdit
+  FaEdit,
+  FaUndo
 } from 'react-icons/fa'
 import TaskCompletion from './TaskCompletion'
 import TaskAssignment from './TaskAssignment'
 import { PermissionGate, RoleButton } from './RoleBasedAccess'
+import CompletionAnimation from './CompletionAnimation'
 
 export const filterTasksForDay = (tasks, date) => {
   if (!Array.isArray(tasks)) return []
@@ -45,6 +47,8 @@ const TaskList = ({ selectedDate }) => {
   const [assigningTask, setAssigningTask] = useState(null)
   const [quickCompletingTask, setQuickCompletingTask] = useState(null)
   const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(currentMember?.role === 'child')
+  const [quickAnimationData, setQuickAnimationData] = useState({ show: false, points: 0, position: null })
+  const taskRefs = useRef({})
 
   // Get assignments for current member for selected date
   const myAssignments = getTasksForMember(currentMember?.id, selectedDate)
@@ -157,6 +161,22 @@ const TaskList = ({ selectedDate }) => {
       if (quickCompleteTask && assignment?.id) {
         // Use quickCompleteTask with assignment ID for tests (only if assignment exists)
         await quickCompleteTask(assignment.id)
+        
+        // Get task element position for animation
+        const taskElement = taskRefs.current[task.id]
+        const position = taskElement ? taskElement.getBoundingClientRect() : null
+        
+        // Show animation for successful completion
+        setQuickAnimationData({ 
+          show: true, 
+          points: task.points || 0,
+          position: position ? {
+            top: position.top,
+            left: position.left,
+            width: position.width,  
+            height: position.height
+          } : null
+        })
       } else {
         // Fallback to regular completeTask with completion data
         const completionData = {
@@ -169,6 +189,22 @@ const TaskList = ({ selectedDate }) => {
         const { error } = await completeTask(completionData)
         if (error) {
           alert('Feil ved fullføring av oppgave: ' + error.message)
+        } else {
+          // Get task element position for animation
+          const taskElement = taskRefs.current[task.id]
+          const position = taskElement ? taskElement.getBoundingClientRect() : null
+          
+          // Show animation for successful completion
+          setQuickAnimationData({ 
+            show: true, 
+            points: task.points || 0,
+            position: position ? {
+              top: position.top,
+              left: position.left,
+              width: position.width,  
+              height: position.height
+            } : null
+          })
         }
       }
     } catch (error) {
@@ -185,6 +221,10 @@ const TaskList = ({ selectedDate }) => {
 
   const handleAssignTask = (task) => {
     setAssigningTask(task)
+  }
+
+  const handleQuickAnimationComplete = () => {
+    setQuickAnimationData({ show: false, points: 0, position: null })
   }
 
   if (!currentMember) {
@@ -272,17 +312,20 @@ const TaskList = ({ selectedDate }) => {
             const assignment = getTaskAssignment(task.id) || task.assignment
             const completion = getTaskCompletion(task.id) || task.assignment?.completion
             const { status, color, icon: StatusIcon } = getTaskStatus(task)
+            const isCompleted = completion && status === 'completed'
             
             return (
               <div
                 key={task.id}
+                ref={el => taskRefs.current[task.id] = el}
                 style={{
-                  backgroundColor: 'white',
+                  backgroundColor: isCompleted ? '#d4f8d4' : 'white',
                   border: `2px solid ${color}20`,
                   borderLeft: `4px solid ${color}`,
                   borderRadius: '0.5rem',
                   padding: '1rem',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  transition: 'background-color 0.3s ease'
                 }}
               >
                 {/* Header */}
@@ -497,7 +540,7 @@ const TaskList = ({ selectedDate }) => {
                           alignItems: 'center',
                           gap: '0.5rem',
                           padding: '0.5rem 1rem',
-                          backgroundColor: '#dc3545',
+                          backgroundColor: '#6c757d',
                           color: 'white',
                           border: 'none',
                           borderRadius: '2rem',
@@ -508,7 +551,7 @@ const TaskList = ({ selectedDate }) => {
                         }}
                         aria-label="undo"
                       >
-                        <FaExclamationTriangle />
+                        <FaUndo />
                         Angre
                       </button>
                     </>
@@ -550,6 +593,19 @@ const TaskList = ({ selectedDate }) => {
           assignment={completingTask.assignment}
           open={true}
           onClose={() => setCompletingTask(null)}
+          taskPosition={completingTask.task ? 
+            (() => {
+              const element = taskRefs.current[completingTask.task.id]
+              if (!element) return null
+              const rect = element.getBoundingClientRect()
+              return {
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height
+              }
+            })() : null
+          }
         />
       )}
 
@@ -561,6 +617,13 @@ const TaskList = ({ selectedDate }) => {
           onClose={() => setAssigningTask(null)}
         />
       )}
+
+      <CompletionAnimation
+        show={quickAnimationData.show}
+        points={quickAnimationData.points}
+        position={quickAnimationData.position}
+        onComplete={handleQuickAnimationComplete}
+      />
     </div>
   )
 }

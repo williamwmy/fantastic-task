@@ -3,8 +3,9 @@ import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
 import { FaCheck, FaClock, FaCoins, FaComment, FaCamera, FaTimes } from 'react-icons/fa'
 import Modal from './Modal'
+import CompletionAnimation from './CompletionAnimation'
 
-const TaskCompletion = ({ task, assignment, open, onClose }) => {
+const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }) => {
   const { completeTask } = useTasks()
   const { currentMember } = useFamily()
   const timeoutRef = useRef(null)
@@ -13,6 +14,7 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState('')
+  const [showAnimation, setShowAnimation] = useState(false)
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -81,21 +83,22 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
       alert('Feil ved fullføring av oppgave: ' + error.message)
     } else {
       setSuccess('Oppgave fullført!')
-      
-      // Close modal after showing success briefly
-      timeoutRef.current = setTimeout(() => {
-        // Clean up image previews
-        images.forEach(image => URL.revokeObjectURL(image.preview))
-        
-        onClose()
-        setTimeSpent('')
-        setComment('')
-        setImages([])
-        setSuccess('')
-      }, 1500)
+      setShowAnimation(true)
     }
     
     setLoading(false)
+  }
+
+  const handleAnimationComplete = () => {
+    // Clean up image previews
+    images.forEach(image => URL.revokeObjectURL(image.preview))
+    
+    onClose()
+    setTimeSpent('')
+    setComment('')
+    setImages([])
+    setSuccess('')
+    setShowAnimation(false)
   }
 
   const formatEstimatedTime = (minutes) => {
@@ -114,6 +117,7 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
     : 'Poeng tildeles umiddelbart'
 
   return (
+    <>
     <Modal open={open} onClose={onClose}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <div style={{ 
@@ -444,6 +448,16 @@ const TaskCompletion = ({ task, assignment, open, onClose }) => {
         </form>
       </div>
     </Modal>
+    
+    {showAnimation && (
+      <CompletionAnimation
+        show={showAnimation}
+        points={Number(task.points) || 0}
+        position={taskPosition}
+        onComplete={handleAnimationComplete}
+      />
+    )}
+  </>
   )
 }
 
