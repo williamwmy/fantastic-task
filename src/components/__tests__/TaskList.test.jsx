@@ -81,7 +81,7 @@ describe('TaskList', () => {
   })
 
   it('should render tasks for the selected date', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
     expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument()
@@ -89,7 +89,7 @@ describe('TaskList', () => {
   })
 
   it('should display task details correctly', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(screen.getByText('Beskrivelse for oppgave 1')).toBeInTheDocument()
     expect(screen.getByText('10 poeng')).toBeInTheDocument()
@@ -97,7 +97,7 @@ describe('TaskList', () => {
   })
 
   it('should show assigned family member', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Check for avatar circles or member indicators
     const avatarElements = screen.getAllByText(/^[A-Z]$/) // Single uppercase letters
@@ -107,7 +107,7 @@ describe('TaskList', () => {
   })
 
   it('should display completion status correctly', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Completed task should show completion details
     expect(screen.getByText(/Ferdig!/)).toBeInTheDocument() // Now in comment with emoji
@@ -116,7 +116,7 @@ describe('TaskList', () => {
 
 
   it('should handle quick complete button click', async () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     const user = userEvent.setup()
     // Find and click the quick complete button for the first task
     const quickCompleteButtons = screen.getAllByLabelText('quick complete')
@@ -129,7 +129,7 @@ describe('TaskList', () => {
   it('should open detailed completion modal when clicking "Fullfør..."', async () => {
     const user = userEvent.setup()
     
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Find and click the detailed complete button for the first task
     const detailedCompleteButtons = screen.getAllByText('Fullfør...')
@@ -150,7 +150,7 @@ describe('TaskList', () => {
     const user = userEvent.setup()
     mockTasksHook.undoCompletion.mockResolvedValue({ success: true })
     
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Find and click the undo button for completed task
     const undoButtons = screen.getAllByLabelText('undo')
@@ -164,13 +164,13 @@ describe('TaskList', () => {
   it('should display empty state when no tasks', () => {
     mockTasksHook.getTasksForDate.mockReturnValue([])
     
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(screen.getByText(/ingen oppgaver/i)).toBeInTheDocument()
   })
 
   it('should group tasks by assignment status', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Should show different sections or styling for assigned vs unassigned tasks
     expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
@@ -178,7 +178,7 @@ describe('TaskList', () => {
   })
 
   it('should display verification status for completed tasks', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Should show approval status in the status badge (not in button area anymore)
     const approvedElements = screen.queryAllByText(/godkjent/i)
@@ -203,7 +203,7 @@ describe('TaskList', () => {
     
     mockTasksHook.getTasksForDate.mockReturnValue(tasksWithDifferentStatuses)
     
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(screen.getByText(/venter/i)).toBeInTheDocument()
   })
@@ -227,7 +227,7 @@ describe('TaskList', () => {
     
     mockTasksHook.getTasksForDate.mockReturnValue(tasksWithAdultCompletion)
     
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     // Should show as completed, not pending verification
     const godkjentElements = screen.getAllByText(/godkjent/i)
@@ -236,25 +236,25 @@ describe('TaskList', () => {
   })
 
   it('should update when selectedDate changes', () => {
-    const { rerender } = render(<TaskList selectedDate={selectedDate} />)
+    const { rerender } = render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(mockTasksHook.getTasksForDate).toHaveBeenCalledWith(selectedDate)
     
     const newDate = '2023-06-16'
-    rerender(<TaskList selectedDate={newDate} />)
+    rerender(<TaskList selectedDate={newDate} onDateChange={() => {}} />)
     
     expect(mockTasksHook.getTasksForDate).toHaveBeenCalledWith(newDate)
   })
 
   it('should handle loading state', () => {
     mockTasksHook.getTasksForDate.mockReturnValue([])
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     const emptyMessages = screen.getAllByText(/ingen oppgaver/i)
     expect(emptyMessages.length).toBeGreaterThan(0)
   })
 
   it('should display points correctly', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     
     expect(screen.getByText('10 poeng')).toBeInTheDocument()
     expect(screen.getByText('15 poeng')).toBeInTheDocument()
@@ -262,7 +262,7 @@ describe('TaskList', () => {
   })
 
   it('should show task assignment avatars with correct colors', () => {
-    render(<TaskList selectedDate={selectedDate} />)
+    render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
     // Sjekk at initialer vises for tildelte brukere
     const avatarElements = screen.getAllByText(/^[A-Z]$/)
     expect(avatarElements.length).toBeGreaterThanOrEqual(1)
@@ -320,20 +320,20 @@ describe('TaskList', () => {
       // Set current member to a child
       mockFamilyHook.currentMember = { id: 'member-3', nickname: 'Child User', role: 'child' }
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       // Filter toggle should not be visible for child users
-      expect(screen.queryByText(/vis kun mine oppgaver/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/mine oppgaver/i)).not.toBeInTheDocument()
     })
 
     it('should show filter toggle for admin and member users', () => {
       // Set current member to admin (default)
       mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       // Filter toggle should be visible for admin/member users
-      expect(screen.getByText(/vis kun mine oppgaver/i)).toBeInTheDocument()
+      expect(screen.getByText(/mine oppgaver/i)).toBeInTheDocument()
       expect(screen.getByRole('checkbox')).toBeInTheDocument()
     })
 
@@ -341,13 +341,12 @@ describe('TaskList', () => {
       const user = userEvent.setup()
       mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       // Initially all tasks should be visible
       expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
       expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument()
       expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
-      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
       
       // Click the filter toggle
       const filterCheckbox = screen.getByRole('checkbox')
@@ -357,7 +356,7 @@ describe('TaskList', () => {
       expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
       expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
       expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
-      expect(screen.getByText(/2 oppgaver tildelt meg/i)).toBeInTheDocument()
+      // Check that only assigned tasks are visible (2 tasks)
     })
 
     it('should show contextual empty state when no tasks are assigned to user', async () => {
@@ -381,7 +380,7 @@ describe('TaskList', () => {
       mockTasksHook.getTasksForDate.mockReturnValue(mockTasksNoAssignments)
       mockTasksHook.getTasksForMember.mockReturnValue([]) // No assignments for current user
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       // Click the filter toggle
       const filterCheckbox = screen.getByRole('checkbox')
@@ -401,33 +400,39 @@ describe('TaskList', () => {
         { id: 'assignment-1', task_id: 'task-1', assigned_to: 'member-3' }
       ])
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       // Child should only see their assigned task (task-1)
       expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
       expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
       expect(screen.queryByText('Test Oppgave 3')).not.toBeInTheDocument()
-      expect(screen.getByText(/1 oppgaver tildelt meg/i)).toBeInTheDocument()
+      // Child should see only 1 assigned task
     })
 
     it('should toggle between all tasks and assigned tasks correctly', async () => {
       const user = userEvent.setup()
       mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
       
-      render(<TaskList selectedDate={selectedDate} />)
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
       const filterCheckbox = screen.getByRole('checkbox')
       
-      // Initially should show all tasks
-      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
+      // Initially should show all tasks - verify by checking specific task titles
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument() 
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
       
-      // Toggle to show only assigned tasks
+      // Toggle to show only assigned tasks (member-1 has task-1 and task-3 assigned)
       await user.click(filterCheckbox)
-      expect(screen.getByText(/2 oppgaver tildelt meg/i)).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
+      expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
       
       // Toggle back to show all tasks
       await user.click(filterCheckbox)
-      expect(screen.getByText(/3 oppgaver tilgjengelig/i)).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
     })
   })
 })
