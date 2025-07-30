@@ -99,4 +99,51 @@ describe('Animation Restart Prevention Logic', () => {
     expect(animationStage).toBe(stageBeforeRefresh)
     expect(isAnimationStarted).toBe(true)
   })
+
+  it('should handle animation cleanup when cancelled', () => {
+    // Test the cleanup logic when animation is cancelled before completion
+    let isAnimationStarted = false
+    let animationStage = 'hidden'
+    let cleanupCalled = false
+    
+    const handleShowChange = (show) => {
+      if (!show) {
+        // Check if animation was running before cleanup
+        const wasAnimationRunning = isAnimationStarted
+        
+        animationStage = 'hidden'
+        isAnimationStarted = false
+        
+        // Call cleanup if animation was running
+        if (wasAnimationRunning) {
+          cleanupCalled = true
+        }
+        return
+      }
+
+      if (isAnimationStarted && animationStage !== 'hidden') {
+        return
+      }
+
+      isAnimationStarted = true
+      animationStage = 'checkmark'
+    }
+
+    // Start animation
+    handleShowChange(true)
+    expect(isAnimationStarted).toBe(true)
+    expect(animationStage).toBe('checkmark')
+    expect(cleanupCalled).toBe(false)
+
+    // Progress animation
+    animationStage = 'confetti'
+
+    // Cancel animation (modal closes)
+    handleShowChange(false)
+    
+    // Cleanup should have been called
+    expect(cleanupCalled).toBe(true)
+    expect(isAnimationStarted).toBe(false)
+    expect(animationStage).toBe('hidden')
+  })
 })

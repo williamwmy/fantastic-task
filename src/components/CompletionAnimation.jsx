@@ -9,11 +9,19 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
 
   useEffect(() => {
     if (!show) {
+      // Check if animation was running before we reset the flag
+      const wasAnimationRunning = isAnimationStartedRef.current
+      
       setAnimationStage('hidden')
       isAnimationStartedRef.current = false
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
+      }
+      
+      // Call onComplete when animation is cancelled/hidden (to clean up parent state)
+      if (wasAnimationRunning) {
+        onComplete()
       }
       return
     }
