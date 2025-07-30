@@ -629,7 +629,11 @@ const TaskList = ({ selectedDate, onDateChange }) => {
                       )}
                       
                       <button
-                        onClick={() => undoCompletion(completion.id)}
+                        onClick={() => {
+                          undoCompletion(completion.id)
+                          // Hide animation when task is undone
+                          setQuickAnimationData({ show: false, points: 0, position: null })
+                        }}
                         style={{
                           display: 'flex',
                           alignItems: 'center',

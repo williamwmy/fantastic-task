@@ -17,14 +17,12 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
   const [success, setSuccess] = useState('')
   const [showAnimation, setShowAnimation] = useState(false)
 
-  // Cleanup timeout and animation on unmount
+  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
-      // Reset animation state when component unmounts
-      setShowAnimation(false)
     }
   }, [])
 
