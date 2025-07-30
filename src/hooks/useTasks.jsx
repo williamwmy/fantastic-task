@@ -563,6 +563,11 @@ export const TasksProvider = ({ children }) => {
       // Reload data immediately to update UI (async for consistency)
       loadTaskCompletions()
       loadTasks()
+      
+      // Refresh family member balances immediately
+      if (window.refreshFamilyData) {
+        window.refreshFamilyData()
+      }
 
 
       return { data: completion, error: null }
@@ -762,8 +767,20 @@ export const TasksProvider = ({ children }) => {
 
       if (fetchError) throw fetchError
 
-      // Delete any points transactions related to this completion
-      if (completionData.points_awarded > 0) {
+      // Get all points transactions for this completion to calculate total points to subtract
+      const { data: transactionsToDelete, error: transactionsFetchError } = await supabase
+        .from('points_transactions')
+        .select('points, bonus_points')
+        .eq('task_completion_id', completionIdOrAssignmentId)
+
+      if (transactionsFetchError) throw transactionsFetchError
+
+      // Calculate total points to subtract (base + bonus)
+      const totalPointsToSubtract = transactionsToDelete.reduce((sum, tx) => 
+        sum + (tx.points || 0) + (tx.bonus_points || 0), 0)
+
+      // Delete points transactions related to this completion
+      if (totalPointsToSubtract > 0) {
         const { error: pointsError } = await supabase
           .from('points_transactions')
           .delete()
@@ -771,9 +788,9 @@ export const TasksProvider = ({ children }) => {
 
         if (pointsError) throw pointsError
 
-        // Update member's points balance by subtracting the awarded points
+        // Update member's points balance by subtracting the total awarded points (base + bonus)
         const currentBalance = completionData.completed_by_member.points_balance || 0
-        const newBalance = Math.max(0, currentBalance - completionData.points_awarded)
+        const newBalance = Math.max(0, currentBalance - totalPointsToSubtract)
         
         const { error: balanceError } = await supabase
           .from('family_members')
@@ -798,6 +815,11 @@ export const TasksProvider = ({ children }) => {
       await loadTaskCompletions()
       await loadTasks()
       await loadPointsTransactions()
+      
+      // Refresh family member balances immediately
+      if (window.refreshFamilyData) {
+        window.refreshFamilyData()
+      }
       
       return { data: {}, error: null }
     } catch (error) {
