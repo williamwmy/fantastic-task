@@ -48,6 +48,24 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     }
   }, [user, initialFamily, initialMember])
 
+  const refreshFamilyData = async () => {
+    // Alias for loadFamilyData to make it clear this is for refreshing
+    return await loadFamilyData()
+  }
+
+  // Make refreshFamilyData globally available for real-time updates
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.refreshFamilyData = refreshFamilyData
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.refreshFamilyData
+      }
+    }
+  }, [])
+
   const loadFamilyData = async () => {
     try {
       setLoading(true)
@@ -551,6 +569,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     loading,
     setCurrentMember,
     loadFamilyData,
+    refreshFamilyData,
     rotateFamilyCode,
     updateMemberNickname,
     updateMemberAvatarColor,
