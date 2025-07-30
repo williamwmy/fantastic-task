@@ -5,16 +5,26 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
   const [animationStage, setAnimationStage] = useState('hidden') // hidden, checkmark, confetti, done
   const canvasRef = useRef(null)
   const animationRef = useRef(null)
+  const isAnimationStartedRef = useRef(false)
 
   useEffect(() => {
     if (!show) {
       setAnimationStage('hidden')
+      isAnimationStartedRef.current = false
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
       }
       return
     }
+
+    // Don't restart animation if it's already running
+    if (isAnimationStartedRef.current && animationStage !== 'hidden') {
+      return
+    }
+
+    // Mark animation as started
+    isAnimationStartedRef.current = true
 
     // Start checkmark animation
     setAnimationStage('checkmark')
