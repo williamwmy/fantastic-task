@@ -50,11 +50,6 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
 
   const refreshFamilyData = async () => {
     // Alias for loadFamilyData to make it clear this is for refreshing
-    // Only refresh if user exists
-    if (!user) {
-      console.warn('Cannot refresh family data: no user found')
-      return
-    }
     return await loadFamilyData()
   }
 
@@ -69,18 +64,11 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
         delete window.refreshFamilyData
       }
     }
-  }, [])
+  }, [refreshFamilyData])
 
   const loadFamilyData = async () => {
     try {
       setLoading(true)
-
-      // Ensure user exists before proceeding
-      if (!user) {
-        console.error('No user found when loading family data')
-        setLoading(false)
-        return
-      }
 
       // Get the user's family membership
       let memberData, memberError
