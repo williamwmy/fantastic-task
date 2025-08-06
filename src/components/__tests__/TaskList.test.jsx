@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TaskList from '../TaskList.jsx'
 
@@ -335,6 +335,34 @@ describe('TaskList', () => {
       // Filter toggle should be visible for admin/member users
       expect(screen.getByText(/mine oppgaver/i)).toBeInTheDocument()
       expect(screen.getByRole('checkbox')).toBeInTheDocument()
+    })
+
+    it('should show filter toggle for member role specifically', () => {
+      // Test member role specifically
+      mockFamilyHook.currentMember = { id: 'member-2', nickname: 'Member User', role: 'member' }
+      
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
+      
+      // Filter toggle should be visible for member users
+      expect(screen.getByText(/mine oppgaver/i)).toBeInTheDocument()
+      expect(screen.getByRole('checkbox')).toBeInTheDocument()
+    })
+
+    it('should verify filter toggle exists for all non-child roles', () => {
+      const roles = ['admin', 'member']
+      
+      roles.forEach(role => {
+        // Clean up previous render
+        cleanup()
+        
+        mockFamilyHook.currentMember = { id: `${role}-user`, nickname: `${role} User`, role }
+        
+        render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
+        
+        // Filter toggle should be visible for this role
+        expect(screen.getByText(/mine oppgaver/i)).toBeInTheDocument()
+        expect(screen.getByRole('checkbox')).toBeInTheDocument()
+      })
     })
 
     it('should filter tasks to show only assigned tasks when toggle is checked', async () => {

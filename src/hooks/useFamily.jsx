@@ -23,50 +23,7 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
   // Removed invitationCodes state - family code is now part of family object
   const [loading, setLoading] = useState(false)
 
-  // Load family data when user changes
-  useEffect(() => {
-    // Don't override initial props in test mode
-    if (initialFamily && initialMember) {
-      return
-    }
-    
-    if (user) {
-      if (LOCAL_TEST_USER) {
-        // Use centralized mock data
-        setFamily(mockData.family);
-        setCurrentMember(mockData.currentMember);
-        setFamilyMembers(mockData.familyMembers);
-        // Family code is now part of family object
-        setLoading(false);
-      } else {
-        loadFamilyData()
-      }
-    } else {
-      setFamily(null)
-      setFamilyMembers([])
-      setCurrentMember(null)
-    }
-  }, [user, initialFamily, initialMember, loadFamilyData])
-
-  const refreshFamilyData = useCallback(async () => {
-    // Alias for loadFamilyData to make it clear this is for refreshing
-    return await loadFamilyData()
-  }, [loadFamilyData])
-
-  // Make refreshFamilyData globally available for real-time updates
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.refreshFamilyData = refreshFamilyData
-    }
-    
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete window.refreshFamilyData
-      }
-    }
-  }, [refreshFamilyData])
-
-  const loadFamilyData = async () => {
+  const loadFamilyData = useCallback(async () => {
     try {
       setLoading(true)
 
@@ -130,7 +87,50 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  // Load family data when user changes
+  useEffect(() => {
+    // Don't override initial props in test mode
+    if (initialFamily && initialMember) {
+      return
+    }
+    
+    if (user) {
+      if (LOCAL_TEST_USER) {
+        // Use centralized mock data
+        setFamily(mockData.family);
+        setCurrentMember(mockData.currentMember);
+        setFamilyMembers(mockData.familyMembers);
+        // Family code is now part of family object
+        setLoading(false);
+      } else {
+        loadFamilyData()
+      }
+    } else {
+      setFamily(null)
+      setFamilyMembers([])
+      setCurrentMember(null)
+    }
+  }, [user, initialFamily, initialMember, loadFamilyData])
+
+  const refreshFamilyData = useCallback(async () => {
+    // Alias for loadFamilyData to make it clear this is for refreshing
+    return await loadFamilyData()
+  }, [loadFamilyData])
+
+  // Make refreshFamilyData globally available for real-time updates
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.refreshFamilyData = refreshFamilyData
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.refreshFamilyData
+      }
+    }
+  }, [refreshFamilyData])
 
   // loadInvitationCodes removed - family code is now part of family object
 

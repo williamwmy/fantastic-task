@@ -19,7 +19,7 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
     }
 
     // Don't restart animation if it's already running
-    if (isAnimationStartedRef.current && animationStage !== 'hidden') {
+    if (isAnimationStartedRef.current) {
       return
     }
 
@@ -31,22 +31,26 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
     
     // After checkmark, show confetti
     const confettiTimer = setTimeout(() => {
+      console.log('CompletionAnimation: Setting stage to confetti')
       setAnimationStage('confetti')
       startConfettiAnimation()
     }, 500)
 
     // Complete animation - longer timeout to let confetti finish
     const completeTimer = setTimeout(() => {
+      console.log('CompletionAnimation: Setting stage to done')
       setAnimationStage('done')
+      // Call onComplete immediately - the component will be hidden due to stage change
+      console.log('CompletionAnimation: Calling onComplete')
       onComplete()
-    }, 4000) // Increased from 2500 to 4000ms
+    }, 3000) // Reduced back to reasonable time
 
     return () => {
       clearTimeout(confettiTimer)
       clearTimeout(completeTimer)
       // Don't cancel animation frame here - let confetti finish naturally
     }
-  }, [show, onComplete, animationStage])
+  }, [show, onComplete])
 
   // Separate cleanup effect when component unmounts
   useEffect(() => {
@@ -185,8 +189,11 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
   }
 
   if (animationStage === 'hidden' || animationStage === 'done') {
+    console.log('CompletionAnimation: returning null, stage:', animationStage, 'show:', show)
     return null
   }
+
+  console.log('CompletionAnimation: rendering, stage:', animationStage, 'show:', show)
 
   // Use position if provided, otherwise center on screen
   const containerStyle = position ? {

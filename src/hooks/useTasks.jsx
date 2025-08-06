@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, useCallback } from 'react'
 import { useFamily } from './useFamily.jsx'
 import { supabase } from '../lib/supabase'
 import { mockData, generateMockTask, generateMockTaskCompletion, generateMockPointsTransaction } from '../lib/mockData'
@@ -28,42 +28,101 @@ export const TasksProvider = ({ children }) => {
   // Real-time subscriptions
   const [subscriptions, setSubscriptions] = useState([])
 
-  // Load all task-related data when family changes
-  useEffect(() => {
-    if (family && currentMember) {
-      if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
-        loadMockTaskData()
-      } else {
-        loadTaskData()
-        setupSubscriptions()
-      }
-    } else {
-      setTasks([])
-      setTaskAssignments([])
-      setTaskCompletions([])
-      setPointsTransactions([])
-      if (!LOCAL_TEST_USER) {
-        cleanupSubscriptions()
-      }
-    }
+  const cleanupSubscriptions = useCallback(() => {
+    subscriptions.forEach(subscription => {
+      supabase.removeChannel(subscription)
+    })
+    setSubscriptions([])
+  }, [subscriptions])
 
-    return () => {
-      if (!LOCAL_TEST_USER) {
-        cleanupSubscriptions()
-      }
-    }
-  }, [family, currentMember, cleanupSubscriptions, loadTaskData, setupSubscriptions])
+  const setupSubscriptions = useCallback(() => {
+    if (!family) return
 
-  const loadMockTaskData = () => {
+    const newSubscriptions = []
+
+    // Tasks subscription
+    const tasksSubscription = supabase
+      .channel('tasks')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+          filter: `family_id=eq.${family.id}`
+        },
+        () => loadTasks()
+      )
+      .subscribe()
+
+    // Task assignments subscription
+    const assignmentsSubscription = supabase
+      .channel('task_assignments')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'task_assignments'
+        },
+        () => loadTaskAssignments()
+      )
+      .subscribe()
+
+    // Task completions subscription
+    const completionsSubscription = supabase
+      .channel('task_completions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'task_completions'
+        },
+        () => loadTaskCompletions()
+      )
+      .subscribe()
+
+    // Points transactions subscription
+    const pointsSubscription = supabase
+      .channel('points_transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'points_transactions'
+        },
+        () => {
+          loadPointsTransactions()
+          // Also refresh family member balances
+          if (window.refreshFamilyData) {
+            window.refreshFamilyData()
+          }
+        }
+      )
+      .subscribe()
+
+    newSubscriptions.push(
+      tasksSubscription,
+      assignmentsSubscription,
+      completionsSubscription,
+      pointsSubscription
+    )
+
+    setSubscriptions(newSubscriptions)
+  }, [family])
+
+  const loadMockTaskData = useCallback(() => {
     // Use centralized mock data
     setTasks(mockData.tasks);
     setTaskAssignments(mockData.taskAssignments);
     setTaskCompletions(mockData.taskCompletions);
     setPointsTransactions(mockData.pointsTransactions);
     setLoading(false);
-  };
+  }, []);
 
-  const loadTaskData = async () => {
+  const loadTaskData = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -88,7 +147,33 @@ export const TasksProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [loadMockTaskData])
+
+  // Load all task-related data when family changes
+  useEffect(() => {
+    if (family && currentMember) {
+      if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
+        loadMockTaskData()
+      } else {
+        loadTaskData()
+        setupSubscriptions()
+      }
+    } else {
+      setTasks([])
+      setTaskAssignments([])
+      setTaskCompletions([])
+      setPointsTransactions([])
+      if (!LOCAL_TEST_USER) {
+        cleanupSubscriptions()
+      }
+    }
+
+    return () => {
+      if (!LOCAL_TEST_USER) {
+        cleanupSubscriptions()
+      }
+    }
+  }, [family, currentMember, cleanupSubscriptions, loadTaskData, setupSubscriptions, loadMockTaskData])
 
   const loadTasks = async () => {
     if (!family) return
@@ -173,91 +258,7 @@ export const TasksProvider = ({ children }) => {
     }
   }
 
-  // Real-time subscriptions
-  const setupSubscriptions = () => {
-    if (!family) return
 
-    const newSubscriptions = []
-
-    // Tasks subscription
-    const tasksSubscription = supabase
-      .channel('tasks')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'tasks',
-          filter: `family_id=eq.${family.id}`
-        },
-        () => loadTasks()
-      )
-      .subscribe()
-
-    // Task assignments subscription
-    const assignmentsSubscription = supabase
-      .channel('task_assignments')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'task_assignments'
-        },
-        () => loadTaskAssignments()
-      )
-      .subscribe()
-
-    // Task completions subscription
-    const completionsSubscription = supabase
-      .channel('task_completions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'task_completions'
-        },
-        () => loadTaskCompletions()
-      )
-      .subscribe()
-
-    // Points transactions subscription
-    const pointsSubscription = supabase
-      .channel('points_transactions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'points_transactions'
-        },
-        () => {
-          loadPointsTransactions()
-          // Also refresh family member balances
-          if (window.refreshFamilyData) {
-            window.refreshFamilyData()
-          }
-        }
-      )
-      .subscribe()
-
-    newSubscriptions.push(
-      tasksSubscription,
-      assignmentsSubscription,
-      completionsSubscription,
-      pointsSubscription
-    )
-
-    setSubscriptions(newSubscriptions)
-  }
-
-  const cleanupSubscriptions = () => {
-    subscriptions.forEach(subscription => {
-      supabase.removeChannel(subscription)
-    })
-    setSubscriptions([])
-  }
 
   // Task CRUD operations
   const getTasks = () => {
