@@ -26,7 +26,7 @@ export const TasksProvider = ({ children }) => {
   const [loading, setLoading] = useState(false)
 
   // Real-time subscriptions
-  const [subscriptions, setSubscriptions] = useState([])
+  const [_subscriptions, setSubscriptions] = useState([])
 
   const cleanupSubscriptions = useCallback(() => {
     setSubscriptions(currentSubscriptions => {

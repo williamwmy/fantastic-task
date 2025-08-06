@@ -115,9 +115,35 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
   }, [user, initialFamily, initialMember, loadFamilyData])
 
   const refreshFamilyData = useCallback(async () => {
-    // Alias for loadFamilyData to make it clear this is for refreshing
-    return await loadFamilyData()
-  }, [loadFamilyData])
+    // Refresh family data without changing the currently selected profile
+    // This preserves manual profile selection while updating data like point balances
+    try {
+      if (!family?.id) return
+      
+      // Only refresh family members data, don't change currentMember
+      const { data: allMembers, error: membersError } = await supabase
+        .from('family_members')
+        .select('*')
+        .eq('family_id', family.id)
+        .order('created_at')
+
+      if (membersError) {
+        console.error('Error refreshing family members:', membersError)
+      } else {
+        setFamilyMembers(allMembers)
+        
+        // Update currentMember data if it exists, but preserve the selection
+        if (currentMember) {
+          const updatedCurrentMember = allMembers.find(m => m.id === currentMember.id)
+          if (updatedCurrentMember) {
+            setCurrentMember(updatedCurrentMember)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing family data:', error)
+    }
+  }, [family?.id, currentMember])
 
   // Make refreshFamilyData globally available for real-time updates
   useEffect(() => {

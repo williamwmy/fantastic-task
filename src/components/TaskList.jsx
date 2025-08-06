@@ -40,7 +40,8 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     getCompletionsForMember,
     completeTask,
     undoCompletion,
-    quickCompleteTask
+    quickCompleteTask,
+    taskCompletions
   } = useTasks()
 
   const { currentMember, familyMembers } = useFamily()
@@ -98,15 +99,28 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   })
 
   const getTaskCompletion = (taskId) => {
-    // First check if there's a completion for this specific date
+    // Check if ANYONE has completed this task on the selected date
+    const selectedDateStr = typeof selectedDate === 'string' ? selectedDate : selectedDate.toISOString().split('T')[0]
+    
+    // First check all completions (not just mine) for this task on the selected date
+    const allCompletions = Array.isArray(taskCompletions) ? taskCompletions : []
+    const anyCompletion = allCompletions.find(completion => {
+      if (completion.task_id !== taskId) return false
+      
+      // Check if completion was on the selected date
+      const completionDateStr = completion.completed_at ? completion.completed_at.split('T')[0] : null
+      return completionDateStr === selectedDateStr
+    })
+    
+    if (anyCompletion) {
+      return anyCompletion
+    }
+    
+    // Fallback: check my specific completions for the date (for backwards compatibility)
     const dateCompletion = myCompletions.find(completion => completion.task_id === taskId)
     if (dateCompletion) {
       return dateCompletion
     }
-    
-    // For recurring tasks, we only want to show completion on the day it was completed
-    // So we need to check if there's a completion for this task on the selected date
-    const selectedDateStr = typeof selectedDate === 'string' ? selectedDate : selectedDate.toISOString().split('T')[0]
     
     return allMyCompletions.find(completion => {
       if (completion.task_id !== taskId) return false
