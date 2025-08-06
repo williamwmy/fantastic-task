@@ -31,7 +31,14 @@ export const TasksProvider = ({ children }) => {
   const cleanupSubscriptions = useCallback(() => {
     setSubscriptions(currentSubscriptions => {
       currentSubscriptions.forEach(subscription => {
-        supabase.removeChannel(subscription)
+        try {
+          if (subscription && subscription.state !== 'closed') {
+            supabase.removeChannel(subscription)
+          }
+        } catch (error) {
+          // Silently ignore errors when cleaning up subscriptions
+          console.warn('Error cleaning up subscription:', error)
+        }
       })
       return []
     })
