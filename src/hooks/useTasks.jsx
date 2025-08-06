@@ -128,25 +128,20 @@ export const TasksProvider = ({ children }) => {
     try {
       setLoading(true)
       
-      console.log('useTasks: loadTaskData starting, family:', family?.id)
-      
       // Check for LOCAL_TEST_USER dynamically
       const isLocalTestUser = import.meta.env.VITE_LOCAL_TEST_USER === 'true'
       
       if (isLocalTestUser) {
-        console.log('useTasks: Using mock data')
         loadMockTaskData()
         return { data: {}, error: null }
       }
       
-      console.log('useTasks: Loading real data...')
       await Promise.all([
         loadTasks(),
         loadTaskAssignments(),
         loadTaskCompletions(),
         loadPointsTransactions()
       ])
-      console.log('useTasks: Data loading completed')
       return { data: {}, error: null }
     } catch (error) {
       console.error('Error loading task data:', error)
@@ -158,29 +153,21 @@ export const TasksProvider = ({ children }) => {
 
   // Load all task-related data when family changes
   useEffect(() => {
-    console.log('useTasks: useEffect triggered', { family: family?.id, currentMember: currentMember?.id })
-    
     if (family && currentMember) {
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
-        console.log('useTasks: Loading mock data')
         loadMockTaskData()
       } else {
-        console.log('useTasks: Loading real data and setting up subscriptions')
-        
         // Inline data loading to avoid stale closure issues
         const loadData = async () => {
           try {
             setLoading(true)
-            console.log('useTasks: loadTaskData starting, family:', family?.id)
             
-            console.log('useTasks: Loading real data...')
             await Promise.all([
               loadTasks(),
               loadTaskAssignments(),
               loadTaskCompletions(),
               loadPointsTransactions()
             ])
-            console.log('useTasks: Data loading completed')
           } catch (error) {
             console.error('Error loading task data:', error)
           } finally {
@@ -192,7 +179,6 @@ export const TasksProvider = ({ children }) => {
         setupSubscriptions()
       }
     } else {
-      console.log('useTasks: No family or member, clearing data')
       setTasks([])
       setTaskAssignments([])
       setTaskCompletions([])
@@ -212,13 +198,9 @@ export const TasksProvider = ({ children }) => {
   }, [family, currentMember])
 
   const loadTasks = async () => {
-    if (!family) {
-      console.log('useTasks: loadTasks - no family, skipping')
-      return
-    }
+    if (!family) return
 
     try {
-      console.log('useTasks: loadTasks - loading tasks for family:', family.id)
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
@@ -227,7 +209,6 @@ export const TasksProvider = ({ children }) => {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      console.log('useTasks: loadTasks - loaded tasks:', data?.length || 0)
       setTasks(data || [])
     } catch (error) {
       console.error('Error loading tasks:', error)

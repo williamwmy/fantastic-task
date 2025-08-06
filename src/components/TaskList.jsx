@@ -68,14 +68,6 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   // Get tasks available for today
   const allTodayTasks = getTasksForDate(selectedDate) || []
   
-  // Debug logging to help troubleshoot missing tasks
-  console.log('TaskList Debug:', {
-    selectedDate: selectedDate,
-    allTodayTasksCount: allTodayTasks.length,
-    showOnlyMyTasks: showOnlyMyTasks,
-    currentMember: currentMember?.id,
-    myAssignmentsCount: myAssignments.length
-  })
   
   // Filter tasks based on the toggle - if showOnlyMyTasks is true, only show assigned tasks
   const filteredTasks = showOnlyMyTasks 
