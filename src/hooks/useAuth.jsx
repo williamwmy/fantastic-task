@@ -55,7 +55,7 @@ export const AuthProvider = ({ children, initialUser }) => {
       console.error('Auth state change error:', error)
       setIsLoading(false)
     }
-  }, [])
+  }, [initialUser])
 
   // MOCKED FUNCTIONS
   const signUp = async (email, password, familyCode = null) => {

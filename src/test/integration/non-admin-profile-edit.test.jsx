@@ -54,7 +54,7 @@ vi.mock('../../hooks/useFamily.jsx', () => ({
     familyMembers: mockFamilyMembers,
     currentMember: mockCurrentMember,
     setCurrentMember: vi.fn(),
-    hasPermission: vi.fn((permission, targetMemberId) => {
+    hasPermission: vi.fn((permission) => {
       // Regular member permissions
       switch (permission) {
         case 'manage_family':

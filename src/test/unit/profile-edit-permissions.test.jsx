@@ -97,7 +97,7 @@ describe('Profile Edit Permissions', () => {
   })
 
   it('should prevent non-admins from changing other users profiles', () => {
-    const updateMemberProfile = (memberId, data) => {
+    const updateMemberProfile = (memberId) => {
       // Check permissions - fixed logic
       const canUpdate = mockCurrentMember && (
         mockCurrentMember.id === memberId || // Own profile

@@ -16,8 +16,8 @@ import {
 } from 'react-icons/fa'
 
 const StatsView = ({ open = true, onClose }) => {
-  const { tasks, taskCompletions, pointsTransactions } = useTasks()
-  const { familyMembers, currentMember } = useFamily()
+  const { taskCompletions } = useTasks()
+  const { familyMembers } = useFamily()
   const [timeframe, setTimeframe] = useState('week') // 'week', 'month', 'all'
   const [activeTab, setActiveTab] = useState('leaderboard') // 'leaderboard', 'tasks', 'time', 'achievements'
 

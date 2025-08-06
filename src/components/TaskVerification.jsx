@@ -8,7 +8,6 @@ const TaskVerification = ({ open, onClose }) => {
   const { getPendingVerifications, verifyTaskCompletion } = useTasks()
   const { hasPermission } = useFamily()
   const [loading, setLoading] = useState(false)
-  const [selectedCompletion, setSelectedCompletion] = useState(null)
 
   const pendingVerifications = getPendingVerifications()
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth.jsx'
 import Modal from './Modal'
 
 const AuthModal = ({ open, onClose, showFamilySetup = false }) => {
-  const { user, signUp, signIn, resetPassword, createFamily, joinFamilyWithCode } = useAuth()
+  const { signUp, signIn, resetPassword, createFamily, joinFamilyWithCode } = useAuth()
   const [mode, setMode] = useState(showFamilySetup ? 'create-family' : 'signin') // 'signin', 'signup', 'reset', 'create-family', 'join-family'
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

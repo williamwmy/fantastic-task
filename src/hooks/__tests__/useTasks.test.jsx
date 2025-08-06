@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
+import { renderHook, act } from '@testing-library/react'
 import { useTasks, TasksProvider } from '../useTasks.jsx'
 import { mockTask, mockTaskAssignment, mockTaskCompletion, mockUser, mockFamily, mockFamilyMember } from '../../test/utils.jsx'
 import { AuthProvider } from '../useAuth.jsx'

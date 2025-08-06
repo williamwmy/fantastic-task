@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, createContext, useContext, useCallback } from 'react'
 import { useAuth } from './useAuth.jsx'
 import { supabase } from '../lib/supabase'
 import { mockData, generateMockFamilyCode } from '../lib/mockData'
@@ -46,12 +46,12 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
       setFamilyMembers([])
       setCurrentMember(null)
     }
-  }, [user, initialFamily, initialMember])
+  }, [user, initialFamily, initialMember, loadFamilyData])
 
-  const refreshFamilyData = async () => {
+  const refreshFamilyData = useCallback(async () => {
     // Alias for loadFamilyData to make it clear this is for refreshing
     return await loadFamilyData()
-  }
+  }, [loadFamilyData])
 
   // Make refreshFamilyData globally available for real-time updates
   useEffect(() => {

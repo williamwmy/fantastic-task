@@ -26,7 +26,7 @@ const FamilyInvitation = () => {
       await navigator.clipboard.writeText(family.family_code)
       setCopiedCode(true)
       setTimeout(() => setCopiedCode(false), 2000)
-    } catch (error) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
       textArea.value = family.family_code

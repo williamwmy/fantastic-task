@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 
 const WEEKDAYS = ["Ma", "Ti", "On", "To", "Fr", "Lø", "Sø"];
 
-function getStatsData(log, tasks) {
+function getStatsData(log) {
   // Samle prosent for hver ukedag
   const days = [0,1,2,3,4,5,6];
   const stats = days.map(dayIdx => {

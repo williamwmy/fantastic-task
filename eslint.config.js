@@ -42,7 +42,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['**/*.test.{js,jsx}', '**/test/**/*.{js,jsx}', '**/__tests__/**/*.{js,jsx}', '**/vitest.config.js', '**/playwright.config.js'],
+    files: ['**/*.test.{js,jsx}', '**/test/**/*.{js,jsx}', '**/__tests__/**/*.{js,jsx}', '**/vitest.config.js', '**/playwright.config.js', '**/tests/**/*.{js,jsx}', '**/*.spec.{js,jsx}'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -51,6 +51,14 @@ export default defineConfig([
         global: 'readonly',
         __dirname: 'readonly',
         process: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        test: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
       },
     },
     rules: {

@@ -46,7 +46,7 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
       clearTimeout(completeTimer)
       // Don't cancel animation frame here - let confetti finish naturally
     }
-  }, [show, onComplete])
+  }, [show, onComplete, animationStage])
 
   // Separate cleanup effect when component unmounts
   useEffect(() => {

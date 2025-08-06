@@ -13,7 +13,7 @@ const mockFamilyHook = {
     { id: 'child-1', nickname: 'Child User', avatar_color: '#4ecdc4', role: 'child', points_balance: 50 }
   ],
   currentMember: { id: 'admin-1', nickname: 'Admin User', role: 'admin', points_balance: 150 },
-  hasPermission: vi.fn((permission) => {
+  hasPermission: vi.fn(() => {
     // Admin has all permissions
     return true
   }),

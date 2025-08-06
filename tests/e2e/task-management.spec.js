@@ -216,7 +216,7 @@ test.describe('Task Management Flow', () => {
     await expect(page.locator('button[title="Poenghistorikk"]')).toBeVisible()
   })
 
-  test('should handle keyboard navigation', async ({ page, browserName }) => {
+  test('should handle keyboard navigation', async ({ page }) => {
     // Get viewport size to detect mobile
     const viewport = page.viewportSize()
     const isMobile = viewport && viewport.width <= 768

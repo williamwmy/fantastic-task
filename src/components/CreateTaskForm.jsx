@@ -18,7 +18,7 @@ import commonTasks from '../data/commonTasks.json'
 
 const CreateTaskForm = ({ open, onClose }) => {
   const { createTask } = useTasks()
-  const { familyMembers, currentMember } = useFamily()
+  const { currentMember } = useFamily()
   const timeoutRef = useRef(null)
   
   const [formData, setFormData] = useState({

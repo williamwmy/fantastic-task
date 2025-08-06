@@ -1,9 +1,8 @@
 import { useState, useEffect, createContext, useContext } from 'react'
-import { useAuth } from './useAuth.jsx'
 import { useFamily } from './useFamily.jsx'
 import { supabase } from '../lib/supabase'
 import { mockData, generateMockTask, generateMockTaskCompletion, generateMockPointsTransaction } from '../lib/mockData'
-import { calculateBonusPoints, calculateTotalPoints } from '../utils/bonusPointsUtils'
+import { calculateBonusPoints } from '../utils/bonusPointsUtils'
 
 const TasksContext = createContext({})
 
@@ -18,8 +17,7 @@ export const useTasks = () => {
 const LOCAL_TEST_USER = import.meta.env.VITE_LOCAL_TEST_USER === 'true';
 
 export const TasksProvider = ({ children }) => {
-  const { user } = useAuth()
-  const { family, currentMember, familyMembers } = useFamily()
+  const { family, currentMember } = useFamily()
   
   const [tasks, setTasks] = useState([])
   const [taskAssignments, setTaskAssignments] = useState([])
@@ -54,7 +52,7 @@ export const TasksProvider = ({ children }) => {
         cleanupSubscriptions()
       }
     }
-  }, [family, currentMember])
+  }, [family, currentMember, cleanupSubscriptions, loadTaskData, setupSubscriptions])
 
   const loadMockTaskData = () => {
     // Use centralized mock data
@@ -464,7 +462,7 @@ export const TasksProvider = ({ children }) => {
                               : 0;
 
       // Calculate bonus points if time was spent and estimated time exists
-      const { bonusPoints, explanation } = calculateBonusPoints(timeSpentMinutes, estimatedMinutes);
+      const { bonusPoints } = calculateBonusPoints(timeSpentMinutes, estimatedMinutes);
       const totalPointsAwarded = finalCompletionData.points_awarded && 
                                 !isNaN(Number(finalCompletionData.points_awarded))
                                 ? Number(finalCompletionData.points_awarded)
@@ -539,7 +537,6 @@ export const TasksProvider = ({ children }) => {
 
 
       // Handle points transaction
-      const completedTask = completion.tasks
       const member = completion.completed_by_member
       const pointsAwarded = cleanedData.points_awarded
 
@@ -854,7 +851,7 @@ export const TasksProvider = ({ children }) => {
     }
   }
 
-  const rejectCompletion = async (completionId, _reason) => {
+  const rejectCompletion = async (completionId) => {
     try {
       // For tests/mock mode, update tasks in memory
       setTasks(prev => prev.map(task => {

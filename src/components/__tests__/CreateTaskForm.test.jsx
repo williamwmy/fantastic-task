@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CreateTaskForm from '../CreateTaskForm.jsx'
 import { renderWithProviders } from '../../test/utils.jsx'

@@ -440,13 +440,13 @@ describe('Supabase Integration Tests', () => {
 
       supabase.channel = vi.fn().mockReturnValue(mockChannel)
 
-      const channel = supabase
+      supabase
         .channel('tasks-changes')
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'tasks'
-        }, (payload) => {
+        }, () => {
           // Handle task change
         })
         .subscribe()

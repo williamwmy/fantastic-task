@@ -5,10 +5,10 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 // Mock the undoCompletion logic specifically for database mode
 describe('Database Mode Bonus Points Undo', () => {
-  let mockSupabase
   let mockFetchCompletionData
   let mockFetchTransactions
   let mockUpdateMemberBalance
+  let mockSupabase
 
   beforeEach(() => {
     // Set up database mode (not local test user)

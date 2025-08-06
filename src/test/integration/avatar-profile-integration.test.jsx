@@ -54,7 +54,7 @@ vi.mock('../../hooks/useFamily.jsx', () => ({
     familyMembers: mockFamilyMembers,
     currentMember: mockCurrentMember,
     setCurrentMember: vi.fn(),
-    hasPermission: vi.fn((permission) => {
+    hasPermission: vi.fn(() => {
       // Admin has all permissions
       if (mockCurrentMember.role === 'admin') return true
       return false
