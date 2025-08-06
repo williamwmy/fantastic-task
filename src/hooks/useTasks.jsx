@@ -154,7 +154,7 @@ export const TasksProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }, [loadMockTaskData])
+  }, [loadMockTaskData, family])
 
   // Load all task-related data when family changes
   useEffect(() => {
@@ -166,7 +166,29 @@ export const TasksProvider = ({ children }) => {
         loadMockTaskData()
       } else {
         console.log('useTasks: Loading real data and setting up subscriptions')
-        loadTaskData()
+        
+        // Inline data loading to avoid stale closure issues
+        const loadData = async () => {
+          try {
+            setLoading(true)
+            console.log('useTasks: loadTaskData starting, family:', family?.id)
+            
+            console.log('useTasks: Loading real data...')
+            await Promise.all([
+              loadTasks(),
+              loadTaskAssignments(),
+              loadTaskCompletions(),
+              loadPointsTransactions()
+            ])
+            console.log('useTasks: Data loading completed')
+          } catch (error) {
+            console.error('Error loading task data:', error)
+          } finally {
+            setLoading(false)
+          }
+        }
+        
+        loadData()
         setupSubscriptions()
       }
     } else {
