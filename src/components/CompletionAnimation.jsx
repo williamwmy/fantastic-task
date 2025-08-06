@@ -6,6 +6,12 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
   const canvasRef = useRef(null)
   const animationRef = useRef(null)
   const isAnimationStartedRef = useRef(false)
+  const onCompleteRef = useRef(onComplete)
+
+  // Update the ref when onComplete changes
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
 
   useEffect(() => {
     if (!show) {
@@ -42,7 +48,7 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
       console.log('CompletionAnimation: Setting stage to done and calling onComplete')
       setAnimationStage('done')
       // Call onComplete immediately - the component will be hidden due to stage change
-      onComplete()
+      onCompleteRef.current()
     }, 3000) // Reduced back to reasonable time
 
     return () => {
@@ -50,7 +56,7 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
       clearTimeout(completeTimer)
       // Don't cancel animation frame here - let confetti finish naturally
     }
-  }, [show, onComplete])
+  }, [show])
 
   // Separate cleanup effect when component unmounts
   useEffect(() => {
