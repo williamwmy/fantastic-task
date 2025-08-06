@@ -29,11 +29,13 @@ export const TasksProvider = ({ children }) => {
   const [subscriptions, setSubscriptions] = useState([])
 
   const cleanupSubscriptions = useCallback(() => {
-    subscriptions.forEach(subscription => {
-      supabase.removeChannel(subscription)
+    setSubscriptions(currentSubscriptions => {
+      currentSubscriptions.forEach(subscription => {
+        supabase.removeChannel(subscription)
+      })
+      return []
     })
-    setSubscriptions([])
-  }, [subscriptions])
+  }, [])
 
   const setupSubscriptions = useCallback(() => {
     if (!family) return
@@ -173,7 +175,9 @@ export const TasksProvider = ({ children }) => {
         cleanupSubscriptions()
       }
     }
-  }, [family, currentMember, cleanupSubscriptions, loadTaskData, setupSubscriptions, loadMockTaskData])
+  // ESLint disable because we want this to only run when family/currentMember changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [family, currentMember])
 
   const loadTasks = async () => {
     if (!family) return
