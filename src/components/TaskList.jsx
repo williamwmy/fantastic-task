@@ -68,6 +68,15 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   // Get tasks available for today
   const allTodayTasks = getTasksForDate(selectedDate) || []
   
+  // Debug logging to help troubleshoot missing tasks
+  console.log('TaskList Debug:', {
+    selectedDate: selectedDate,
+    allTodayTasksCount: allTodayTasks.length,
+    showOnlyMyTasks: showOnlyMyTasks,
+    currentMember: currentMember?.id,
+    myAssignmentsCount: myAssignments.length
+  })
+  
   // Filter tasks based on the toggle - if showOnlyMyTasks is true, only show assigned tasks
   const filteredTasks = showOnlyMyTasks 
     ? allTodayTasks.filter(task => {
@@ -86,7 +95,10 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     
     // If both are assigned to user or both are not, sort alphabetically
     if (aIsAssignedToUser === bIsAssignedToUser) {
-      return a.title.localeCompare(b.title)
+      // Safe string comparison - handle undefined/null titles
+      const aTitle = a.title || ''
+      const bTitle = b.title || ''
+      return aTitle.localeCompare(bTitle)
     }
     
     // User's tasks come first
