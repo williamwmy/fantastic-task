@@ -48,7 +48,7 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   const [completingTask, setCompletingTask] = useState(null)
   const [assigningTask, setAssigningTask] = useState(null)
   const [quickCompletingTask, setQuickCompletingTask] = useState(null)
-  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(currentMember?.role === 'child')
+  const [showOnlyMyTasks, setShowOnlyMyTasks] = useState(false)
   const [quickAnimationData, setQuickAnimationData] = useState({ show: false, points: 0, position: null })
   const taskRefs = useRef({})
 
@@ -69,12 +69,29 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   const allTodayTasks = getTasksForDate(selectedDate) || []
   
   // Filter tasks based on the toggle - if showOnlyMyTasks is true, only show assigned tasks
-  const todayTasks = showOnlyMyTasks 
+  const filteredTasks = showOnlyMyTasks 
     ? allTodayTasks.filter(task => {
         const assignment = getTaskAssignment(task.id) || task.assignment
         return assignment && assignment.assigned_to === currentMember?.id
       })
     : allTodayTasks
+
+  // Sort tasks: user's tasks first, then alphabetically by title
+  const todayTasks = [...filteredTasks].sort((a, b) => {
+    const aAssignment = getTaskAssignment(a.id) || a.assignment
+    const bAssignment = getTaskAssignment(b.id) || b.assignment
+    
+    const aIsAssignedToUser = aAssignment && aAssignment.assigned_to === currentMember?.id
+    const bIsAssignedToUser = bAssignment && bAssignment.assigned_to === currentMember?.id
+    
+    // If both are assigned to user or both are not, sort alphabetically
+    if (aIsAssignedToUser === bIsAssignedToUser) {
+      return a.title.localeCompare(b.title)
+    }
+    
+    // User's tasks come first
+    return bIsAssignedToUser ? 1 : -1
+  })
 
   const getTaskCompletion = (taskId) => {
     // First check if there's a completion for this specific date
@@ -343,8 +360,8 @@ const TaskList = ({ selectedDate, onDateChange }) => {
           </div>
         </div>
         
-        {/* Filter toggle - hide for child users since they always see only their tasks */}
-        {currentMember?.role !== 'child' && (
+        {/* Filter toggle - now available for all roles */}
+        {currentMember && (
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 

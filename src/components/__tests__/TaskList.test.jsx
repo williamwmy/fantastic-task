@@ -316,14 +316,15 @@ describe('TaskList', () => {
       ])
     })
 
-    it('should not show filter toggle for child users', () => {
+    it('should show filter toggle for child users too', () => {
       // Set current member to a child
       mockFamilyHook.currentMember = { id: 'member-3', nickname: 'Child User', role: 'child' }
       
       render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
-      // Filter toggle should not be visible for child users
-      expect(screen.queryByText(/mine oppgaver/i)).not.toBeInTheDocument()
+      // Filter toggle should now be visible for child users as well
+      expect(screen.getByText(/mine oppgaver/i)).toBeInTheDocument()
+      expect(screen.getByRole('checkbox')).toBeInTheDocument()
     })
 
     it('should show filter toggle for admin and member users', () => {
@@ -419,22 +420,81 @@ describe('TaskList', () => {
       expect(screen.getByText(/du har ingen oppgaver tildelt for denne dagen/i)).toBeInTheDocument()
     })
 
-    it('should have child users automatically show only their tasks', () => {
+    it('should allow child users to see all tasks by default', () => {
       // Set current member to a child
       mockFamilyHook.currentMember = { id: 'member-3', nickname: 'Child User', role: 'child' }
       
-      // Mock assignments for child (only task-1)
+      // Use the same mock data as other tests
+      mockTasksHook.getTasksForDate.mockReturnValue(mockTasksWithAssignments)
+      // Mock assignments for child (task-1 assigned to child)
       mockTasksHook.getTasksForMember.mockReturnValue([
         { id: 'assignment-1', task_id: 'task-1', assigned_to: 'member-3' }
       ])
       
       render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
       
-      // Child should only see their assigned task (task-1)
+      // Child should now see all tasks by default
       expect(screen.getByText('Test Oppgave 1')).toBeInTheDocument()
-      expect(screen.queryByText('Test Oppgave 2')).not.toBeInTheDocument()
-      expect(screen.queryByText('Test Oppgave 3')).not.toBeInTheDocument()
-      // Child should see only 1 assigned task
+      expect(screen.getByText('Test Oppgave 2')).toBeInTheDocument()
+      expect(screen.getByText('Test Oppgave 3')).toBeInTheDocument()
+      // Filter should be available and unchecked by default
+      expect(screen.getByRole('checkbox')).not.toBeChecked()
+    })
+
+    it('should sort tasks with user tasks first, then alphabetically', () => {
+      mockFamilyHook.currentMember = { id: 'member-1', nickname: 'Test User', role: 'admin' }
+      
+      // Create tasks with specific titles to test alphabetical sorting
+      const mockTasksForSorting = [
+        {
+          id: 'task-1',
+          title: 'Zebra Task', // Alphabetically last, but assigned to user
+          description: 'Assigned to current user',
+          points: 10,
+          assignment: {
+            id: 'assignment-1',
+            assigned_to: 'member-1',
+            is_completed: false
+          }
+        },
+        {
+          id: 'task-2', 
+          title: 'Alpha Task', // Alphabetically first, not assigned to user
+          description: 'Not assigned to current user',
+          points: 15,
+          assignment: {
+            id: 'assignment-2',
+            assigned_to: 'member-2',
+            is_completed: false
+          }
+        },
+        {
+          id: 'task-3',
+          title: 'Beta Task', // Assigned to user, should come after Zebra Task
+          description: 'Also assigned to current user',
+          points: 5,
+          assignment: {
+            id: 'assignment-3',
+            assigned_to: 'member-1',
+            is_completed: false
+          }
+        }
+      ]
+      
+      mockTasksHook.getTasksForDate.mockReturnValue(mockTasksForSorting)
+      mockTasksHook.getTasksForMember.mockReturnValue([
+        { id: 'assignment-1', task_id: 'task-1', assigned_to: 'member-1' },
+        { id: 'assignment-3', task_id: 'task-3', assigned_to: 'member-1' }
+      ])
+      
+      render(<TaskList selectedDate={selectedDate} onDateChange={() => {}} />)
+      
+      // Get all task titles in the order they appear
+      const taskElements = screen.getAllByText(/Task$/)
+      const taskTitles = taskElements.map(el => el.textContent)
+      
+      // Expected order: user's tasks first (Beta Task, Zebra Task), then others (Alpha Task)
+      expect(taskTitles).toEqual(['Beta Task', 'Zebra Task', 'Alpha Task'])
     })
 
     it('should toggle between all tasks and assigned tasks correctly', async () => {
