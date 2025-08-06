@@ -27,16 +27,19 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
     isAnimationStartedRef.current = true
 
     // Start checkmark animation
+    console.log('CompletionAnimation: Setting stage to checkmark')
     setAnimationStage('checkmark')
     
     // After checkmark, show confetti
     const confettiTimer = setTimeout(() => {
+      console.log('CompletionAnimation: Setting stage to confetti')
       setAnimationStage('confetti')
       startConfettiAnimation()
     }, 500)
 
     // Complete animation - longer timeout to let confetti finish
     const completeTimer = setTimeout(() => {
+      console.log('CompletionAnimation: Setting stage to done and calling onComplete')
       setAnimationStage('done')
       // Call onComplete immediately - the component will be hidden due to stage change
       onComplete()
@@ -185,7 +188,10 @@ const CompletionAnimation = ({ onComplete, points = 0, show = false, position = 
     animationRef.current = requestAnimationFrame(animate)
   }
 
+  console.log('CompletionAnimation: Render stage:', animationStage, 'show:', show)
+  
   if (animationStage === 'hidden' || animationStage === 'done') {
+    console.log('CompletionAnimation: Returning null')
     return null
   }
 

@@ -92,6 +92,7 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
   }
 
   const handleAnimationComplete = () => {
+    console.log('TaskCompletion: handleAnimationComplete called')
     // Clean up image previews
     images.forEach(image => URL.revokeObjectURL(image.preview))
     
@@ -101,6 +102,7 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
     setImages([])
     setSuccess('')
     setShowAnimation(false)
+    console.log('TaskCompletion: setShowAnimation(false) called')
   }
 
   const formatEstimatedTime = (minutes) => {
