@@ -410,11 +410,13 @@ export const generateMockTaskCompletion = (taskId, completedBy, completionData) 
   const task = mockTasks.find(t => t.id === taskId);
   const member = mockFamilyMembers.find(m => m.id === completedBy);
   
+  const finalCompletedAt = completionData?.completed_at || new Date().toISOString()
+  
   return {
     id: 'mock-completion-' + Date.now(),
     task_id: taskId,
     completed_by: completedBy,
-    completed_at: completionData?.completed_at || new Date().toISOString(),
+    completed_at: finalCompletedAt,
     verified_by: null,
     verified_at: null,
     tasks: task,

@@ -68,7 +68,7 @@ CREATE TABLE task_completions (
   task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
   assignment_id UUID REFERENCES task_assignments(id),
   completed_by UUID REFERENCES family_members(id),
-  completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  completed_at TIMESTAMP WITH TIME ZONE NOT NULL,
   time_spent_minutes INTEGER,
   comment TEXT,
   points_awarded INTEGER,
