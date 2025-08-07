@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { generateMockTaskCompletion } from '../lib/mockData.js'
 
-describe('Task Completion Date Bug', () => {
+describe('Task Completion Date - Mock Data Tests', () => {
   beforeEach(() => {
     vi.stubEnv('VITE_LOCAL_TEST_USER', 'true')
     vi.clearAllMocks()
@@ -108,5 +108,72 @@ describe('Task Completion Date Bug', () => {
     expect(completionDateTime.getUTCHours()).toBe(9)
     expect(completionDateTime.getUTCMinutes()).toBe(15)
     expect(completionDateTime.getUTCSeconds()).toBe(30)
+  })
+
+  // Regression test for the quick complete bug
+  it('should be compatible with handleQuickCompleteTask data format', () => {
+    // This test ensures generateMockTaskCompletion works with the data format
+    // that handleQuickCompleteTask now sends (after the bug fix)
+    const selectedDate = '2025-08-06'
+    const currentTime = new Date('2025-08-07T15:30:45.123Z')
+    
+    // Simulate the completion data that handleQuickCompleteTask creates
+    const completionDate = new Date(selectedDate)
+    completionDate.setHours(currentTime.getHours(), currentTime.getMinutes(), currentTime.getSeconds())
+    
+    const completionDataFromQuickComplete = {
+      task_id: 'test-task-id',
+      assignment_id: 'test-assignment-id',
+      completed_by: 'test-user-id',
+      completed_at: completionDate.toISOString(), // This is the key - it should preserve selectedDate
+      points_awarded: 10
+    }
+    
+    const mockCompletion = generateMockTaskCompletion(
+      completionDataFromQuickComplete.task_id,
+      completionDataFromQuickComplete.completed_by,
+      completionDataFromQuickComplete
+    )
+    
+    // Critical assertion: The completion should preserve the selectedDate (2025-08-06)
+    expect(mockCompletion.completed_at).toBe(completionDataFromQuickComplete.completed_at)
+    expect(mockCompletion.completed_at).toMatch(/^2025-08-06T15:30:45/)
+    
+    // Verify all fields are preserved
+    expect(mockCompletion.task_id).toBe(completionDataFromQuickComplete.task_id)
+    expect(mockCompletion.assignment_id).toBe(completionDataFromQuickComplete.assignment_id)
+    expect(mockCompletion.completed_by).toBe(completionDataFromQuickComplete.completed_by)
+    expect(mockCompletion.points_awarded).toBe(completionDataFromQuickComplete.points_awarded)
+  })
+
+  it('should handle completion data with all expected fields from TaskList', () => {
+    // Test with the exact structure that TaskList.handleQuickCompleteTask sends
+    const completionData = {
+      task_id: 'mock-task-1',
+      assignment_id: 'mock-assignment-1',
+      completed_by: 'mock-member-1',
+      completed_at: '2025-08-06T14:25:30.000Z',
+      points_awarded: 15
+    }
+    
+    const mockCompletion = generateMockTaskCompletion(
+      completionData.task_id,
+      completionData.completed_by,
+      completionData
+    )
+    
+    // Verify that all fields from the completion data are preserved
+    expect(mockCompletion).toMatchObject({
+      task_id: 'mock-task-1',
+      assignment_id: 'mock-assignment-1',
+      completed_by: 'mock-member-1',
+      completed_at: '2025-08-06T14:25:30.000Z',
+      points_awarded: 15
+    })
+    
+    // Verify additional fields are added
+    expect(mockCompletion).toHaveProperty('id')
+    expect(mockCompletion).toHaveProperty('verified_by', null)
+    expect(mockCompletion).toHaveProperty('verified_at', null)
   })
 })

@@ -41,7 +41,6 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     getCompletionsForMember,
     completeTask,
     undoCompletion,
-    quickCompleteTask,
     taskCompletions,
     taskAssignments
   } = useTasks()

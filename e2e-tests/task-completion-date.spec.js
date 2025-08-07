@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Task Completion Date Bug', () => {
   test('should complete task on yesterday date correctly', async ({ page }) => {
