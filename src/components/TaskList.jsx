@@ -243,10 +243,14 @@ const TaskList = ({ selectedDate, onDateChange }) => {
         })
       } else {
         // Fallback to regular completeTask with completion data
+        const completionDate = new Date(selectedDate)
+        completionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds())
+        
         const completionData = {
           task_id: task.id,
           assignment_id: assignment?.id || null,
           completed_by: currentMember.id,
+          completed_at: completionDate.toISOString(),
           points_awarded: task.points || 0
         }
         
@@ -724,6 +728,7 @@ const TaskList = ({ selectedDate, onDateChange }) => {
         <TaskCompletion
           task={completingTask.task}
           assignment={completingTask.assignment}
+          selectedDate={selectedDate}
           open={true}
           onClose={() => setCompletingTask(null)}
           taskPosition={completingTask.task ? 

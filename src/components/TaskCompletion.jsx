@@ -6,7 +6,7 @@ import Modal from './Modal'
 import CompletionAnimation from './CompletionAnimation'
 import { calculateBonusPoints, calculateTotalPoints } from '../utils/bonusPointsUtils'
 
-const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }) => {
+const TaskCompletion = ({ task, assignment, selectedDate, open, onClose, taskPosition = null }) => {
   const { completeTask } = useTasks()
   const { currentMember } = useFamily()
   const timeoutRef = useRef(null)
@@ -68,10 +68,15 @@ const TaskCompletion = ({ task, assignment, open, onClose, taskPosition = null }
     
     setLoading(true)
     
+    // Create completion date from selectedDate but with current time
+    const completionDate = new Date(selectedDate)
+    completionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds())
+    
     const completionData = {
       task_id: task.id,
       assignment_id: assignment?.id || null,
       completed_by: currentMember.id,
+      completed_at: completionDate.toISOString(),
       time_spent_minutes: timeSpent && timeSpent.trim() ? parseInt(timeSpent.trim()) : null,
       comment: comment.trim() || null,
       points_awarded: Number(task.points) || 0

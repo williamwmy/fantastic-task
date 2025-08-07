@@ -513,11 +513,15 @@ export const TasksProvider = ({ children }) => {
                                 ? Number(finalCompletionData.points_awarded)
                                 : basePoints + bonusPoints;
 
+      // Use provided completion date or current date
+      const completionDate = finalCompletionData.completed_at || new Date().toISOString()
+      
       // Validate and clean the completion data before sending to Supabase
       const cleanedData = {
         task_id: finalCompletionData.task_id,
         assignment_id: finalCompletionData.assignment_id || null,
         completed_by: finalCompletionData.completed_by,
+        completed_at: completionDate,
         time_spent_minutes: timeSpentMinutes || null,
         comment: finalCompletionData.comment && typeof finalCompletionData.comment === 'string' 
                 ? finalCompletionData.comment.trim() || null 
@@ -538,14 +542,14 @@ export const TasksProvider = ({ children }) => {
         
         // Auto-assign the task to the completer if no assignment exists
         if (!cleanedData.assignment_id) {
-          const completionDate = new Date().toISOString().split('T')[0];
+          const assignmentDate = cleanedData.completed_at.split('T')[0]; // Use completion date
           const newAssignment = {
             id: `assignment-${cleanedData.task_id}-${cleanedData.completed_by}`,
             task_id: cleanedData.task_id,
             assigned_to: cleanedData.completed_by,
             assigned_by: cleanedData.completed_by, // Self-assigned through completion
-            due_date: completionDate,
-            created_at: new Date().toISOString(),
+            due_date: assignmentDate,
+            created_at: cleanedData.completed_at, // Use completion time for consistency
             is_completed: true
           };
           
@@ -641,7 +645,7 @@ export const TasksProvider = ({ children }) => {
               task_id: cleanedData.task_id,
               assigned_to: cleanedData.completed_by,
               assigned_by: cleanedData.completed_by, // Self-assigned through completion
-              due_date: new Date().toISOString().split('T')[0] // Today's date
+              due_date: cleanedData.completed_at.split('T')[0] // Use completion date
             })
 
           if (assignmentError) {
