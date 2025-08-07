@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
 import { 
@@ -41,10 +41,11 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     completeTask,
     undoCompletion,
     quickCompleteTask,
-    taskCompletions
+    taskCompletions,
+    taskAssignments
   } = useTasks()
 
-  const { currentMember, familyMembers } = useFamily()
+  const { currentMember, familyMembers, family } = useFamily()
 
   const [completingTask, setCompletingTask] = useState(null)
   const [assigningTask, setAssigningTask] = useState(null)
@@ -56,6 +57,24 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   // Get assignments for current member for selected date
   const myAssignments = getTasksForMember(currentMember?.id, selectedDate)
   
+  // Get ALL assignments for selected date (to see what's assigned to anyone)
+  const allAssignments = useMemo(() => {
+    if (!taskAssignments || !Array.isArray(taskAssignments)) return []
+    
+    const selectedDateStr = typeof selectedDate === 'string' ? selectedDate : selectedDate.toISOString().split('T')[0]
+    return taskAssignments.filter(assignment => {
+      if (!assignment.due_date) {
+        // If no specific due date, check if assignment was created today
+        const createdDate = assignment.created_at ? assignment.created_at.split('T')[0] : null
+        return createdDate === selectedDateStr
+      }
+      
+      // Check if due_date matches selected date
+      const dueDateStr = assignment.due_date.split('T')[0] // Get date part only
+      return dueDateStr === selectedDateStr
+    })
+  }, [taskAssignments, selectedDate])
+  
   // Get completions for current member for selected date
   const myCompletions = getCompletionsForMember(currentMember?.id, selectedDate)
   
@@ -63,6 +82,13 @@ const TaskList = ({ selectedDate, onDateChange }) => {
   const allMyCompletions = getCompletionsForMember(currentMember?.id)
 
   const getTaskAssignment = (taskId) => {
+    // First check if there's ANY assignment for this task (not just current user's)
+    const anyAssignment = allAssignments.find(assignment => assignment.task_id === taskId)
+    if (anyAssignment) {
+      return anyAssignment
+    }
+    
+    // Fallback to checking task.assignment or current user's assignments
     return myAssignments.find(assignment => assignment.task_id === taskId)
   }
 
@@ -153,11 +179,12 @@ const TaskList = ({ selectedDate, onDateChange }) => {
         const completedByMember = completion.completed_by_member || 
                                  (completion.completed_by && familyMembers.find(m => m.id === completion.completed_by))
         
-        // Only children need verification - adults are automatically approved
-        if (completedByMember?.role === 'child') {
+        // Only children need verification if the family setting requires it
+        const requiresVerification = family?.require_child_verification !== false // Default to true if not set
+        if (completedByMember?.role === 'child' && requiresVerification) {
           return { status: 'pending_verification', color: '#ffc107', icon: FaHourglassHalf }
         } else {
-          // Adults (admin/member) automatically have their completions approved
+          // Adults (admin/member) or children when verification is disabled are automatically approved
           return { status: 'completed', color: '#28a745', icon: FaCheckCircle }
         }
       }
@@ -474,6 +501,30 @@ const TaskList = ({ selectedDate, onDateChange }) => {
                     }}>
                       <StatusIcon style={{ color }} />
                       {task.title}
+                      {assignment && assignment.assigned_to !== currentMember?.id && (
+                        <span style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: familyMembers.find(m => m.id === assignment.assigned_to)?.avatar_color || '#82bcf4',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '1rem',
+                          fontWeight: '500'
+                        }}>
+                          {familyMembers.find(m => m.id === assignment.assigned_to)?.nickname || 'ukjent'}
+                        </span>
+                      )}
+                      {assignment && assignment.assigned_to === currentMember?.id && (
+                        <span style={{
+                          fontSize: '0.75rem',
+                          backgroundColor: currentMember?.avatar_color || '#28a745',
+                          color: 'white',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '1rem',
+                          fontWeight: '500'
+                        }}>
+                          {currentMember?.nickname || 'Du'}
+                        </span>
+                      )}
                     </h4>
                     
                     {task.description && (
@@ -523,58 +574,6 @@ const TaskList = ({ selectedDate, onDateChange }) => {
                   </div>
                 </div>
 
-                {/* Assignment info */}
-                {assignment && (
-                  <div style={{
-                    backgroundColor: '#f8f9fa',
-                    padding: '0.75rem',
-                    borderRadius: '0.25rem',
-                    marginBottom: '0.75rem',
-                    fontSize: '0.9rem'
-                  }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '1rem',
-                      flexWrap: 'wrap'
-                    }}>
-                      {assignment.assigned_by && (
-                        <div>
-                          <strong>Tildelt av:</strong> {
-                            familyMembers.find(m => m.id === assignment.assigned_by)?.nickname || 'Ukjent'
-                          }
-                        </div>
-                      )}
-                      {(() => {
-                        const assignedMember = familyMembers.find(m => m.id === assignment.assigned_to)
-                        if (assignedMember && assignedMember.nickname) {
-                          const initials = assignedMember.nickname.trim()[0].toUpperCase()
-                          return (
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '2rem',
-                                height: '2rem',
-                                borderRadius: '50%',
-                                backgroundColor: assignedMember.avatar_color || '#82bcf4',
-                                color: 'white',
-                                fontWeight: 700,
-                                fontSize: '1.1rem',
-                                marginLeft: assignment.assigned_by ? '0.5rem' : '0',
-                              }}
-                              title={assignedMember.nickname}
-                            >
-                              {initials}
-                            </span>
-                          )
-                        }
-                        return null
-                      })()}
-                    </div>
-                  </div>
-                )}
                 
                 {/* Buttons */}
                 <div style={{ 

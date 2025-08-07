@@ -17,6 +17,7 @@ export const mockFamily = {
   id: 'mock-family-id',
   name: 'Test Familie',
   family_code: 'FAM15', // Simple 5-character family code
+  require_child_verification: true, // Default to requiring verification for children
   created_by: mockUser.id,
   created_at: now
 };

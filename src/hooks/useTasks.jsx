@@ -380,12 +380,23 @@ export const TasksProvider = ({ children }) => {
   const assignTask = async (taskId, memberId, dueDate) => {
     try {
       if (import.meta.env.VITE_LOCAL_TEST_USER === 'true') {
+        const newAssignment = {
+          id: `assignment-${taskId}`,
+          task_id: taskId,
+          assigned_to: memberId,
+          assigned_by: currentMember.id,
+          due_date: dueDate || null,
+          created_at: new Date().toISOString(),
+          is_completed: false
+        }
+        
+        // Update both tasks and taskAssignments
         setTasks(prev => prev.map(task =>
           task.id === taskId
             ? {
                 ...task,
                 assignment: {
-                  id: `assignment-${taskId}`,
+                  id: newAssignment.id,
                   assigned_to: memberId,
                   assigned_by: currentMember.id,
                   due_date: dueDate || null,
@@ -396,6 +407,10 @@ export const TasksProvider = ({ children }) => {
               }
             : task
         ));
+        
+        // Add to taskAssignments array so getTasksForMember finds it
+        setTaskAssignments(prev => [...(prev || []), newAssignment]);
+        
         const assignedTask = tasks.find(t => t.id === taskId);
         return { data: assignedTask, error: null };
       }
@@ -520,19 +535,51 @@ export const TasksProvider = ({ children }) => {
           cleanedData
         );
         setTaskCompletions(prev => [mockCompletion, ...prev]);
-        // Update the relevant task's assignment with completion
-        setTasks(prev => prev.map(task =>
-          (task.id === cleanedData.task_id || task.assignment?.id === cleanedData.assignment_id) && task.assignment
-            ? {
-                ...task,
-                assignment: {
-                  ...task.assignment,
-                  is_completed: true,
-                  completion: mockCompletion
+        
+        // Auto-assign the task to the completer if no assignment exists
+        if (!cleanedData.assignment_id) {
+          const completionDate = new Date().toISOString().split('T')[0];
+          const newAssignment = {
+            id: `assignment-${cleanedData.task_id}-${cleanedData.completed_by}`,
+            task_id: cleanedData.task_id,
+            assigned_to: cleanedData.completed_by,
+            assigned_by: cleanedData.completed_by, // Self-assigned through completion
+            due_date: completionDate,
+            created_at: new Date().toISOString(),
+            is_completed: true
+          };
+          
+          // Add to taskAssignments array so everyone can see who did the task
+          setTaskAssignments(prev => [...(prev || []), newAssignment]);
+          
+          // Update the task with the new assignment
+          setTasks(prev => prev.map(task =>
+            task.id === cleanedData.task_id
+              ? {
+                  ...task,
+                  assignment: {
+                    ...newAssignment,
+                    completion: mockCompletion
+                  }
                 }
-              }
-            : task
-        ));
+              : task
+          ));
+        } else {
+          // Update existing assignment with completion
+          setTasks(prev => prev.map(task =>
+            (task.id === cleanedData.task_id || task.assignment?.id === cleanedData.assignment_id) && task.assignment
+              ? {
+                  ...task,
+                  assignment: {
+                    ...task.assignment,
+                    is_completed: true,
+                    completion: mockCompletion
+                  }
+                }
+              : task
+          ));
+        }
+        
         // Mock points transaction  
         const pointsAwarded = cleanedData.points_awarded;
         if (pointsAwarded > 0) {
@@ -571,8 +618,9 @@ export const TasksProvider = ({ children }) => {
       const pointsAwarded = cleanedData.points_awarded
 
       if (pointsAwarded > 0) {
-        // For child members, points are pending until verified
-        const needsVerification = member.role === 'child'
+        // For child members, points are pending until verified (if setting is enabled)
+        const requiresVerification = family?.require_child_verification !== false // Default to true if not set
+        const needsVerification = member.role === 'child' && requiresVerification
         
         if (!needsVerification) {
           // Award points immediately for adults
@@ -584,18 +632,40 @@ export const TasksProvider = ({ children }) => {
         // If verification is needed, points will be awarded when verified
       }
 
+      // Auto-assign the task to the completer if no assignment exists (for database mode)
+      if (!cleanedData.assignment_id) {
+        try {
+          const { error: assignmentError } = await supabase
+            .from('task_assignments')
+            .insert({
+              task_id: cleanedData.task_id,
+              assigned_to: cleanedData.completed_by,
+              assigned_by: cleanedData.completed_by, // Self-assigned through completion
+              due_date: new Date().toISOString().split('T')[0] // Today's date
+            })
+
+          if (assignmentError) {
+            console.warn('Could not auto-assign task after completion:', assignmentError)
+            // Don't throw error as the completion was successful
+          }
+        } catch (autoAssignError) {
+          console.warn('Error during auto-assignment:', autoAssignError)
+          // Continue execution as completion was successful
+        }
+      }
+
       // Update local state immediately for better UX
       setTaskCompletions(prev => [completion, ...prev])
       
       // Reload data immediately to update UI (async for consistency)
       loadTaskCompletions()
       loadTasks()
+      loadTaskAssignments() // Also reload assignments to show the new auto-assignment
       
       // Refresh family member balances immediately
       if (window.refreshFamilyData) {
         window.refreshFamilyData()
       }
-
 
       return { data: completion, error: null }
     } catch (error) {
@@ -706,7 +776,18 @@ export const TasksProvider = ({ children }) => {
     let assignments = safeAssignments.filter(a => a.assigned_to === memberId)
     
     if (date) {
-      assignments = assignments.filter(a => a.due_date === date)
+      const selectedDateStr = typeof date === 'string' ? date : date.toISOString().split('T')[0]
+      assignments = assignments.filter(a => {
+        if (!a.due_date) {
+          // If no specific due date, check if assignment was created today
+          const createdDate = a.created_at ? a.created_at.split('T')[0] : null
+          return createdDate === selectedDateStr
+        }
+        
+        // Check if due_date matches selected date
+        const dueDateStr = a.due_date.split('T')[0] // Get date part only
+        return dueDateStr === selectedDateStr
+      })
     }
     
     return assignments
@@ -728,6 +809,11 @@ export const TasksProvider = ({ children }) => {
 
   const getPendingVerifications = () => {
     if (!Array.isArray(taskCompletions)) return [];
+    
+    // Only show pending verifications if the family requires child verification
+    const requiresVerification = family?.require_child_verification !== false // Default to true if not set
+    if (!requiresVerification) return [];
+    
     return taskCompletions.filter(c => 
       !c.verified_by && 
       c.completed_by_member?.role === 'child'
@@ -911,7 +997,32 @@ export const TasksProvider = ({ children }) => {
   const getTasksForDate = (date) => {
     const dayOfWeek = new Date(date).getDay()
     const safeTasks = Array.isArray(tasks) ? tasks : [];
+    const safeAssignments = Array.isArray(taskAssignments) ? taskAssignments : [];
+    
     return safeTasks.filter(task => {
+      // Check if task has an assignment for this date
+      const hasAssignmentForDate = safeAssignments.some(assignment => {
+        if (assignment.task_id !== task.id) return false
+        
+        // If assignment has specific due_date, check if it matches
+        if (assignment.due_date) {
+          const assignmentDate = assignment.due_date.split('T')[0] // Get date part only
+          const selectedDate = typeof date === 'string' ? date : date.toISOString().split('T')[0]
+          return assignmentDate === selectedDate
+        }
+        
+        // If no specific due date, check if assignment was created for today
+        const assignmentCreated = assignment.created_at ? assignment.created_at.split('T')[0] : null
+        const selectedDate = typeof date === 'string' ? date : date.toISOString().split('T')[0]
+        return assignmentCreated === selectedDate
+      })
+      
+      // Show task if it has assignment for this date, regardless of recurring pattern
+      if (hasAssignmentForDate) {
+        return true
+      }
+      
+      // Otherwise, check recurring pattern as before
       if (!task.recurring_days || task.recurring_days.length === 0) {
         return true // No specific days means it's available every day
       }

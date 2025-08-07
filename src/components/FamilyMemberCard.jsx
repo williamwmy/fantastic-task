@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
 import Modal from './Modal'
 import BackgroundSelector from './BackgroundSelector'
-import { FaUser, FaUserShield, FaChild, FaEdit, FaSave, FaTimes } from 'react-icons/fa'
+import ChangePasswordModal from './ChangePasswordModal'
+import { FaUser, FaUserShield, FaChild, FaEdit, FaSave, FaTimes, FaKey, FaTrash } from 'react-icons/fa'
 
 const FamilyMemberCard = ({ member, onClose }) => {
   const { 
@@ -11,11 +12,13 @@ const FamilyMemberCard = ({ member, onClose }) => {
     currentMember,
     promoteToAdmin,
     demoteFromAdmin,
-    setChildRole
+    setChildRole,
+    removeFamilyMember
   } = useFamily()
   
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
   const [formData, setFormData] = useState({
     nickname: member.nickname,
     avatar_color: member.avatar_color || '#82bcf4',
@@ -32,6 +35,8 @@ const FamilyMemberCard = ({ member, onClose }) => {
   const canEditProfile = hasPermission('edit_member_profile', member.id) || 
                         (member.id === currentMember.id)
   const canChangeRole = hasPermission('change_roles') && member.id !== currentMember.id
+  const canChangePassword = member.is_local_user && (hasPermission('manage_family') || member.id === currentMember.id)
+  const canDeleteMember = hasPermission('manage_family') && member.id !== currentMember.id
 
   const handleInputChange = (e) => {
     setFormData(prev => ({
@@ -115,6 +120,22 @@ const FamilyMemberCard = ({ member, onClose }) => {
     }
     
     setLoading(false)
+  }
+
+  const handleDeleteMember = async () => {
+    if (!canDeleteMember) return
+    
+    if (confirm(`Er du sikker på at du vil fjerne ${member.nickname} fra familien?`)) {
+      setLoading(true)
+      const { error } = await removeFamilyMember(member.id)
+      if (error) {
+        alert('Feil ved fjerning av medlem: ' + error.message)
+        setLoading(false)
+      } else {
+        // Close modal since member was deleted
+        onClose()
+      }
+    }
   }
 
   const getRoleIcon = (role) => {
@@ -288,6 +309,27 @@ const FamilyMemberCard = ({ member, onClose }) => {
               />
             </div>
 
+            {/* Password change section */}
+            {canChangePassword && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem' }}>
+                  Passord:
+                </label>
+                <button
+                  onClick={() => setChangingPassword(true)}
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: '#ffc107',
+                    color: '#212529',
+                    width: 'auto'
+                  }}
+                >
+                  <FaKey />
+                  Endre passord
+                </button>
+              </div>
+            )}
+
           </div>
         ) : (
           <div>
@@ -313,23 +355,81 @@ const FamilyMemberCard = ({ member, onClose }) => {
               </div>
             </div>
 
-            {/* Role management for admins */}
-            {canChangeRole && (
+            {/* Role management and member actions for admins */}
+            {(canChangeRole || canDeleteMember) && (
               <div style={{ 
                 backgroundColor: '#fff3cd', 
                 padding: '1rem', 
                 borderRadius: '0.5rem',
                 marginBottom: '1rem'
               }}>
-                <h4 style={{ margin: '0 0 0.5rem 0' }}>Rollehåndtering</h4>
-                <p style={{ fontSize: '0.9rem', color: '#856404', marginBottom: '1rem' }}>
-                  Endre medlemmets rolle i familien:
-                </p>
+                <h4 style={{ margin: '0 0 0.5rem 0' }}>Medlemsadministrasjon</h4>
                 
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {member.role !== 'admin' && (
+                {canChangeRole && (
+                  <>
+                    <p style={{ fontSize: '0.9rem', color: '#856404', marginBottom: '1rem' }}>
+                      Endre medlemmets rolle i familien:
+                    </p>
+                    
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: canDeleteMember ? '1rem' : '0' }}>
+                      {member.role !== 'admin' && (
+                        <button
+                          onClick={() => handleRoleChange('admin')}
+                          disabled={loading}
+                          style={{
+                            ...buttonStyle,
+                            backgroundColor: '#28a745',
+                            color: 'white',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <FaUserShield />
+                          Gjør til admin
+                        </button>
+                      )}
+                      
+                      {member.role !== 'member' && (
+                        <button
+                          onClick={() => handleRoleChange('member')}
+                          disabled={loading}
+                          style={{
+                            ...buttonStyle,
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <FaUser />
+                          Gjør til medlem
+                        </button>
+                      )}
+                      
+                      {member.role !== 'child' && (
+                        <button
+                          onClick={() => handleRoleChange('child')}
+                          disabled={loading}
+                          style={{
+                            ...buttonStyle,
+                            backgroundColor: '#17a2b8',
+                            color: 'white',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <FaChild />
+                          Gjør til barn
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {canDeleteMember && (
+                  <>
+                    <p style={{ fontSize: '0.9rem', color: '#856404', marginBottom: '1rem' }}>
+                      Fjern medlem fra familien:
+                    </p>
                     <button
-                      onClick={() => handleRoleChange('admin')}
+                      onClick={handleDeleteMember}
                       disabled={loading}
                       style={{
                         ...buttonStyle,
@@ -338,43 +438,11 @@ const FamilyMemberCard = ({ member, onClose }) => {
                         fontSize: '0.9rem'
                       }}
                     >
-                      <FaUserShield />
-                      Gjør til admin
+                      <FaTrash />
+                      Fjern fra familie
                     </button>
-                  )}
-                  
-                  {member.role !== 'member' && (
-                    <button
-                      onClick={() => handleRoleChange('member')}
-                      disabled={loading}
-                      style={{
-                        ...buttonStyle,
-                        backgroundColor: '#6c757d',
-                        color: 'white',
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      <FaUser />
-                      Gjør til medlem
-                    </button>
-                  )}
-                  
-                  {member.role !== 'child' && (
-                    <button
-                      onClick={() => handleRoleChange('child')}
-                      disabled={loading}
-                      style={{
-                        ...buttonStyle,
-                        backgroundColor: '#17a2b8',
-                        color: 'white',
-                        fontSize: '0.9rem'
-                      }}
-                    >
-                      <FaChild />
-                      Gjør til barn
-                    </button>
-                  )}
-                </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -399,6 +467,17 @@ const FamilyMemberCard = ({ member, onClose }) => {
         )}
 
       </div>
+
+      {/* Change password modal */}
+      {changingPassword && (
+        <ChangePasswordModal
+          member={member}
+          onClose={() => setChangingPassword(false)}
+          onSuccess={() => {
+            console.log('Password changed for:', member.nickname)
+          }}
+        />
+      )}
     </Modal>
   )
 }

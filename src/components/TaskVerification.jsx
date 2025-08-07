@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useTasks } from '../hooks/useTasks.jsx'
 import { useFamily } from '../hooks/useFamily.jsx'
-import { FaCheck, FaTimes, FaChild, FaClock, FaStar } from 'react-icons/fa'
+import { FaCheck, FaTimes, FaChild, FaClock, FaStar, FaCog } from 'react-icons/fa'
 import Modal from './Modal'
 
 const TaskVerification = ({ open, onClose }) => {
   const { getPendingVerifications, verifyTaskCompletion } = useTasks()
-  const { hasPermission } = useFamily()
+  const { hasPermission, family, updateFamilySetting } = useFamily()
   const [loading, setLoading] = useState(false)
+  const [updatingSettings, setUpdatingSettings] = useState(false)
 
   const pendingVerifications = getPendingVerifications()
 
@@ -23,6 +24,21 @@ const TaskVerification = ({ open, onClose }) => {
     }
     
     setLoading(false)
+  }
+
+  const handleToggleVerificationSetting = async () => {
+    if (!hasPermission('manage_family')) return
+    
+    setUpdatingSettings(true)
+    const newSetting = !family?.require_child_verification
+    
+    const { error } = await updateFamilySetting('require_child_verification', newSetting)
+    
+    if (error) {
+      alert('Feil ved endring av innstilling: ' + error.message)
+    }
+    
+    setUpdatingSettings(false)
   }
 
   const formatTime = (minutes) => {
@@ -89,6 +105,52 @@ const TaskVerification = ({ open, onClose }) => {
       icon={<FaChild />}
     >
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+
+        {/* Settings Section for Admins */}
+        {hasPermission('manage_family') && (
+          <div style={{
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            borderRadius: '0.5rem',
+            padding: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <FaCog style={{ color: '#6c757d' }} />
+              <h4 style={{ margin: 0, color: '#495057' }}>Innstillinger for verifikasjon</h4>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600 }}>
+                  Krever verifikasjon for barns oppgaver
+                </p>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#6c757d' }}>
+                  Når dette er aktivert, må alle oppgaver utført av barn godkjennes av en administrator før poeng tildeles.
+                </p>
+              </div>
+              
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: updatingSettings ? 'not-allowed' : 'pointer',
+                opacity: updatingSettings ? 0.6 : 1
+              }}>
+                <input
+                  type="checkbox"
+                  checked={family?.require_child_verification !== false} // Default to true if not set
+                  onChange={handleToggleVerificationSetting}
+                  disabled={updatingSettings}
+                  style={{
+                    width: '1.2rem',
+                    height: '1.2rem',
+                    cursor: updatingSettings ? 'not-allowed' : 'pointer'
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        )}
 
         {pendingVerifications.length === 0 ? (
           <div style={{

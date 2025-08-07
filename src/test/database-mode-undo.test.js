@@ -8,7 +8,7 @@ describe('Database Mode Bonus Points Undo', () => {
   let mockFetchCompletionData
   let mockFetchTransactions
   let mockUpdateMemberBalance
-  let mockSupabase
+  let _mockSupabase
 
   beforeEach(() => {
     // Set up database mode (not local test user)
@@ -19,7 +19,7 @@ describe('Database Mode Bonus Points Undo', () => {
     mockFetchTransactions = vi.fn()
     mockUpdateMemberBalance = vi.fn()
     
-    mockSupabase = {
+    _mockSupabase = {
       from: vi.fn((table) => {
         if (table === 'task_completions') {
           return {

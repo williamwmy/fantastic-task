@@ -587,6 +587,35 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     }
   }
 
+  const updateFamilySetting = async (settingKey, settingValue) => {
+    try {
+      if (!currentMember || currentMember.role !== 'admin') {
+        throw new Error('Only admins can update family settings')
+      }
+
+      if (LOCAL_TEST_USER) {
+        // In test mode, just update local state
+        setFamily(prev => ({ ...prev, [settingKey]: settingValue }))
+        return { error: null }
+      }
+
+      const { error } = await supabase
+        .from('families')
+        .update({ [settingKey]: settingValue })
+        .eq('id', family.id)
+
+      if (error) throw error
+
+      // Update local state
+      setFamily(prev => ({ ...prev, [settingKey]: settingValue }))
+
+      return { error: null }
+    } catch (error) {
+      console.error('Error updating family setting:', error)
+      return { error }
+    }
+  }
+
   const value = {
     family,
     familyMembers,
@@ -611,7 +640,8 @@ export const FamilyProvider = ({ children, initialFamily, initialMember }) => {
     demoteFromAdmin,
     setChildRole,
     resetAllPoints,
-    hasPermission
+    hasPermission,
+    updateFamilySetting
   }
 
   return (

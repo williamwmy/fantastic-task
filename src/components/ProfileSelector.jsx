@@ -1,25 +1,22 @@
 import React, { useState } from 'react'
 import { useFamily } from '../hooks/useFamily.jsx'
 import { useAuth } from '../hooks/useAuth.jsx'
-import { FaUser, FaUserShield, FaChild, FaEdit, FaTrash, FaUserPlus, FaKey, FaSignOutAlt } from 'react-icons/fa'
+import { FaUser, FaUserShield, FaChild, FaEdit, FaUserPlus, FaSignOutAlt } from 'react-icons/fa'
 import FamilyMemberCard from './FamilyMemberCard'
 import CreateLocalUserModal from './CreateLocalUserModal'
-import ChangePasswordModal from './ChangePasswordModal'
 
 const ProfileSelector = () => {
   const { 
     familyMembers, 
     currentMember, 
     setCurrentMember, 
-    hasPermission,
-    removeFamilyMember 
+    hasPermission
   } = useFamily()
   
   const { signOut } = useAuth()
   
   const [editingMember, setEditingMember] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [changingPasswordFor, setChangingPasswordFor] = useState(null)
 
   const getRoleIcon = (role) => {
     switch (role) {
@@ -45,14 +42,6 @@ const ProfileSelector = () => {
     setEditingMember(member)
   }
 
-  const handleRemoveMember = async (memberId, memberName) => {
-    if (confirm(`Er du sikker på at du vil fjerne ${memberName} fra familien?`)) {
-      const { error } = await removeFamilyMember(memberId)
-      if (error) {
-        alert('Feil ved fjerning av medlem: ' + error.message)
-      }
-    }
-  }
 
   const handleSignOut = async () => {
     if (confirm('Er du sikker på at du vil logge ut?')) {
@@ -209,52 +198,6 @@ const ProfileSelector = () => {
                 >
                   <FaEdit />
                 </button>
-                
-                {/* Password change only for local users and only admins can change others' passwords */}
-                {member.is_local_user && (canManageMembers || member.id === currentMember.id) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setChangingPasswordFor(member)
-                    }}
-                    style={{
-                      padding: '0.5rem',
-                      backgroundColor: '#ffc107',
-                      color: '#212529',
-                      border: 'none',
-                      borderRadius: '0.25rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                    title="Endre passord"
-                  >
-                    <FaKey />
-                  </button>
-                )}
-                
-                {/* Remove button only for admins and not for themselves */}
-                {canManageMembers && member.id !== currentMember.id && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleRemoveMember(member.id, member.nickname)
-                    }}
-                    style={{
-                      padding: '0.5rem',
-                      backgroundColor: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '0.25rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                    title="Fjern medlem"
-                  >
-                    <FaTrash />
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -348,18 +291,6 @@ const ProfileSelector = () => {
           onSuccess={(newUser) => {
             // Could show a success message here
             console.log('New user created:', newUser)
-          }}
-        />
-      )}
-
-      {/* Change password modal */}
-      {changingPasswordFor && (
-        <ChangePasswordModal
-          member={changingPasswordFor}
-          onClose={() => setChangingPasswordFor(null)}
-          onSuccess={() => {
-            // Could show a success message here
-            console.log('Password changed for:', changingPasswordFor.nickname)
           }}
         />
       )}
