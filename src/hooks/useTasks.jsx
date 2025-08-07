@@ -443,6 +443,8 @@ export const TasksProvider = ({ children }) => {
 
   const completeTask = async (assignmentIdOrData, completionData) => {
     try {
+      // Debug logging removed
+      
       // Validate input
       if (!assignmentIdOrData) {
         throw new Error('Assignment ID or completion data is required');
@@ -515,6 +517,8 @@ export const TasksProvider = ({ children }) => {
 
       // Use provided completion date or current date
       const completionDate = finalCompletionData.completed_at || new Date().toISOString()
+      
+      // Date tracking debug removed
       
       // Validate and clean the completion data before sending to Supabase
       const cleanedData = {
@@ -604,6 +608,8 @@ export const TasksProvider = ({ children }) => {
       }
 
 
+      // Supabase insert debug removed
+      
       const { data: completion, error: completionError } = await supabase
         .from('task_completions')
         .insert(cleanedData)

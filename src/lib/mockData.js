@@ -412,6 +412,8 @@ export const generateMockTaskCompletion = (taskId, completedBy, completionData) 
   
   const finalCompletedAt = completionData?.completed_at || new Date().toISOString()
   
+  // Mock data debug removed
+  
   return {
     id: 'mock-completion-' + Date.now(),
     task_id: taskId,

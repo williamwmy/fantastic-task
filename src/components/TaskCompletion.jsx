@@ -72,6 +72,8 @@ const TaskCompletion = ({ task, assignment, selectedDate, open, onClose, taskPos
     const completionDate = new Date(selectedDate)
     completionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds())
     
+    // Debug code removed
+    
     const completionData = {
       task_id: task.id,
       assignment_id: assignment?.id || null,

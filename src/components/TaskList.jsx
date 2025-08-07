@@ -19,6 +19,7 @@ import TaskCompletion from './TaskCompletion'
 import TaskAssignment from './TaskAssignment'
 import { PermissionGate, RoleButton } from './RoleBasedAccess'
 import CompletionAnimation from './CompletionAnimation'
+// import DateDebugger from './DateDebugger' // Debug component - removed
 
 export const filterTasksForDay = (tasks, date) => {
   if (!Array.isArray(tasks)) return []
@@ -130,6 +131,7 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     
     // First check all completions (not just mine) for this task on the selected date
     const allCompletions = Array.isArray(taskCompletions) ? taskCompletions : []
+    
     const anyCompletion = allCompletions.find(completion => {
       if (completion.task_id !== taskId) return false
       
@@ -222,10 +224,25 @@ const TaskList = ({ selectedDate, onDateChange }) => {
     setQuickCompletingTask(task.id)
     
     try {
-      if (quickCompleteTask && assignment?.id) {
-        // Use quickCompleteTask with assignment ID for tests (only if assignment exists)
-        await quickCompleteTask(assignment.id)
-        
+      // Always use the completion data approach to ensure correct date handling
+      // Use regular completeTask with completion data (always)
+      const completionDate = new Date(selectedDate)
+      completionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds())
+      
+      // Debug logging removed
+      
+      const completionData = {
+        task_id: task.id,
+        assignment_id: assignment?.id || null,
+        completed_by: currentMember.id,
+        completed_at: completionDate.toISOString(),
+        points_awarded: task.points || 0
+      }
+      
+      const { error } = await completeTask(completionData)
+      if (error) {
+        alert('Feil ved fullføring av oppgave: ' + error.message)
+      } else {
         // Get task element position for animation
         const taskElement = taskRefs.current[task.id]
         const position = taskElement ? taskElement.getBoundingClientRect() : null
@@ -241,39 +258,6 @@ const TaskList = ({ selectedDate, onDateChange }) => {
             height: position.height
           } : null
         })
-      } else {
-        // Fallback to regular completeTask with completion data
-        const completionDate = new Date(selectedDate)
-        completionDate.setHours(new Date().getHours(), new Date().getMinutes(), new Date().getSeconds())
-        
-        const completionData = {
-          task_id: task.id,
-          assignment_id: assignment?.id || null,
-          completed_by: currentMember.id,
-          completed_at: completionDate.toISOString(),
-          points_awarded: task.points || 0
-        }
-        
-        const { error } = await completeTask(completionData)
-        if (error) {
-          alert('Feil ved fullføring av oppgave: ' + error.message)
-        } else {
-          // Get task element position for animation
-          const taskElement = taskRefs.current[task.id]
-          const position = taskElement ? taskElement.getBoundingClientRect() : null
-          
-          // Show animation for successful completion
-          setQuickAnimationData({ 
-            show: true, 
-            points: task.points || 0,
-            position: position ? {
-              top: position.top,
-              left: position.left,
-              width: position.width,  
-              height: position.height
-            } : null
-          })
-        }
       }
     } catch (error) {
       alert('Feil ved fullføring av oppgave: ' + error.message)
@@ -333,7 +317,9 @@ const TaskList = ({ selectedDate, onDateChange }) => {
                 if (onDateChange) {
                   const d = new Date(selectedDate)
                   d.setDate(d.getDate() - 1)
-                  onDateChange(d.toISOString().slice(0, 10))
+                  const newDate = d.toISOString().slice(0, 10)
+                  // Date navigation
+                  onDateChange(newDate)
                 }
               }}
               style={{
@@ -378,7 +364,9 @@ const TaskList = ({ selectedDate, onDateChange }) => {
                 if (onDateChange) {
                   const d = new Date(selectedDate)
                   d.setDate(d.getDate() + 1)
-                  onDateChange(d.toISOString().slice(0, 10))
+                  const newDate = d.toISOString().slice(0, 10)
+                  // Date navigation
+                  onDateChange(newDate)
                 }
               }}
               style={{
@@ -762,6 +750,8 @@ const TaskList = ({ selectedDate, onDateChange }) => {
         position={quickAnimationData.position}
         onComplete={handleQuickAnimationComplete}
       />
+      
+      {/* Debug component removed */}
     </div>
   )
 }
