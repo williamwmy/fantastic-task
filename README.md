@@ -57,7 +57,17 @@ npm install
    - `database/schema.sql` - Hovedskjema
    - `database/rls-policies.sql` - Sikkerhetspolicies
 
-### 3. Start utviklingsserver
+### 3. Sett opp GitHub Secrets (for keep-alive)
+For å holde Supabase-databasen aktiv og forhindre at den blir suspendert, må du legge til følgende secrets i GitHub repository settings:
+
+1. Gå til repository settings → Secrets and variables → Actions
+2. Legg til følgende secrets:
+   - `VITE_SUPABASE_URL` - Din Supabase URL
+   - `VITE_SUPABASE_ANON_KEY` - Din Supabase anon key
+
+GitHub Actions vil automatisk kjøre et keep-alive script daglig kl. 03:00 UTC.
+
+### 4. Start utviklingsserver
 ```bash
 npm run dev
 ```
@@ -105,7 +115,9 @@ fantastic-task/
 │   └── test/              # Testfiler
 ├── public/                # Statisk innhold og PWA-manifest
 ├── database/              # SQL-skjema og migreringer
+├── scripts/               # Utility scripts (keep-alive, etc.)
 ├── tests/                 # E2E-tester (Playwright)
+├── .github/workflows/     # GitHub Actions workflows
 ├── coverage/              # Testdekning (auto-generert)
 ├── playwright-report/     # Playwright rapporter (auto-generert)
 └── test-results/          # Testresultater (auto-generert)
