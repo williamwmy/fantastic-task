@@ -28,18 +28,50 @@ async function keepAlive() {
     console.log(`📍 URL: ${supabaseUrl}`);
     console.log(`⏰ Time: ${new Date().toISOString()}`);
 
-    // Perform a simple query to keep the database active
-    // Count families (this is a lightweight query that doesn't modify data)
-    const { count, error } = await supabase
+    // Insert a heartbeat record to ensure database activity is registered
+    // This is a write operation that Supabase will definitely track
+    const { data: pingData, error: pingError } = await supabase
+      .from('keep_alive_pings')
+      .insert([
+        {
+          source: 'github-actions',
+          pinged_at: new Date().toISOString()
+        }
+      ])
+      .select();
+
+    if (pingError) {
+      console.error('❌ Error writing heartbeat:', pingError.message);
+      process.exit(1);
+    }
+
+    console.log(`✅ Heartbeat written successfully! ID: ${pingData[0]?.id}`);
+
+    // Also perform a read to verify database connectivity
+    const { count, error: countError } = await supabase
       .from('families')
       .select('*', { count: 'exact', head: true });
 
-    if (error) {
-      console.error('❌ Error querying database:', error.message);
+    if (countError) {
+      console.error('❌ Error reading database:', countError.message);
       process.exit(1);
     }
 
     console.log(`✅ Database is active! Found ${count} families.`);
+
+    // Clean up old pings (keep last 100 records)
+    const { error: cleanupError } = await supabase
+      .from('keep_alive_pings')
+      .delete()
+      .lt('pinged_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (cleanupError) {
+      console.warn('⚠️  Warning: Could not cleanup old pings:', cleanupError.message);
+      // Don't fail the script for cleanup errors
+    } else {
+      console.log('🧹 Cleaned up pings older than 30 days');
+    }
+
     console.log('🎉 Keep-alive ping successful!');
 
   } catch (error) {
