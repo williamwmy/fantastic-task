@@ -66,7 +66,7 @@ For å holde Supabase-databasen aktiv og forhindre at den blir suspendert, må d
    - `VITE_SUPABASE_URL` - Din Supabase URL
    - `VITE_SUPABASE_ANON_KEY` - Din Supabase anon key
 
-GitHub Actions vil automatisk kjøre et keep-alive script hver 3. dag kl. 03:00 UTC. Scriptet skriver en heartbeat-record til databasen for å sikre aktivitet registreres.
+GitHub Actions vil automatisk kjøre et keep-alive script daglig kl. 03:00 UTC. Scriptet skriver en heartbeat-record til databasen for å sikre aktivitet registreres.
 
 ### 4. Start utviklingsserver
 ```bash
